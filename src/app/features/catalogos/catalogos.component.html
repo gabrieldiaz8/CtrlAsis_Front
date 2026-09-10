@@ -1,0 +1,193 @@
+<div class="flex flex-col h-full">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-headline-lg font-bold text-primary">Catálogos</h1>
+      <p class="text-body-sm text-on-surface-variant mt-1">Administra rubros, medios de pago y tipos de membresía.</p>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] overflow-hidden">
+    <div class="border-b border-outline-variant">
+      <nav class="flex overflow-x-auto" aria-label="Catálogos">
+        <button *ngFor="let tab of tabOptions" 
+                (click)="onTabChange(tab)"
+                [class]="activeTab() === tab 
+                  ? 'border-secondary text-secondary' 
+                  : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
+                class="flex items-center gap-2 px-6 py-4 border-b-2 -mb-px font-medium text-label-md transition-colors whitespace-nowrap relative">
+          <lucide-icon [img]="getTabIcon(tab)" class="w-5 h-5"></lucide-icon>
+          <span>{{ tab === 'rubros' ? 'Rubros' : tab === 'medios-pago' ? 'Medios de Pago' : 'Tipos de Membresía' }}</span>
+          <span class="ml-2 px-2 py-0.5 text-label-sm rounded-full bg-surface-container-high"
+                [class.bg-secondary-container]="activeTab() === tab"
+                [class.text-on-secondary-container]="activeTab() === tab"
+                [class.text-on-surface-variant]="activeTab() !== tab">
+            {{ getTabConfig().count }}
+          </span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="p-4">
+      <!-- Search and Add Button -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div class="relative w-full sm:w-64">
+          <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+          <input
+            type="text"
+            (input)="onSearchChange($event)"
+            [placeholder]="'Buscar ' + getTabConfig().label.toLowerCase() + '...'"
+            class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+          />
+        </div>
+        <button (click)="openNewModal()" class="bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+          <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+          <span class="text-label-md font-medium">Añadir {{ getTabConfig().label.slice(0, -1) }}</span>
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" *ngIf="!loading(); else loadingTemplate">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant">
+              <th class="p-3 text-label-md font-medium text-primary-container">Nombre</th>
+              <th class="p-3 text-label-md font-medium text-primary-container" *ngIf="activeTab() === 'tipos-membresia'">Descripción</th>
+              <th class="p-3 text-label-md font-medium text-primary-container">Estado</th>
+              <th class="p-3 text-label-md font-medium text-primary-container text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="text-body-sm">
+            <tr *ngFor="let item of paginatedItems(); let i = index" 
+                class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group"
+                [class.bg-background]="i % 2 === 1">
+              <td class="p-3 font-medium text-primary">{{ item.nombre }}</td>
+              <td class="p-3 text-on-surface-variant max-w-xs truncate" *ngIf="activeTab() === 'tipos-membresia'">
+                {{ getDescripcion(item) }}
+              </td>
+              <td class="p-3">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
+                      [ngClass]="item.activo ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-surface-variant text-on-surface-variant'">
+                  {{ item.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="p-3 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="openEditModal(item)" 
+                          class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                          title="Editar">
+                    <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                  </button>
+                  <button (click)="onDelete(item)" 
+                          class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                          title="Desactivar">
+                    <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedItems().length === 0 && !loading()">
+              <td colspan="4" class="p-8 text-center text-on-surface-variant">
+                <lucide-icon [img]="getTabIcon(activeTab())" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+                <p class="text-body-md">No se encontraron {{ getTabConfig().label.toLowerCase() }}</p>
+                <p class="text-body-sm mt-1">Intenta ajustar tu búsqueda o añade uno nuevo</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ng-template #loadingTemplate>
+          <div class="p-8 text-center">
+            <lucide-icon [img]="Loader2" class="w-8 h-8 mx-auto text-secondary animate-spin"></lucide-icon>
+            <p class="text-body-md text-on-surface-variant mt-2">Cargando...</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Pagination -->
+      <div class="p-4 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-4" *ngIf="!loading() && totalPages() > 1">
+        <div class="text-body-sm text-on-surface-variant">
+          Mostrando {{ (currentPage() - 1) * pageSize + 1 }} a {{ Math.min(currentPage() * pageSize, filteredItems().length) }} de {{ filteredItems().length }} {{ getTabConfig().label.toLowerCase() }}
+        </div>
+        <div class="flex items-center gap-1">
+          <button (click)="onPageChange(currentPage() - 1)" 
+                  [disabled]="currentPage() === 1"
+                  class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon [img]="ChevronLeft" class="w-5 h-5"></lucide-icon>
+          </button>
+          <ng-container *ngFor="let page of getPageNumbers()">
+            <button *ngIf="page > 0; else ellipsis" 
+                    (click)="onPageChange(page)" 
+                    [class]="page === currentPage() ? 'bg-secondary text-on-secondary' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high'"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+              {{ page }}
+            </button>
+            <ng-template #ellipsis>
+              <span class="px-2 text-on-surface-variant/50">...</span>
+            </ng-template>
+          </ng-container>
+          <button (click)="onPageChange(currentPage() + 1)" 
+                  [disabled]="currentPage() === totalPages()"
+                  class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon [img]="ChevronRight" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Create/Edit -->
+  <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h2 class="text-headline-md font-bold text-primary">
+          {{ editingItem() ? 'Editar' : 'Nuevo' }} {{ getTabConfig().label.slice(0, -1) }}
+        </h2>
+        <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form [formGroup]="catalogoForm" (ngSubmit)="onSubmit()" class="p-6 space-y-6">
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Nombre</label>
+          <input type="text" formControlName="nombre" 
+                 [placeholder]="'Nombre del ' + getTabConfig().label.slice(0, -1).toLowerCase()"
+                 class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+          <p *ngIf="catalogoForm.get('nombre')?.invalid && catalogoForm.get('nombre')?.touched" 
+             class="text-label-sm text-error mt-1">El nombre es requerido (mín. 2 caracteres)</p>
+        </div>
+
+        <div *ngIf="activeTab() === 'tipos-membresia'">
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Descripción</label>
+          <textarea formControlName="descripcion" rows="3"
+                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all resize-none"
+                    placeholder="Descripción opcional..."></textarea>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <input type="checkbox" formControlName="activo" id="activo"
+                 class="w-4 h-4 text-secondary focus:ring-secondary border-outline-variant rounded" />
+          <label for="activo" class="text-body-sm text-on-surface cursor-pointer">Activo</label>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeModal()" 
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="catalogoForm.invalid || saving()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+            {{ editingItem() ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

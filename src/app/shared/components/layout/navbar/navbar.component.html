@@ -1,0 +1,107 @@
+<header class="flex justify-between items-center h-16 px-8 sticky top-0 z-40 border-b border-outline-variant bg-surface transition-all duration-300" [class.ml-64]="!sidebarCollapsed()" [class.ml-20]="sidebarCollapsed()">
+  <!-- Left Side: Menu Toggle + Page Title -->
+  <div class="flex items-center gap-4">
+    <button
+      (click)="onToggleSidebar()"
+      class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 lg:hidden"
+      aria-label="Toggle sidebar"
+    >
+      <lucide-icon [img]="sidebarCollapsed() ? X : Menu" class="w-5 h-5"></lucide-icon>
+    </button>
+
+    <h1 class="text-headline-md font-headline-md font-bold text-primary hidden sm:block">{{ pageTitle() }}</h1>
+  </div>
+
+  <!-- Right Actions -->
+  <div class="flex items-center gap-4">
+    <!-- Search -->
+    <div class="relative group hidden lg:block">
+      <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-secondary transition-colors w-5 h-5"></lucide-icon>
+      <input
+        type="text"
+        placeholder="Buscar socios, pagos..."
+        class="w-64 pl-10 pr-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest text-body-sm font-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all shadow-sm"
+      />
+    </div>
+
+    <!-- Quick Check-in Action -->
+    <button class="hidden md:block text-secondary border-b-2 border-secondary pb-1 text-label-md font-label-md hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 px-2">
+      Check-in Rápido
+    </button>
+
+    <!-- Icon Actions -->
+    <div class="flex items-center gap-2">
+      <button
+        (click)="toggleNotifications()"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 relative"
+        aria-label="Notificaciones"
+      >
+        <lucide-icon [img]="Bell" class="w-5 h-5"></lucide-icon>
+        <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+      </button>
+
+      <button
+        class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70"
+        aria-label="Ayuda"
+      >
+        <lucide-icon [img]="HelpCircle" class="w-5 h-5"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Profile Dropdown -->
+    <div class="relative">
+      <button
+        (click)="toggleProfileMenu()"
+        class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant shadow-sm cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
+        aria-label="Perfil de usuario"
+        aria-expanded="false"
+      >
+        @if (userAvatar()) {
+          <img [src]="userAvatar()" class="w-full h-full object-cover" alt="Avatar" />
+        } @else {
+          <lucide-icon [img]="User" class="w-5 h-5 text-on-surface-variant"></lucide-icon>
+        }
+      </button>
+
+      @if (showProfileMenu()) {
+        <div class="absolute right-0 mt-2 w-48 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg py-2 z-50 animate-in fade-in-0 zoom-in-95">
+          <div class="px-4 py-3 border-b border-outline-variant">
+            <p class="text-label-md font-label-md text-primary">{{ userName() }}</p>
+            <p class="text-label-sm font-label-sm text-on-surface-variant">Administrador</p>
+          </div>
+          <a
+            href="#"
+            class="flex items-center gap-3 px-4 py-2 text-label-md font-label-md text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+          >
+            <lucide-icon [img]="User" class="w-4 h-4"></lucide-icon>
+            Mi Perfil
+          </a>
+          <a
+            href="#"
+            class="flex items-center gap-3 px-4 py-2 text-label-md font-label-md text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+          >
+            <lucide-icon [img]="HelpCircle" class="w-4 h-4"></lucide-icon>
+            Ayuda
+          </a>
+          <hr class="my-2 border-outline-variant" />
+          <button
+            (click)="onLogout()"
+            class="w-full flex items-center gap-3 px-4 py-2 text-label-md font-label-md text-error hover:bg-error-container/20 transition-colors cursor-pointer"
+          >
+            <lucide-icon [img]="LogOut" class="w-4 h-4"></lucide-icon>
+            Cerrar Sesión
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Backdrop for mobile sidebar -->
+  @if (!sidebarCollapsed()) {
+    <div
+      class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+      (click)="onToggleSidebar()"
+      aria-hidden="true"
+    ></div>
+  }
+</header>

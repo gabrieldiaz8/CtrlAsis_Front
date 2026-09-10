@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Control de Acceso - FitFlow Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#004395",
+                        "secondary": "#0058be",
+                        "tertiary": "#031427",
+                        "primary": "#0a1422",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-container": "#fefcff",
+                        "inverse-primary": "#bdc7d9",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#19293d",
+                        "tertiary-fixed": "#d3e4fe",
+                        "surface-dim": "#d9dadb",
+                        "outline": "#75777c",
+                        "on-background": "#191c1d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-container": "#2170e4",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "primary-fixed-dim": "#bdc7d9",
+                        "on-primary-fixed-variant": "#3d4756",
+                        "primary-fixed": "#d9e3f6",
+                        "background": "#f8f9fa",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#001a42",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container": "#edeeef",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#44474c",
+                        "on-tertiary-container": "#8090a8",
+                        "on-surface": "#191c1d",
+                        "outline-variant": "#c5c6cc",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#8690a1",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-fixed": "#121c2a",
+                        "error": "#ba1a1a",
+                        "primary-container": "#1f2937",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#555f6f",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-container-highest": "#e1e3e4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "2xl": "48px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-full flex overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-primary dark:bg-tertiary border-r border-outline-variant shadow-sm h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-4 z-50">
+<!-- Brand -->
+<div class="mb-8 px-2 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+<span class="text-headline-md font-headline-md font-bold text-on-primary dark:text-on-secondary-container">FitFlow Manager</span>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 flex flex-col gap-2">
+<!-- Active Tab: Control de Acceso -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed bg-secondary-container font-bold text-label-md font-label-md scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">door_front</span>
+                Control de Acceso
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">group</span>
+                Socios
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">event_note</span>
+                Planes
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">payments</span>
+                Pagos
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Configuración
+            </a>
+</div>
+<!-- User Profile & CTA -->
+<div class="mt-auto border-t border-primary-container pt-4">
+<button class="w-full bg-secondary text-on-secondary py-2 rounded-lg text-label-md font-label-md mb-4 hover:bg-secondary-container hover:text-on-secondary-container transition-colors">
+                Nuevo Socio
+            </button>
+<div class="flex items-center gap-3 px-2">
+<img alt="Administrador de FitFlow" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a gym administrator, well-lit, corporate athletic style, sharp focus, modern gym environment background out of focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeGQL255xWD82VKiVmEm1sGEjebpz2OXjOrT81wCKeNDGhY0P6MhUaK8zDRS54ajaUk7J4vCWSnJz4ePoPEjIwPdJOFUGt8WgnBGKdATCQd4ExCTgwUzHN-6ry6i4hp9vFaEspoEVG8NvGBO0skuxHMXyhGLHSUjNdZzcIBBN79QY_4VrMU4qvm16aoY3qP-hjgculnIkjPooXYq8t7XLRTyWXDYQBAywzLw8s48ycyLB7Y44nv2Be"/>
+<div>
+<div class="text-label-md font-label-md text-on-primary">Administrador de FitFlow</div>
+<div class="text-label-sm font-label-sm text-on-primary-container">Administración Central</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col h-full bg-surface overflow-y-auto">
+<!-- TopNavBar (Shared Component) -->
+<header class="docked full-width top-0 sticky z-40 border-b border-outline-variant bg-surface dark:bg-background flex justify-between items-center h-16 px-8">
+<h1 class="text-headline-md font-headline-md text-primary dark:text-on-background font-bold hidden">FitFlow Manager</h1>
+<div class="flex-1 flex justify-end gap-6 items-center">
+<div class="relative hidden md:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-md font-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" placeholder="Buscar..." type="text"/>
+</div>
+<button class="flex items-center gap-2 text-secondary font-label-md text-label-md hover:bg-surface-container-low px-3 py-1.5 rounded-lg transition-all cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+                    Check-in Rápido
+                </button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-primary hover:bg-surface-container-low p-2 rounded-full transition-all cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-primary hover:bg-surface-container-low p-2 rounded-full transition-all cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">help</span>
+</button>
+<img alt="Avatar del Usuario" class="w-8 h-8 rounded-full border border-outline-variant cursor-pointer active:opacity-70" data-alt="Small circular avatar profile picture of a fitness center manager, clean background, sharp corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjwjkmBb0mnKQmsAcnatK58QLrnCsQtlhmh53mTlkknCJ48ju5Rmt6vfl7uBhhDf4ZgB7nx_-jR5Gxfm1XvbbciJjEuG9a2W6rGGyC73CLGmOISaQeArvpxUPlH-FrsombHzkTusKgK3d-DEiUl_VF6XX3DAATslYcJsxJ9F-hg8OMVu--RprOPRHuwVkNLfDCjc7ZAVBlTzRtGGSoxMSM0hxQ7Z5h2VN10BxEEKWkLv0P86_MPesH"/>
+</div>
+</div>
+</header>
+<!-- Access Control Kiosk UI -->
+<div class="flex-1 p-margin-desktop flex flex-col items-center justify-start max-w-5xl mx-auto w-full">
+<!-- Input Section -->
+<div class="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-sm border border-outline p-8 mb-8 text-center flex flex-col items-center">
+<h2 class="text-headline-lg font-headline-lg text-primary mb-6">Ingreso de Socio</h2>
+<div class="flex w-full gap-4 items-center">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-3xl">badge</span>
+<input autofocus="" class="w-full pl-14 pr-6 py-5 text-display-lg font-display-lg bg-surface border-2 border-outline-variant rounded-xl focus:border-secondary focus:ring-4 focus:ring-secondary-container outline-none transition-all text-center tracking-widest placeholder:text-surface-variant" placeholder="Escanea o ingresa DNI" type="text"/>
+</div>
+<button class="bg-secondary text-on-secondary px-8 py-5 rounded-xl text-headline-md font-headline-md font-bold hover:bg-secondary-container transition-colors shadow-sm flex items-center gap-2 h-full">
+<span class="material-symbols-outlined text-3xl">check_circle</span>
+                        Validar
+                    </button>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-4">El cursor debe estar en el campo de texto para usar el lector de código de barras.</p>
+</div>
+<!-- Simulation Toggles (For demonstration) -->
+<div class="flex gap-4 mb-6">
+<button class="px-4 py-2 bg-surface-container-high border border-outline-variant rounded text-label-md font-label-md hover:bg-surface-container-highest" onclick="showStatus('permitido')">Simular Permitido</button>
+<button class="px-4 py-2 bg-surface-container-high border border-outline-variant rounded text-label-md font-label-md hover:bg-surface-container-highest" onclick="showStatus('rechazado')">Simular Rechazado</button>
+<button class="px-4 py-2 bg-surface-container-high border border-outline-variant rounded text-label-md font-label-md hover:bg-surface-container-highest" onclick="showStatus('excepcion')">Simular Excepción</button>
+</div>
+<!-- Result Areas -->
+<div class="w-full" id="status-container">
+<!-- PERMITIDO STATE -->
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-outline overflow-hidden hidden" id="state-permitido">
+<div class="bg-[#10B981] text-white py-6 px-8 flex items-center justify-center gap-4">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<h2 class="text-display-lg font-display-lg tracking-tight">ACCESO PERMITIDO</h2>
+</div>
+<div class="p-8 flex gap-8">
+<img alt="Foto del Socio" class="w-48 h-48 rounded-lg object-cover border-4 border-surface-container-high shadow-sm" data-alt="A high-quality, professional ID photo of a young athletic male gym member. White background, neutral expression, clear lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVhnL7sJU5ba9GzEhp2MG9SRXYe6y1m1AhmtWkK-YWnTiW0_AhcG9qG5sXgQM7AT22hntRmrcFjv1bmibnVMN8kComm9v11zmfZzSvbsD-JfnsfNUXF2QNKIhHoMUN_ADTuJn00WHhMkFx2wwj-iX0vmCHNOR-yC_ssZ4y1AXNIPyBYqpqS_7hkH8nBXe43Fy1nRYOowKiW8JnUaLk26SfucSVGcnRp3bdXFUZmtgbjIrDPtYiESvb"/>
+<div class="flex-1 flex flex-col justify-center">
+<h3 class="text-headline-lg font-headline-lg text-primary mb-2">Carlos Mendoza Ramírez</h3>
+<div class="text-body-lg font-body-lg text-on-surface-variant mb-6">DNI: 45.678.901</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<div class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Plan Activo</div>
+<div class="text-headline-md font-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[#10B981]">fitness_center</span>
+                                        Musculación + Cardio
+                                    </div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<div class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Vencimiento</div>
+<div class="text-headline-md font-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">calendar_today</span>
+                                        15 Oct 2024
+                                    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RECHAZADO STATE -->
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-error overflow-hidden hidden" id="state-rechazado">
+<div class="bg-error text-on-error py-6 px-8 flex items-center justify-center gap-4">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">cancel</span>
+<h2 class="text-display-lg font-display-lg tracking-tight">ACCESO DENEGADO</h2>
+</div>
+<div class="p-8 flex gap-8">
+<div class="relative">
+<img alt="Foto del Socio" class="w-48 h-48 rounded-lg object-cover border-4 border-error-container shadow-sm grayscale" data-alt="A professional ID photo of a female gym member, slightly muted colors indicating inactive status, clear lighting, neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOSH1mzs1flQu-D1NY4R0Y7kubZk3Hqsy9AnhhMaEyZcY3iZhLnPhTJ8-k2Yy4r2vJNKNYRLbxlvXXmeV7JsVVgBpT5J030JNGK43IK9lFQ2NxejbYnZZKuKVkQ6_XPQrKSdRxzn2qhpXWt5sqHj5VtMuouvlvjfzvCcNIipAXJaRUX03e57cfkl1QxAAZYuk8wBAwHEy6QWA4sQiJwqqCf-nnGkjnrYEdNrAIKDw2NT2Zs2Sz1NJA"/>
+<div class="absolute inset-0 bg-error/10 rounded-lg"></div>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<h3 class="text-headline-lg font-headline-lg text-primary mb-2">Lucía Fernández Gomez</h3>
+<div class="text-body-lg font-body-lg text-on-surface-variant mb-6">DNI: 39.123.456</div>
+<div class="bg-error-container p-6 rounded-lg border border-error flex items-start gap-4">
+<span class="material-symbols-outlined text-error text-3xl">warning</span>
+<div>
+<div class="text-headline-md font-headline-md text-error mb-1">Mensualidad Vencida</div>
+<div class="text-body-lg font-body-lg text-error/80">El plan venció el 01 Sep 2024 (Hace 24 días). Por favor, dirigir al socio a recepción para regularizar su pago.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- EXCEPCIÓN STATE -->
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-[#F59E0B] overflow-hidden hidden" id="state-excepcion">
+<div class="bg-[#F59E0B] text-white py-6 px-8 flex items-center justify-center gap-4">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">info</span>
+<h2 class="text-display-lg font-display-lg tracking-tight">REVISIÓN REQUERIDA</h2>
+</div>
+<div class="p-8 flex gap-8">
+<img alt="Foto del Socio" class="w-48 h-48 rounded-lg object-cover border-4 border-[#FDE68A] shadow-sm" data-alt="A professional ID photo of an older male gym member, clear lighting, neutral background, athletic attire." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEKu8gueVpMADb4Eq0aLLJzLZyLaFe_urJJy81an6mLsCNDBo1NNOWuRtU-b-DuM-EOi8tDxpJsvhjZAHabhMKXa0NMoM4F3kdR9gJBNZkSNi5h1rvqiMk-nnU8Dj9dgVVTjaPos6LyiDBbvQSmpahywWr6VpDzJmz7ecJeaDXyeTqMat52RDaQ4uoo3b2EdcIIB3eAXAFTrJAOWD9QMzebSbVTmZKKDAfyC1wOF9wODNBTcwjw3El"/>
+<div class="flex-1 flex flex-col justify-center">
+<h3 class="text-headline-lg font-headline-lg text-primary mb-2">Roberto Silva</h3>
+<div class="text-body-lg font-body-lg text-on-surface-variant mb-4">DNI: 22.456.789</div>
+<div class="bg-[#FEF3C7] p-4 rounded-lg border border-[#FCD34D] flex items-start gap-3 mb-4">
+<span class="material-symbols-outlined text-[#D97706]">priority_high</span>
+<div class="text-body-md font-body-md text-[#92400E]">Falta firmar exención de responsabilidad médica actualizada.</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-md font-label-md text-primary">Observación / Autorización (Opcional)</label>
+<div class="flex gap-4">
+<input class="flex-1 bg-surface border border-outline-variant rounded-lg px-4 py-2 text-body-md font-body-md focus:border-secondary outline-none" placeholder="Ej: Firmó documento físico hoy..." type="text"/>
+<button class="bg-[#F59E0B] text-white px-6 py-2 rounded-lg text-label-md font-label-md font-bold hover:bg-[#D97706] transition-colors">
+                                        Forzar Ingreso
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        function showStatus(state) {
+            document.getElementById('state-permitido').classList.add('hidden');
+            document.getElementById('state-rechazado').classList.add('hidden');
+            document.getElementById('state-excepcion').classList.add('hidden');
+            
+            document.getElementById('state-' + state).classList.remove('hidden');
+        }
+        
+        // Default show permitted for preview
+        showStatus('permitido');
+    </script>
+</body></html>

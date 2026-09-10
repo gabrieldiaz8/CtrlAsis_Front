@@ -1,0 +1,105 @@
+<div class="flex flex-col h-full">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-headline-lg font-bold text-primary">Configuración</h1>
+      <p class="text-body-sm text-on-surface-variant mt-1">Gestiona los datos de tu negocio.</p>
+    </div>
+  </div>
+
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] overflow-hidden flex-1" *ngIf="!loading(); else loadingTemplate">
+    <div class="p-6 md:p-8">
+      <!-- Alert Messages -->
+      <div *ngIf="error()" class="mb-6 p-4 bg-error-container text-on-error-container rounded-lg flex items-center gap-3" role="alert">
+        <lucide-icon [img]="AlertCircle" class="w-5 h-5 flex-shrink-0"></lucide-icon>
+        <span class="text-body-sm">{{ error() }}</span>
+      </div>
+
+      <div *ngIf="success()" class="mb-6 p-4 bg-[#D1FAE5] text-[#065F46] rounded-lg flex items-center gap-3" role="status">
+        <lucide-icon [img]="CheckCircle" class="w-5 h-5 flex-shrink-0"></lucide-icon>
+        <span class="text-body-sm">{{ success() }}</span>
+      </div>
+
+      <!-- Business Info Card -->
+      <div class="mb-8">
+        <h2 class="text-headline-sm font-bold text-primary mb-6 flex items-center gap-2">
+          <lucide-icon [img]="Building" class="w-5 h-5 text-secondary"></lucide-icon>
+          Datos del Negocio
+        </h2>
+
+        <form [formGroup]="negocioForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nombre -->
+            <div class="md:col-span-2">
+              <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="nombre">Nombre del Negocio</label>
+              <div class="relative">
+                <lucide-icon [img]="Building" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+                <input type="text" id="nombre" formControlName="nombre"
+                       class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+                       placeholder="Ej: FitFlow Gym" />
+              </div>
+              <p *ngIf="negocioForm.get('nombre')?.invalid && negocioForm.get('nombre')?.touched" 
+                 class="text-label-sm text-error mt-1">El nombre es requerido (mín. 2 caracteres)</p>
+            </div>
+
+            <!-- Rubro -->
+            <div>
+              <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="rubroId">Rubro</label>
+              <select id="rubroId" formControlName="rubroId"
+                      class="w-full p-2.5 pl-10 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
+                <option value="">Seleccionar rubro...</option>
+                <option *ngFor="let rubro of rubros()" [value]="rubro.id">{{ rubro.nombre }}</option>
+              </select>
+              <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <lucide-icon [img]="Tag" class="w-5 h-5 text-on-surface-variant"></lucide-icon>
+              </div>
+              <p *ngIf="negocioForm.get('rubroId')?.invalid && negocioForm.get('rubroId')?.touched" 
+                 class="text-label-sm text-error mt-1">Selecciona un rubro</p>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-end pt-6 border-t border-outline-variant">
+            <button type="submit" [disabled]="saving() || negocioForm.invalid"
+                    class="px-8 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+              <lucide-icon [img]="Save" class="w-4 h-4" *ngIf="!saving()"></lucide-icon>
+              {{ saving() ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Current Business Info (Read-only display) -->
+      <div *ngIf="negocio()" class="bg-surface-container-low border border-outline-variant rounded-lg p-6">
+        <h3 class="text-label-md font-medium text-primary mb-4 flex items-center gap-2">
+          <lucide-icon [img]="Building" class="w-4 h-4 text-secondary"></lucide-icon>
+          Información Actual
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-body-sm">
+          <div>
+            <p class="text-on-surface-variant">ID del Negocio</p>
+            <p class="font-medium text-primary">{{ negocio()!.id }}</p>
+          </div>
+          <div>
+            <p class="text-on-surface-variant">Rubro</p>
+            <p class="font-medium text-primary">{{ negocio()!.rubroNombre }}</p>
+          </div>
+          <div>
+            <p class="text-on-surface-variant">Rubro ID</p>
+            <p class="font-medium text-primary">{{ negocio()!.rubroId }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <lucide-icon [img]="Loader2" class="w-10 h-10 mx-auto text-secondary animate-spin"></lucide-icon>
+        <p class="text-body-md text-on-surface-variant mt-3">Cargando configuración...</p>
+      </div>
+    </div>
+  </ng-template>
+</div>

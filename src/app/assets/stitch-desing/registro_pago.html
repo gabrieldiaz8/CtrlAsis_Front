@@ -1,0 +1,329 @@
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registro de Pago - FitFlow Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#004395",
+                        "secondary": "#0058be",
+                        "tertiary": "#031427",
+                        "primary": "#0a1422",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-container": "#fefcff",
+                        "inverse-primary": "#bdc7d9",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#19293d",
+                        "tertiary-fixed": "#d3e4fe",
+                        "surface-dim": "#d9dadb",
+                        "outline": "#75777c",
+                        "on-background": "#191c1d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-container": "#2170e4",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "primary-fixed-dim": "#bdc7d9",
+                        "on-primary-fixed-variant": "#3d4756",
+                        "primary-fixed": "#d9e3f6",
+                        "background": "#f8f9fa",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#001a42",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container": "#edeeef",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#44474c",
+                        "on-tertiary-container": "#8090a8",
+                        "on-surface": "#191c1d",
+                        "outline-variant": "#c5c6cc",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#8690a1",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-fixed": "#121c2a",
+                        "error": "#ba1a1a",
+                        "primary-container": "#1f2937",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#555f6f",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-container-highest": "#e1e3e4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "2xl": "48px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F9FAFB; }
+        .input-glow:focus { box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+    </style>
+</head>
+<body class="font-body-md text-body-md text-on-surface bg-background antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-primary dark:bg-tertiary border-r border-outline-variant shadow-sm flex-col py-6 px-4 z-50">
+<div class="mb-8 px-2 flex items-center gap-3">
+<span class="material-symbols-outlined text-on-primary text-3xl">fitness_center</span>
+<span class="text-headline-md font-headline-md font-bold text-on-primary dark:text-on-secondary-container">FitFlow Manager</span>
+</div>
+<div class="flex items-center gap-3 mb-8 px-2">
+<img alt="Administrador de FitFlow" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a corporate fitness manager with a friendly but professional demeanor, well-lit in a modern office setting. Light mode, corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhWbCoaCdDTUIHj2jrjxYZBo9qLmrm-dtsLF39sYDAYKAsVEcK4rgJv7mco-SXUkXDYxuUgtNE7OCqXJg0-N0jYaPcS4JCHh_DQI3NwEYDf4NeYK5xUbpn1K11kyDbeX5IrBc74fPI7lChVGAb4VGp1Vs_JYz2rkMAldDDNBkzhHPAX5g6C2x6mu-NYbbkXDya5hZXQ2v-rMCRE07VcTMTqdIvAPvdFbR19MOZl-NjrXShp3b8kc9e"/>
+<div>
+<p class="text-label-md font-label-md text-on-primary dark:text-on-secondary-container">Administrador</p>
+<p class="text-label-sm font-label-sm text-on-primary-container">Administración Central</p>
+</div>
+</div>
+<button class="w-full bg-secondary text-on-secondary rounded flex items-center justify-center gap-2 py-2 mb-6 font-label-md text-label-md hover:bg-secondary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+            Nuevo Socio
+        </button>
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">door_front</span>
+<span class="text-label-md font-label-md">Control de Acceso</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">Socios</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="text-label-md font-label-md">Planes</span>
+</a>
+</li>
+<li>
+<!-- ACTIVE NAV ITEM -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-secondary-fixed bg-secondary-container font-bold scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="text-label-md font-label-md">Pagos</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Configuración</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Area -->
+<div class="flex flex-col flex-1 md:ml-64 h-full relative">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-8 docked full-width top-0 sticky z-40 bg-surface dark:bg-background border-b border-outline-variant">
+<!-- Mobile Brand (Hidden on desktop) -->
+<div class="md:hidden flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">fitness_center</span>
+<span class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-primary">FitFlow</span>
+</div>
+<!-- Search (Right aligned as per JSON) -->
+<div class="flex-1 flex justify-end items-center gap-6">
+<div class="relative w-64 hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-surface-container-low border border-outline-variant rounded text-body-sm font-body-sm focus:outline-none focus:border-secondary input-glow transition-all" placeholder="Buscar socio..." type="text"/>
+</div>
+<button class="hidden sm:flex bg-secondary text-on-secondary px-4 py-1.5 rounded items-center gap-2 text-label-md font-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" style="font-size: 18px;">bolt</span>
+                    Check-in Rápido
+                </button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="cursor-pointer active:opacity-70 hover:text-primary transition-all p-1 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="cursor-pointer active:opacity-70 hover:text-primary transition-all p-1 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">help</span>
+</button>
+<img alt="Avatar del Usuario" class="w-8 h-8 rounded-full border border-outline-variant object-cover ml-2" data-alt="A small circular avatar placeholder showing a professional silhouette in light mode colors, corporate UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzGE2c1WDsBA-sNBu8OesuKPiw6YklTtFgkLcyccAS-GTyRuXcOndNTtYL0B2GI6p-12B9hGMgMQKJ-snmg-wbooBzaW5RjXJeNC_ehz6O6r_1LrWrT9mFbp-NuY2Og_Y-jNIHhB9HCeiR6y1Did2JZogYxEryqWBL_7Es6FZs7AFmO-MCw-84usjXkRmdrhfUfDHDlZwrZ04FDhw0Echdf5h5hT0xi8Q-jzW74MqFqSv-NElYpxoG"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 overflow-y-auto p-4 md:p-margin-desktop bg-background">
+<div class="max-w-4xl mx-auto">
+<!-- Page Header -->
+<div class="mb-8 flex items-center gap-3">
+<div class="p-3 bg-secondary-fixed text-on-secondary-fixed rounded-lg inline-flex">
+<span class="material-symbols-outlined text-3xl">point_of_sale</span>
+</div>
+<div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface">Registro de Pago</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Ingresa los detalles del nuevo cobro al sistema.</p>
+</div>
+</div>
+<!-- Main Form Grid (Bento Style Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Primary Inputs -->
+<div class="lg:col-span-2 space-y-6">
+<!-- Socio Selection Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm relative overflow-hidden group">
+<!-- Decorative background accent -->
+<div class="absolute -right-16 -top-16 w-32 h-32 bg-secondary-fixed-dim opacity-20 rounded-full blur-2xl group-hover:scale-110 transition-transform"></div>
+<h2 class="text-label-md font-label-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-xl">person_search</span>
+                                Buscar Socio
+                            </h2>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded text-body-md font-body-md focus:border-secondary focus:ring-0 input-glow transition-all" placeholder="Nombre, DNI o número de socio..." type="text" value="Carlos Mendoza"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-secondary cursor-pointer hover:bg-surface-container-low p-1 rounded-full transition-colors">check_circle</span>
+</div>
+<!-- Selected Member Preview Panel -->
+<div class="mt-4 p-4 bg-surface-container-low border border-outline-variant rounded-lg flex items-start gap-4">
+<img alt="Socio" class="w-12 h-12 rounded bg-surface border border-outline-variant object-cover" data-alt="A bright, clear, professional portrait of a male gym member smiling, wearing athletic clothing, white background, corporate photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMvdqNwTJz1KOghm6vOQxtI4IxEys36RVfoPx_4tFSXsb9QhrrEGjLe29P9YHj3St7hkBskKDJoFlq4cwzMWTTeuDG8ZcaKYiHbuN1w6blXcZcFUE8PXVp6ykHrqZD7DNaYGQz0V0bmVlSwAxDG4sXjNA-1FPV8NH9F0fhVjl5nmIOWL18DrgeowKLEzZvs9Bv6yWG5BL-3qpiVTet3NBbARV8JkwWObdc4QDj3PWnXPCqiqt9wX6c"/>
+<div class="flex-1">
+<h3 class="text-body-md font-body-md font-semibold text-on-surface">Carlos Mendoza</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Socio #4092 • DNI: 34.567.890</p>
+<div class="mt-2 inline-block px-2 py-1 bg-error-container text-on-error-container text-label-sm font-label-sm rounded">
+                                        Vencido hace 3 días
+                                    </div>
+</div>
+</div>
+</div>
+<!-- Payment Details Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
+<h2 class="text-label-md font-label-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-xl">receipt_long</span>
+                                Detalle del Cobro
+                            </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Membresía -->
+<div class="space-y-2">
+<label class="block text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Membresía a Pagar</label>
+<select class="w-full p-3 bg-surface border border-outline-variant rounded text-body-md font-body-md focus:border-secondary focus:ring-0 input-glow appearance-none">
+<option>Pase Libre Mensual</option>
+<option>Pase Matutino</option>
+<option>Clases Sueltas (Pack 10)</option>
+<option>Anual VIP</option>
+</select>
+</div>
+<!-- Fecha -->
+<div class="space-y-2">
+<label class="block text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Fecha de Pago</label>
+<div class="relative">
+<input class="w-full p-3 bg-surface border border-outline-variant rounded text-body-md font-body-md focus:border-secondary focus:ring-0 input-glow" type="date" value="2023-10-25"/>
+</div>
+</div>
+</div>
+<!-- Monto -->
+<div class="mt-6 space-y-2">
+<label class="block text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Monto a Cobrar</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-headline-md font-headline-md text-on-surface-variant">$</span>
+<input class="w-full pl-10 pr-4 py-4 bg-surface border border-outline-variant rounded-lg text-headline-md font-headline-md text-on-surface focus:border-secondary focus:ring-0 input-glow font-bold" step="100" type="number" value="15000"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Methods & Action -->
+<div class="space-y-6">
+<!-- Payment Method Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
+<h2 class="text-label-md font-label-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-xl">account_balance_wallet</span>
+                                Medio de Pago
+                            </h2>
+<div class="flex flex-col gap-3">
+<!-- Option 1 -->
+<label class="relative flex items-center p-4 border border-secondary bg-secondary-fixed-dim/20 rounded-lg cursor-pointer transition-colors group">
+<input checked="" class="w-4 h-4 text-secondary focus:ring-secondary border-outline-variant" name="payment_method" type="radio"/>
+<div class="ml-3 flex-1 flex items-center justify-between">
+<span class="text-body-md font-body-md font-medium text-on-surface">Efectivo</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary transition-colors">payments</span>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="relative flex items-center p-4 border border-outline-variant hover:border-secondary hover:bg-surface-container-low rounded-lg cursor-pointer transition-colors group">
+<input class="w-4 h-4 text-secondary focus:ring-secondary border-outline-variant" name="payment_method" type="radio"/>
+<div class="ml-3 flex-1 flex items-center justify-between">
+<span class="text-body-md font-body-md font-medium text-on-surface">Tarjeta</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary transition-colors">credit_card</span>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="relative flex items-center p-4 border border-outline-variant hover:border-secondary hover:bg-surface-container-low rounded-lg cursor-pointer transition-colors group">
+<input class="w-4 h-4 text-secondary focus:ring-secondary border-outline-variant" name="payment_method" type="radio"/>
+<div class="ml-3 flex-1 flex items-center justify-between">
+<span class="text-body-md font-body-md font-medium text-on-surface">Transferencia</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary transition-colors">account_balance</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Summary & CTA Card -->
+<div class="bg-surface-container-highest rounded-xl p-6 border border-outline-variant shadow-sm relative overflow-hidden">
+<div class="flex justify-between items-end mb-6">
+<span class="text-label-md font-label-md text-on-surface-variant">Total a Registrar</span>
+<span class="text-headline-lg font-headline-lg font-bold text-on-surface">$15.000</span>
+</div>
+<button class="w-full bg-secondary hover:bg-secondary-container text-on-secondary py-4 rounded-lg text-body-md font-body-md font-bold flex items-center justify-center gap-2 transition-all shadow-md active:scale-95">
+<span class="material-symbols-outlined">check_circle</span>
+                                Registrar Cobro
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

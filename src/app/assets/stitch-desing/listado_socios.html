@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Listado de Socios - FitFlow Manager</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#004395",
+                    "secondary": "#0058be",
+                    "tertiary": "#031427",
+                    "primary": "#0a1422",
+                    "on-error": "#ffffff",
+                    "surface-variant": "#e1e3e4",
+                    "on-secondary-container": "#fefcff",
+                    "inverse-primary": "#bdc7d9",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#19293d",
+                    "tertiary-fixed": "#d3e4fe",
+                    "surface-dim": "#d9dadb",
+                    "outline": "#75777c",
+                    "on-background": "#191c1d",
+                    "inverse-on-surface": "#f0f1f2",
+                    "secondary-container": "#2170e4",
+                    "surface": "#f8f9fa",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "primary-fixed-dim": "#bdc7d9",
+                    "on-primary-fixed-variant": "#3d4756",
+                    "primary-fixed": "#d9e3f6",
+                    "background": "#f8f9fa",
+                    "inverse-surface": "#2e3132",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed": "#001a42",
+                    "secondary-fixed": "#d8e2ff",
+                    "surface-container": "#edeeef",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#44474c",
+                    "on-tertiary-container": "#8090a8",
+                    "on-surface": "#191c1d",
+                    "outline-variant": "#c5c6cc",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#8690a1",
+                    "surface-bright": "#f8f9fa",
+                    "surface-container-high": "#e7e8e9",
+                    "on-primary-fixed": "#121c2a",
+                    "error": "#ba1a1a",
+                    "primary-container": "#1f2937",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#555f6f",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f3f4f5",
+                    "surface-container-highest": "#e1e3e4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "base": "8px",
+                    "margin-desktop": "32px",
+                    "margin-mobile": "16px",
+                    "2xl": "48px",
+                    "sm": "12px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xl": "32px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Inter", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "label-md": ["Inter", "sans-serif"],
+                    "headline-md": ["Inter", "sans-serif"],
+                    "headline-lg-mobile": ["Inter", "sans-serif"],
+                    "body-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "label-sm": ["Inter", "sans-serif"],
+                    "headline-lg": ["Inter", "sans-serif"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                    "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                    "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                    "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                    "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md text-body-md">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-primary border-r border-outline-variant shadow-sm flex flex-col py-6 px-4 z-50">
+<!-- Header Info (Instead of generic Brand Logo as per JSON context, using Avatar + Titles) -->
+<div class="flex items-center gap-md mb-xl px-2">
+<img alt="Administrador de FitFlow" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a fit, well-groomed athletic facility manager in a modern office setting. The lighting is crisp, high-key, and bright, reflecting a corporate modern aesthetic. The subject is wearing a subtle, dark-colored athletic polo shirt, exuding confidence and precision. The background is slightly blurred, showing hints of a clean, high-tech gym administration area with cool white and subtle blue tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYi65ld6LmRIkp3NEmOXYtjeLJDWem8ty4p9UBYYdVEiEmVXSPAAx1jevHGGQsFp4iWDRpwWDLPj1QY5l4fs046g0_4w-H11O7_luMHQLnHUtMjFsATshznnXAQsA7WH2n_2pdxPnhLp0DO9UZZKTHCJ_HZkr7pbQTLKwr4WgVCqasTICOKEz1jLSB0BiFjmPEIPUDTSXRgjRZjZDpa9xORuQ2xErGld7_WxH0uGkfGIswC_gTy2JM"/>
+<div>
+<h1 class="text-on-primary font-label-md text-label-md">FitFlow Manager</h1>
+<p class="text-on-primary-container font-label-sm text-label-sm">Administración Central</p>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 space-y-xs">
+<a class="flex items-center gap-md px-md py-sm rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">door_front</span>
+<span class="font-label-md text-label-md">Control de Acceso</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-md px-md py-sm rounded text-secondary-fixed bg-secondary-container font-bold scale-95 transition-transform duration-150 shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 600;">group</span>
+<span class="font-label-md text-label-md">Socios</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">event_note</span>
+<span class="font-label-md text-label-md">Planes</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">payments</span>
+<span class="font-label-md text-label-md">Pagos</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">settings</span>
+<span class="font-label-md text-label-md">Configuración</span>
+</a>
+</nav>
+<!-- CTA from JSON -->
+<div class="mt-auto pt-lg border-t border-primary-container">
+<button class="w-full bg-secondary hover:bg-secondary-container text-on-secondary hover:text-on-secondary-container font-label-md text-label-md py-sm px-md rounded transition-colors duration-200 flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                Nuevo Socio
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col min-h-screen bg-background">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-8 border-b border-outline-variant bg-surface sticky top-0 z-40">
+<!-- Left side empty to let brand logo stay hidden as per JSON, or act as spacing -->
+<div class="flex items-center gap-sm text-on-surface-variant font-label-md text-label-md hidden">
+<!-- Hidden Brand Logo space -->
+</div>
+<div class="flex items-center gap-md font-label-md text-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">group</span>
+<span>/</span>
+<span class="text-primary font-bold">Directorio</span>
+</div>
+<!-- Right Side Actions -->
+<div class="flex items-center gap-lg">
+<!-- Search Bar (on_right) -->
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-xl pr-sm py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all w-64 text-on-surface" placeholder="Buscar por DNI o Nombre..." type="text"/>
+</div>
+<!-- Trailing Primary Action -->
+<button class="bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container px-md py-2 rounded-full font-label-md text-label-md transition-all shadow-sm flex items-center gap-xs cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                    Check-in Rápido
+                </button>
+<!-- Icon Actions -->
+<div class="flex items-center gap-sm border-l border-outline-variant pl-lg">
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-container-low p-sm rounded-full transition-all cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary hover:bg-surface-container-low p-sm rounded-full transition-all cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">help</span>
+</button>
+<img alt="Avatar del Usuario" class="w-8 h-8 rounded-full border border-outline-variant ml-sm cursor-pointer" data-alt="A small circular avatar of a user profile in a digital dashboard. The image shows a minimalist icon or a generic professional headshot with clean lighting, suitable for a highly functional corporate modern user interface. The color palette aligns with clean whites, cool grays, and subtle professional blues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7QUPdq4voPuMh457Y5Af0JCVVoB2t5zf6Hova3vFzUXlvRJYirrWnlpRrDUCkeJuCwNCLHi4jg0t5IDttWNJKjjUVxPAxCSy6DuuFsbVuj6AxK-UZ9xOQDksFEOwvhdTTbIM8iBWVrVAqVR9nXLsJj5QQXSS4Fs9A_k9pq7SOWRvSN5Utv5QvqPDGcgdEB2bCaRDiI-tkb4TNl-MBSxXylVvDGylRHSqEn10Yc5C8k5_PAVgAuBBC"/>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="p-margin-desktop flex-1 flex flex-col">
+<!-- Page Header & Filters -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-lg gap-md">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Listado de Socios</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Gestiona el directorio de miembros, planes y estados de acceso.</p>
+</div>
+<div class="flex items-center gap-md w-full sm:w-auto">
+<!-- Mobile Search (visible only on small screens) -->
+<div class="relative w-full lg:hidden">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full pl-xl pr-sm py-2 bg-surface-container-lowest border border-outline-variant rounded font-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary" placeholder="Buscar..." type="text"/>
+</div>
+<!-- Filter Dropdown (Visual only) -->
+<button class="flex items-center gap-sm px-md py-2 border border-outline-variant bg-surface-container-lowest text-on-surface rounded font-label-md text-label-md hover:bg-surface-container-low transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filtros
+                        <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+<!-- Primary Action (Duplicate from JSON but contextually placed for page action) -->
+<button class="flex items-center gap-sm px-md py-2 bg-secondary text-on-secondary rounded font-label-md text-label-md hover:bg-secondary-container hover:shadow-sm transition-all whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Nuevo Socio
+                    </button>
+</div>
+</div>
+<!-- Data Table Container (Level 1 Surface) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden flex-1 flex flex-col">
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="bg-surface border-b border-outline-variant sticky top-0 z-10">
+<tr>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">Socio</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">DNI</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">Plan Actual</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">Estado</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">Último Acceso</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1: Activo -->
+<tr class="hover:bg-surface-container-low transition-colors duration-150">
+<td class="px-md py-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center font-label-md">
+                                            MR
+                                        </div>
+<div>
+<p class="font-label-md text-on-background">Martina Ríos</p>
+<p class="font-body-sm text-on-surface-variant text-[12px]">m.rios@email.com</p>
+</div>
+</div>
+</td>
+<td class="px-md py-sm font-body-sm text-on-background">34.567.890</td>
+<td class="px-md py-sm font-body-sm text-on-background">Pase Libre Anual</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-[#D1FAE5] text-[#065F46] font-label-sm border border-[#34D399]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+                                        Activo
+                                    </span>
+</td>
+<td class="px-md py-sm font-body-sm text-on-surface-variant">Hoy, 08:45 AM</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary p-xs rounded transition-colors"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2: Vencido -->
+<tr class="bg-surface-bright hover:bg-surface-container-low transition-colors duration-150">
+<td class="px-md py-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label-md">
+                                            JG
+                                        </div>
+<div>
+<p class="font-label-md text-on-background">Juan Ignacio Gómez</p>
+<p class="font-body-sm text-on-surface-variant text-[12px]">juan.gomez88@email.com</p>
+</div>
+</div>
+</td>
+<td class="px-md py-sm font-body-sm text-on-background">28.901.234</td>
+<td class="px-md py-sm font-body-sm text-on-background">Musculación Mensual</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-error-container text-on-error-container font-label-sm border border-[#FCA5A5]">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        Vencido
+                                    </span>
+</td>
+<td class="px-md py-sm font-body-sm text-on-surface-variant">Hace 3 días</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary p-xs rounded transition-colors"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3: Activo -->
+<tr class="hover:bg-surface-container-low transition-colors duration-150">
+<td class="px-md py-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center font-label-md">
+                                            LC
+                                        </div>
+<div>
+<p class="font-label-md text-on-background">Lucía Castro</p>
+<p class="font-body-sm text-on-surface-variant text-[12px]">lucast_99@email.com</p>
+</div>
+</div>
+</td>
+<td class="px-md py-sm font-body-sm text-on-background">41.234.567</td>
+<td class="px-md py-sm font-body-sm text-on-background">Crossfit Trimestral</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-[#D1FAE5] text-[#065F46] font-label-sm border border-[#34D399]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+                                        Activo
+                                    </span>
+</td>
+<td class="px-md py-sm font-body-sm text-on-surface-variant">Ayer, 18:30 PM</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary p-xs rounded transition-colors"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4: Suspendido -->
+<tr class="bg-surface-bright hover:bg-surface-container-low transition-colors duration-150 text-on-surface-variant">
+<td class="px-md py-sm">
+<div class="flex items-center gap-sm opacity-70">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label-md">
+                                            FM
+                                        </div>
+<div>
+<p class="font-label-md text-on-background">Federico Méndez</p>
+<p class="font-body-sm text-on-surface-variant text-[12px]">fede.mendez@email.com</p>
+</div>
+</div>
+</td>
+<td class="px-md py-sm font-body-sm opacity-70">32.111.222</td>
+<td class="px-md py-sm font-body-sm opacity-70">Pase Libre Mensual</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-sm border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                        Suspendido
+                                    </span>
+</td>
+<td class="px-md py-sm font-body-sm opacity-70">Hace 2 meses</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary p-xs rounded transition-colors"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 5: Activo -->
+<tr class="hover:bg-surface-container-low transition-colors duration-150">
+<td class="px-md py-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center font-label-md">
+                                            SA
+                                        </div>
+<div>
+<p class="font-label-md text-on-background">Sofía Álvarez</p>
+<p class="font-body-sm text-on-surface-variant text-[12px]">sofi.alv@email.com</p>
+</div>
+</div>
+</td>
+<td class="px-md py-sm font-body-sm text-on-background">39.888.777</td>
+<td class="px-md py-sm font-body-sm text-on-background">Pase Libre Anual</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-[#D1FAE5] text-[#065F46] font-label-sm border border-[#34D399]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+                                        Activo
+                                    </span>
+</td>
+<td class="px-md py-sm font-body-sm text-on-surface-variant">Hoy, 10:15 AM</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary p-xs rounded transition-colors"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="bg-surface border-t border-outline-variant px-lg py-sm flex items-center justify-between">
+<p class="font-body-sm text-on-surface-variant">Mostrando <span class="font-semibold text-on-background">1</span> a <span class="font-semibold text-on-background">5</span> de <span class="font-semibold text-on-background">1,248</span> socios</p>
+<div class="flex gap-xs">
+<button class="p-xs text-on-surface-variant border border-outline-variant rounded hover:bg-surface-container-low disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="p-xs text-on-surface-variant border border-outline-variant rounded hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

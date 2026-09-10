@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ficha de Socio - FitFlow Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#004395",
+                        "secondary": "#0058be",
+                        "tertiary": "#031427",
+                        "primary": "#0a1422",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-container": "#fefcff",
+                        "inverse-primary": "#bdc7d9",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#19293d",
+                        "tertiary-fixed": "#d3e4fe",
+                        "surface-dim": "#d9dadb",
+                        "outline": "#75777c",
+                        "on-background": "#191c1d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-container": "#2170e4",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "primary-fixed-dim": "#bdc7d9",
+                        "on-primary-fixed-variant": "#3d4756",
+                        "primary-fixed": "#d9e3f6",
+                        "background": "#f8f9fa",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#001a42",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container": "#edeeef",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#44474c",
+                        "on-tertiary-container": "#8090a8",
+                        "on-surface": "#191c1d",
+                        "outline-variant": "#c5c6cc",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#8690a1",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-fixed": "#121c2a",
+                        "error": "#ba1a1a",
+                        "primary-container": "#1f2937",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#555f6f",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-container-highest": "#e1e3e4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "2xl": "48px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar (Suppressed intentionally as per logical rule: Ficha de Socio is a detailed view / task-focused, not a top-level destination, however prompt explicitly requests it. Obeying prompt request over logic rule for this specific task to demonstrate structure, but in a real app, Details views often hide global nav to focus on the content canvas. Resolving to keep it as requested to fulfill component requirement.) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-primary dark:bg-tertiary border-r border-outline-variant shadow-sm py-6 px-4 z-50">
+<div class="text-headline-md font-headline-md font-bold text-on-primary dark:text-on-secondary-container mb-8">FitFlow Manager</div>
+<nav class="flex-1 flex flex-col space-y-2">
+<a class="flex items-center px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mr-3">door_front</span>
+<span class="text-label-md font-label-md">Control de Acceso</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-secondary-fixed bg-secondary-container font-bold transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-label-md font-label-md">Socios</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mr-3">event_note</span>
+<span class="text-label-md font-label-md">Planes</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mr-3">payments</span>
+<span class="text-label-md font-label-md">Pagos</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="text-label-md font-label-md">Configuración</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col space-y-4">
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-xl font-label-md text-label-md hover:bg-secondary-container hover:text-secondary-fixed transition-colors">Nuevo Socio</button>
+<div class="flex items-center space-x-3 text-on-primary">
+<img alt="Administrador de FitFlow" class="w-10 h-10 rounded-full bg-surface-container object-cover" data-alt="A small circular avatar placeholder image showing a silhouette of a professional administrator in a bright, modern corporate setting, ensuring high-key lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgobm-fRe4U4OYuXxR_0_phR_ccfgx0qul45JZ2yIPdFzBPerszBNVEKH4t4UP2PhgPbQaRQqJ3s-5WZSBLsSPB7-c79nXP4F9vPWOX_tQO_4fGbm_1JhqVIBPP5C6BfpFdzLtjf4ELhcwXjVPFX_WkMKzAWUF5Qb1Jp7f1zmEQaRcT7tup4r1ETGUiLQELsOLxC7QMgDNrIZCD65aV_o9uQF9mcbht3lRoevZmeCAaSwziBSQlEms"/>
+<div>
+<div class="text-label-md font-label-md">FitFlow Manager</div>
+<div class="text-body-sm font-body-sm text-on-primary-container">Administración Central</div>
+</div>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col md:ml-64 min-w-0">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-8 docked full-width top-0 sticky z-40 bg-surface dark:bg-background border-b border-outline-variant">
+<div class="hidden text-headline-md font-headline-md font-bold">FitFlow Manager</div>
+<div class="flex-1 flex items-center justify-between">
+<div class="text-headline-md font-headline-md text-primary dark:text-on-background">Detalle de Socio</div>
+<div class="flex items-center space-x-6">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors outline-none w-64" placeholder="Buscar socios..." type="text"/>
+</div>
+<button class="flex items-center space-x-2 text-on-surface-variant hover:text-primary transition-all active:opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center space-x-2 text-on-surface-variant hover:text-primary transition-all active:opacity-70">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:opacity-90 transition-opacity">Check-in Rápido</button>
+<img alt="Avatar del Usuario" class="w-8 h-8 rounded-full border border-outline-variant object-cover cursor-pointer" data-alt="A circular placeholder avatar for the top navigation bar showing a generic user profile icon in a clean, minimalist design with a soft grey background and white icon." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmZysZ8Gm76QbojjZ6GdVvgpAlQwIbTaamGF7oQB9o5UnRpJnquRIODiJiiVjsRR4j8j9rLRiRerzr0xf7WrU0oanFVg9ui2ZhpKP_qm8hoymJQ_VIOTyY3rP1AXCbQk2Ryd_-mLyzWsOIKk_werFLXnXR_aETM8feOAh-jvFYmWDV_3wTltOUyQp_OSNI58Gou8XZ3FBoGtlWVTl7hSSl1x8FdgazCOXLhihXqEZDVPlI8eC_y4bn"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop overflow-y-auto">
+<div class="max-w-6xl mx-auto space-y-8">
+<!-- Header / Profile Section -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm gap-6">
+<div class="flex items-center gap-6">
+<img class="w-24 h-24 rounded-full border-4 border-surface-container object-cover" data-alt="A professional headshot of a fit, athletic member in a modern gym environment. The lighting is bright and crisp, highlighting a clean corporate-modern aesthetic. The background is slightly blurred showing gym equipment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5fLLj6NkjBuYzqUFiZumVB5Dpc6oUZT7bMv_JC2mD7kNPiarvxSOaqpAb3WFqDwgYOZo6kI_K8fdYtYTgZvaURk-_SOkliE7XKUQhwzo-Wz1tpWcNylvRW5SV60rf2mV2oUOg0gL08mHiz6XeKaYD8zC_qvLT79YAszIR5VbsFshSMCvWfkcDNXkKDRuRpotJzpXgUdGT0VaTYj5DEeJ9phdAF8qwUyEfIN_9mpWdQQwVdV6xR-Z0"/>
+<div>
+<h1 class="text-headline-lg font-headline-lg text-on-background">Carlos Mendoza</h1>
+<div class="flex flex-wrap items-center gap-3 mt-2">
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-full text-label-sm font-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified</span> Socio Activo
+                                </span>
+<span class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span> Cliente desde Oct 2022
+                                </span>
+</div>
+</div>
+</div>
+<div class="flex gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-6 py-2 border border-outline-variant bg-transparent text-primary-container rounded-lg text-label-md font-label-md hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">edit</span> Editar Datos
+                        </button>
+<button class="flex-1 md:flex-none px-6 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">autorenew</span> Renovar Membresía
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Details & Plan -->
+<div class="lg:col-span-1 space-y-8">
+<!-- Datos Personales Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
+<h2 class="text-headline-md font-headline-md text-on-background mb-4 flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-secondary">person</span> Datos Personales
+                            </h2>
+<div class="space-y-4">
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">DNI</p>
+<p class="text-body-md font-body-md text-on-background font-medium">34.567.890</p>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Teléfono</p>
+<p class="text-body-md font-body-md text-on-background font-medium">+54 9 11 1234-5678</p>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Email</p>
+<p class="text-body-md font-body-md text-on-background font-medium break-all">carlos.mendoza.fit@email.com</p>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Fecha de Nacimiento</p>
+<p class="text-body-md font-body-md text-on-background font-medium">15 May 1988 (35 años)</p>
+</div>
+</div>
+</div>
+<!-- Membresía Actual Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm relative overflow-hidden">
+<!-- Subtle background pattern for visual interest on high-level cards -->
+<div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, black 1px, transparent 0); background-size: 20px 20px;"></div>
+<h2 class="text-headline-md font-headline-md text-on-background mb-4 flex items-center gap-2 border-b border-surface-container pb-2 relative z-10">
+<span class="material-symbols-outlined text-secondary">card_membership</span> Membresía Actual
+                            </h2>
+<div class="space-y-5 relative z-10">
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Plan Activo</p>
+<p class="text-headline-md font-headline-md text-secondary mt-1">Pase Libre Mensual</p>
+</div>
+<div class="bg-surface-container-low p-sm rounded-lg border border-outline-variant flex justify-between items-center">
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Vencimiento</p>
+<p class="text-body-md font-body-md text-on-background font-bold">24 Nov 2023</p>
+</div>
+<div class="text-right">
+<span class="inline-block px-2 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded text-label-sm font-label-sm">
+                                            Faltan 12 días
+                                        </span>
+</div>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant mb-2">Frecuencia Semanal</p>
+<div class="flex gap-2">
+<span class="flex-1 text-center py-2 bg-secondary text-on-secondary rounded font-label-md">L</span>
+<span class="flex-1 text-center py-2 bg-secondary text-on-secondary rounded font-label-md">M</span>
+<span class="flex-1 text-center py-2 bg-surface-variant text-on-surface-variant rounded font-label-md">M</span>
+<span class="flex-1 text-center py-2 bg-secondary text-on-secondary rounded font-label-md">J</span>
+<span class="flex-1 text-center py-2 bg-surface-variant text-on-surface-variant rounded font-label-md">V</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-2 text-center">3 días / semana promedio</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Histories -->
+<div class="lg:col-span-2 space-y-8">
+<!-- Historial de Accesos -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
+<div class="flex justify-between items-center mb-4 border-b border-surface-container pb-2">
+<h2 class="text-headline-md font-headline-md text-on-background flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">meeting_room</span> Entradas Recientes
+                                </h2>
+<button class="text-label-sm font-label-sm text-secondary hover:underline">Ver todo</button>
+</div>
+<ul class="space-y-0">
+<li class="flex items-center justify-between py-3 border-b border-surface-container-low last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">login</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-background font-medium">Hoy, 08:30 AM</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Puerta Principal</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-[#d1fae5] text-[#065f46] rounded-full text-label-sm font-label-sm flex items-center gap-1 border border-[#a7f3d0]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Permitido
+                                    </span>
+</li>
+<li class="flex items-center justify-between py-3 border-b border-surface-container-low last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">login</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-background font-medium">Ayer, 18:45 PM</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Puerta Principal</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-[#d1fae5] text-[#065f46] rounded-full text-label-sm font-label-sm flex items-center gap-1 border border-[#a7f3d0]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Permitido
+                                    </span>
+</li>
+<li class="flex items-center justify-between py-3 border-b border-surface-container-low last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">login</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-background font-medium">08 Nov, 08:15 AM</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Puerta Principal</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-[#d1fae5] text-[#065f46] rounded-full text-label-sm font-label-sm flex items-center gap-1 border border-[#a7f3d0]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Permitido
+                                    </span>
+</li>
+<li class="flex items-center justify-between py-3 border-b border-surface-container-low last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[20px]">block</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-background font-medium">06 Nov, 19:00 PM</p>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Zona Musculación (Fuera de horario)</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-error-container text-on-error-container rounded-full text-label-sm font-label-sm flex items-center gap-1 border border-error/30">
+<span class="material-symbols-outlined text-[14px]">cancel</span> Denegado
+                                    </span>
+</li>
+</ul>
+</div>
+<!-- Historial de Pagos -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm overflow-hidden">
+<div class="flex justify-between items-center mb-4 border-b border-surface-container pb-2">
+<h2 class="text-headline-md font-headline-md text-on-background flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">receipt_long</span> Historial de Pagos
+                                </h2>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-primary-container text-label-md font-label-md border-y border-outline-variant">
+<th class="p-sm font-semibold">Fecha</th>
+<th class="p-sm font-semibold">Concepto</th>
+<th class="p-sm font-semibold">Monto</th>
+<th class="p-sm font-semibold">Método</th>
+<th class="p-sm font-semibold text-center">Estado</th>
+</tr>
+</thead>
+<tbody class="text-body-sm font-body-sm text-on-background">
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors bg-surface-bright">
+<td class="p-sm whitespace-nowrap">24 Oct 2023</td>
+<td class="p-sm font-medium">Pase Libre Mensual (Noviembre)</td>
+<td class="p-sm">$12,500</td>
+<td class="p-sm text-on-surface-variant">Tarjeta Crédito</td>
+<td class="p-sm text-center">
+<span class="inline-flex items-center px-2 py-1 rounded bg-[#d1fae5] text-[#065f46] text-[10px] uppercase font-bold tracking-wider">Aprobado</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors bg-surface">
+<td class="p-sm whitespace-nowrap">24 Sep 2023</td>
+<td class="p-sm font-medium">Pase Libre Mensual (Octubre)</td>
+<td class="p-sm">$12,500</td>
+<td class="p-sm text-on-surface-variant">Tarjeta Crédito</td>
+<td class="p-sm text-center">
+<span class="inline-flex items-center px-2 py-1 rounded bg-[#d1fae5] text-[#065f46] text-[10px] uppercase font-bold tracking-wider">Aprobado</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors bg-surface-bright">
+<td class="p-sm whitespace-nowrap">24 Ago 2023</td>
+<td class="p-sm font-medium">Pase Libre Mensual (Septiembre)</td>
+<td class="p-sm">$11,000</td>
+<td class="p-sm text-on-surface-variant">Efectivo</td>
+<td class="p-sm text-center">
+<span class="inline-flex items-center px-2 py-1 rounded bg-[#d1fae5] text-[#065f46] text-[10px] uppercase font-bold tracking-wider">Aprobado</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors bg-surface">
+<td class="p-sm whitespace-nowrap">24 Jul 2023</td>
+<td class="p-sm font-medium">Pase Libre Mensual (Agosto)</td>
+<td class="p-sm">$11,000</td>
+<td class="p-sm text-on-surface-variant">Transferencia</td>
+<td class="p-sm text-center">
+<span class="inline-flex items-center px-2 py-1 rounded bg-[#d1fae5] text-[#065f46] text-[10px] uppercase font-bold tracking-wider">Aprobado</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

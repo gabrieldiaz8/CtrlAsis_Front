@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestión de Planes - FitFlow Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#004395",
+                        "secondary": "#0058be",
+                        "tertiary": "#031427",
+                        "primary": "#0a1422",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-container": "#fefcff",
+                        "inverse-primary": "#bdc7d9",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#19293d",
+                        "tertiary-fixed": "#d3e4fe",
+                        "surface-dim": "#d9dadb",
+                        "outline": "#75777c",
+                        "on-background": "#191c1d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-container": "#2170e4",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "primary-fixed-dim": "#bdc7d9",
+                        "on-primary-fixed-variant": "#3d4756",
+                        "primary-fixed": "#d9e3f6",
+                        "background": "#f8f9fa",
+                        "inverse-surface": "#2e3132",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#001a42",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container": "#edeeef",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#44474c",
+                        "on-tertiary-container": "#8090a8",
+                        "on-surface": "#191c1d",
+                        "outline-variant": "#c5c6cc",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#8690a1",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-fixed": "#121c2a",
+                        "error": "#ba1a1a",
+                        "primary-container": "#1f2937",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#555f6f",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-container-highest": "#e1e3e4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "2xl": "48px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex bg-primary dark:bg-tertiary h-screen w-64 fixed left-0 top-0 border-r border-outline-variant shadow-sm flex-col py-6 px-4 z-50">
+<div class="mb-8 flex items-center gap-4">
+<img alt="Administrador de FitFlow" class="w-12 h-12 rounded-full object-cover border-2 border-surface" data-alt="A highly professional and clean headshot of an administrative manager in a modern fitness center context. Bright lighting, sharp focus, wearing a dark polo shirt. Corporate athletic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3iZTiT_X9ak3OlxJN3OanNBJKIeyXix7RCnC6AoH0cetqLmS8CAyvoqRycFtOwl8McM9gIKyjTRlliLtZYcne9uYZWndoVWD8WySy8OhPnmku5w8i4gzZFdJLO1xGd3aZ9Gf8ROnlUnqlPdclTg93SKwaZQ_wFeR_cNYIkgngVG7VHiYrjHumSrwG-hG2leAWB3zSNY-ExQGjAN--Ag0qcTzqFH734cpHlbQjiq5n-UDPoYzLJEMo"/>
+<div>
+<h2 class="text-headline-md font-headline-md font-bold text-on-primary dark:text-on-secondary-container">FitFlow Manager</h2>
+<p class="text-label-sm font-label-sm text-on-primary-container">Administración Central</p>
+</div>
+</div>
+<button class="mb-8 w-full bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors duration-200 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="text-label-md font-label-md">Nuevo Socio</span>
+</button>
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">door_front</span>
+<span class="text-label-md font-label-md">Control de Acceso</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-md font-label-md">Socios</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary-fixed bg-secondary-container font-bold scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="text-label-md font-label-md">Planes</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-label-md font-label-md">Pagos</span>
+</a>
+</li>
+<li class="mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container hover:text-on-secondary-container hover:bg-primary-container transition-colors duration-200 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-md font-label-md">Configuración</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-64 h-screen">
+<!-- TopNavBar -->
+<header class="hidden md:flex justify-between items-center h-16 px-8 docked full-width top-0 sticky z-40 border-b border-outline-variant bg-surface dark:bg-background flat no shadows">
+<div class="flex items-center gap-4 hidden">
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-on-background">FitFlow Manager</span>
+</div>
+<div class="flex items-center justify-end w-full gap-6">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" placeholder="Buscar planes..." type="text"/>
+</div>
+<button class="text-label-md font-label-md bg-transparent border border-outline-variant text-primary py-2 px-4 rounded-lg hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70">
+                    Check-in Rápido
+                </button>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-all hover:text-primary cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-all hover:text-primary cursor-pointer active:opacity-70">
+<span class="material-symbols-outlined">help</span>
+</button>
+<img alt="Avatar del Usuario" class="w-8 h-8 rounded-full ml-2 object-cover border border-outline-variant" data-alt="A clean, professional circular avatar profile image of a fitness manager. Neutral grey background, well-lit, corporate athletic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkOLrsqmOM11qp2sdrjC2r9PU8FNy1m2z1_4kJc_itxN4gR1GKjhVDfTo5unSHYdaCQn_ksNB4S9EWRBTveT4j0bdqnGUbOOeFUW7GhJe3itEugYiSw7uQWsqjbWKsReIkAnJ48HkZyGdBUQ36Oyt5c3itlA9wGz0Rw5fGRsyu5xI8wOzOPze2-CHgU9yhOHAD0WJwlIkY9O-gvuLaDdoDf31SpOI8_Chi8VER_FcNcY2CgsFILeHv"/>
+</div>
+</div>
+</header>
+<!-- Canvas / Main Section -->
+<main class="flex-1 overflow-y-auto p-margin-mobile md:p-margin-desktop bg-background">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-lg gap-4">
+<div>
+<h1 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg text-primary">Gestión de Planes</h1>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Configura y administra los planes de membresía disponibles.</p>
+</div>
+<button class="bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+<span class="material-symbols-outlined">add</span>
+<span class="text-label-md font-label-md">Añadir Plan</span>
+</button>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-sm text-label-md font-label-md text-primary-container">Nombre</th>
+<th class="p-sm text-label-md font-label-md text-primary-container">Tipo</th>
+<th class="p-sm text-label-md font-label-md text-primary-container">Días/Semana</th>
+<th class="p-sm text-label-md font-label-md text-primary-container">Precio</th>
+<th class="p-sm text-label-md font-label-md text-primary-container">Duración</th>
+<th class="p-sm text-label-md font-label-md text-primary-container text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="text-body-sm font-body-sm">
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-sm font-medium text-primary">Pase Libre</td>
+<td class="p-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-label-sm font-label-sm">Ilimitado</span>
+</td>
+<td class="p-sm text-on-surface-variant">Lunes a Domingo</td>
+<td class="p-sm font-semibold text-primary">$45.00 / mes</td>
+<td class="p-sm text-on-surface-variant">Mensual</td>
+<td class="p-sm text-right">
+<button class="text-outline hover:text-primary transition-colors p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+<tr class="bg-background border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-sm font-medium text-primary">3 veces por semana</td>
+<td class="p-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-label-sm font-label-sm">Parcial</span>
+</td>
+<td class="p-sm text-on-surface-variant">3 Días a elección</td>
+<td class="p-sm font-semibold text-primary">$30.00 / mes</td>
+<td class="p-sm text-on-surface-variant">Mensual</td>
+<td class="p-sm text-right">
+<button class="text-outline hover:text-primary transition-colors p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-sm font-medium text-primary">Pilates Reformer</td>
+<td class="p-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-label-sm font-label-sm">Especialidad</span>
+</td>
+<td class="p-sm text-on-surface-variant">2 Días fijos</td>
+<td class="p-sm font-semibold text-primary">$55.00 / mes</td>
+<td class="p-sm text-on-surface-variant">Mensual</td>
+<td class="p-sm text-right">
+<button class="text-outline hover:text-primary transition-colors p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+</body></html>

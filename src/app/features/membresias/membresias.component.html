@@ -1,0 +1,277 @@
+<div class="flex flex-col h-full">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-headline-lg font-bold text-primary">Membresías</h1>
+      <p class="text-body-sm text-on-surface-variant mt-1">Gestión de membresías activas, vencidas y canceladas.</p>
+    </div>
+    <button (click)="openNewMembresiaModal()" class="bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+      <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+      <span class="text-label-md font-medium">Nueva Membresía</span>
+    </button>
+  </div>
+
+  <!-- Table View -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] overflow-hidden flex-1">
+    <!-- Search and Filter Bar -->
+    <div class="p-4 border-b border-outline-variant bg-surface-container-low flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div class="relative w-full sm:w-64">
+        <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+        <input
+          type="text"
+          (input)="onSearchChange($event)"
+          placeholder="Buscar membresías..."
+          class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+        />
+      </div>
+      <div class="flex items-center gap-2">
+        <lucide-icon [img]="Filter" class="text-on-surface-variant w-5 h-5"></lucide-icon>
+        <select [value]="estadoFilter()" (change)="onEstadoFilterChange($event)"
+                class="bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none">
+          <option value="">Todos los estados</option>
+          <option value="activa">Activa</option>
+          <option value="vencida">Vencida</option>
+          <option value="suspendida">Suspendida</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto flex-1">
+      <table class="w-full text-left border-collapse" *ngIf="!loading(); else loadingTemplate">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant">
+            <th class="p-3 text-label-md font-medium text-primary-container">Socio</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Plan</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Inicio</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Fin</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Estado</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Días Rest.</th>
+            <th class="p-3 text-label-md font-medium text-primary-container text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-body-sm">
+          <tr *ngFor="let m of filteredMembresias(); let i = index" 
+              class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group"
+              [class.bg-background]="i % 2 === 1">
+            <td class="p-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium">
+                  {{ m.socioNombre.charAt(0) || '?' }}
+                </div>
+                <div>
+                  <p class="font-medium text-primary">{{ m.socioNombre }}</p>
+                  <p class="text-label-sm text-on-surface-variant">{{ m.socioDni }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-3 text-on-surface-variant">{{ m.planNombre }}</td>
+            <td class="p-3 text-on-surface-variant whitespace-nowrap">{{ formatDate(m.fechaInicio) }}</td>
+            <td class="p-3 text-on-surface-variant whitespace-nowrap">{{ formatDate(m.fechaFin) }}</td>
+            <td class="p-3">
+              <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-label-sm font-medium"
+                    [ngClass]="getEstadoBadge(m.estado).class">
+                <lucide-icon [img]="getEstadoBadge(m.estado).icon" class="w-3 h-3"></lucide-icon>
+                {{ getEstadoBadge(m.estado).label }}
+              </span>
+            </td>
+            <td class="p-3">
+              <span [ngClass]="getDiasRestantes(m.fechaFin) <= 7 ? 'text-error font-semibold' : 'text-on-surface-variant'">
+                {{ getDiasRestantes(m.fechaFin) }} días
+              </span>
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button (click)="viewMembresiaDetail(m)" 
+                        class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                        title="Ver detalle">
+                  <lucide-icon [img]="Eye" class="w-4 h-4"></lucide-icon>
+                </button>
+                <button (click)="openEditMembresiaModal(m)" 
+                        class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                        title="Editar">
+                  <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                </button>
+                <button *ngIf="m.estado === 'activa'" (click)="renovarMembresia(m)" 
+                        class="text-on-surface-variant hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                        title="Renovar">
+                  <lucide-icon [img]="RotateCcw" class="w-4 h-4"></lucide-icon>
+                </button>
+                <button *ngIf="m.estado === 'activa' || m.estado === 'vencida'" (click)="cancelarMembresia(m)" 
+                        class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                        title="Cancelar">
+                  <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredMembresias().length === 0 && !loading()">
+            <td colspan="7" class="p-8 text-center text-on-surface-variant">
+              <lucide-icon [img]="Shield" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+              <p class="text-body-md">No se encontraron membresías</p>
+              <p class="text-body-sm mt-1">Intenta ajustar tu búsqueda o crea una nueva membresía</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #loadingTemplate>
+        <div class="p-8 text-center">
+          <lucide-icon [img]="Loader2" class="w-8 h-8 mx-auto text-secondary animate-spin"></lucide-icon>
+          <p class="text-body-md text-on-surface-variant mt-2">Cargando membresías...</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Pagination -->
+    <div class="p-4 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-4" *ngIf="!loading() && totalPages() > 1">
+      <div class="text-body-sm text-on-surface-variant">
+        Mostrando {{ (currentPage() - 1) * pageSize + 1 }} a {{ Math.min(currentPage() * pageSize, totalItems()) }} de {{ totalItems() }} membresías
+      </div>
+      <div class="flex items-center gap-1">
+        <button (click)="onPageChange(currentPage() - 1)" 
+                [disabled]="currentPage() === 1"
+                class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-icon [img]="ChevronLeft" class="w-5 h-5"></lucide-icon>
+        </button>
+        <ng-container *ngFor="let page of getPageNumbers()">
+          <button *ngIf="page > 0; else ellipsis" 
+                  (click)="onPageChange(page)" 
+                  [class]="page === currentPage() ? 'bg-secondary text-on-secondary' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high'"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+            {{ page }}
+          </button>
+          <ng-template #ellipsis>
+            <span class="px-2 text-on-surface-variant/50">...</span>
+          </ng-template>
+        </ng-container>
+        <button (click)="onPageChange(currentPage() + 1)" 
+                [disabled]="currentPage() === totalPages()"
+                class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-icon [img]="ChevronRight" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Create/Edit Membresía -->
+  <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h2 class="text-headline-md font-bold text-primary">
+          {{ editingMembresia() ? 'Editar Membresía' : 'Nueva Membresía' }}
+        </h2>
+        <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form [formGroup]="membresiaForm" (ngSubmit)="onSubmitMembresia()" class="p-6 space-y-6">
+        <!-- Socio Search -->
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Buscar Socio</label>
+          <div class="relative">
+            <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+            <input
+              type="text"
+              [(ngModel)]="socioSearchTerm"
+              [ngModelOptions]="{standalone: true}"
+              (keydown.enter)="searchSocio(); $event.preventDefault()"
+              placeholder="Nombre, DNI o número de socio..."
+              class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+            />
+            <button 
+              type="button"
+              (click)="searchSocio()"
+              [disabled]="searchingSocio() || !socioSearchTerm().trim()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:bg-surface-container-low p-1 rounded-full transition-colors disabled:opacity-50">
+              <lucide-icon [img]="CheckCircle" class="w-5 h-5" *ngIf="!searchingSocio()"></lucide-icon>
+              <lucide-icon [img]="Loader2" class="w-5 h-5 animate-spin" *ngIf="searchingSocio()"></lucide-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Selected Socio Preview -->
+        <div *ngIf="selectedSocio()" class="p-4 bg-surface-container-low border border-outline-variant rounded-lg flex items-start gap-4">
+          <div class="w-12 h-12 rounded bg-surface border border-outline-variant flex items-center justify-center text-label-md font-medium text-primary">
+            {{ selectedSocio()!.nombre.charAt(0) || '' }}{{ selectedSocio()!.apellido.charAt(0) || '' }}
+          </div>
+          <div class="flex-1">
+            <h3 class="text-body-md font-medium text-on-surface">{{ selectedSocio()!.nombre }} {{ selectedSocio()!.apellido }}</h3>
+            <p class="text-label-sm text-on-surface-variant">Socio #{{ selectedSocio()!.id }} • DNI: {{ selectedSocio()!.dni }}</p>
+            <div class="mt-2 inline-flex items-center gap-1 text-label-sm" [ngClass]="selectedSocio()!.activo ? 'text-green-600' : 'text-error'">
+              <lucide-icon [img]="CheckCircle" class="w-3 h-3" *ngIf="selectedSocio()!.activo"></lucide-icon>
+              <lucide-icon [img]="X" class="w-3 h-3" *ngIf="!selectedSocio()!.activo"></lucide-icon>
+              {{ selectedSocio()!.activo ? 'Activo' : 'Inactivo' }}
+            </div>
+          </div>
+          <button type="button" (click)="selectedSocio.set(null); membresiaForm.patchValue({socioId: ''})" class="text-on-surface-variant hover:text-error p-1">
+            <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Plan de Membresía -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Plan de Membresía</label>
+            <select formControlName="planId" [disabled]="loadingCatalogs()"
+                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-50">
+              <option value="">Seleccionar plan...</option>
+              <option *ngFor="let plan of planes()" [value]="plan.id">{{ plan.tipoMembresiaNombre }} ({{ plan.diasPorSemana }} días/sem, {{ plan.duracionDias }} días)</option>
+            </select>
+            <p *ngIf="membresiaForm.get('planId')?.invalid && membresiaForm.get('planId')?.touched" 
+               class="text-label-sm text-error mt-1">Seleccione un plan</p>
+          </div>
+
+          <!-- Fecha de Inicio -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Fecha de Inicio</label>
+            <div class="relative">
+              <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+              <input type="date" formControlName="fechaInicio"
+                     class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            </div>
+          </div>
+
+          <!-- Fecha de Fin -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Fecha de Fin</label>
+            <div class="relative">
+              <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+              <input type="date" formControlName="fechaFin"
+                     class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Estado</label>
+            <select formControlName="estado"
+                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
+              <option value="activa">Activa</option>
+              <option value="vencida">Vencida</option>
+              <option value="suspendida">Suspendida</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeModal()" 
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="membresiaForm.invalid || saving()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+            {{ editingMembresia() ? 'Actualizar' : 'Crear Membresía' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

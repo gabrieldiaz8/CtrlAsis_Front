@@ -1,0 +1,223 @@
+<div class="flex flex-col h-full">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-headline-lg font-bold text-primary">Gestión de Planes</h1>
+      <p class="text-body-sm text-on-surface-variant mt-1">Configura y administra los planes de membresía disponibles.</p>
+    </div>
+    <button (click)="openNewPlanModal()" class="bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+      <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+      <span class="text-label-md font-medium">Añadir Plan</span>
+    </button>
+  </div>
+
+  <!-- Data Table Container -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] overflow-hidden">
+    <!-- Search and Filter Bar -->
+    <div class="p-4 border-b border-outline-variant bg-surface-container-low flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div class="relative w-full sm:w-64">
+        <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+        <input
+          type="text"
+          (input)="onSearchChange($event)"
+          placeholder="Buscar planes..."
+          class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+        />
+      </div>
+      <div class="flex items-center gap-2">
+        <lucide-icon [img]="Filter" class="text-on-surface-variant w-5 h-5"></lucide-icon>
+        <select class="bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none">
+          <option value="">Todos los tipos</option>
+          <option value="Mensual">Mensual</option>
+          <option value="Trimestral">Trimestral</option>
+          <option value="Anual">Anual</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse" *ngIf="!loading(); else loadingTemplate">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant">
+            <th class="p-3 text-label-md font-medium text-primary-container">Tipo</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Días/Semana</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Duración</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Precio</th>
+            <th class="p-3 text-label-md font-medium text-primary-container">Estado</th>
+            <th class="p-3 text-label-md font-medium text-primary-container text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-body-sm">
+          <tr *ngFor="let plan of paginatedPlanes(); let i = index" 
+              class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group"
+              [class.bg-background]="i % 2 === 1">
+            <td class="p-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" 
+                     [ngClass]="getPlanIconClass(plan.tipoMembresiaNombre)">
+                  <lucide-icon [img]="getPlanIcon(plan.tipoMembresiaNombre)" class="w-5 h-5 text-white"></lucide-icon>
+                </div>
+                <div>
+                  <p class="font-medium text-primary">{{ plan.tipoMembresiaNombre }}</p>
+                  <p class="text-label-sm text-on-surface-variant">{{ plan.diasPorSemana }} días/semana</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-3 text-on-surface-variant">{{ plan.diasPorSemana }}</td>
+            <td class="p-3 text-on-surface-variant">{{ plan.duracionDias }} días</td>
+            <td class="p-3 font-semibold text-primary">{{ formatPrice(plan.precio) }}</td>
+            <td class="p-3">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
+                    [ngClass]="plan.activo ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-error-container text-on-error-container'">
+                {{ plan.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button (click)="openEditPlanModal(plan)" 
+                        class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                        title="Editar">
+                  <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                </button>
+                <button (click)="onDeletePlan(plan)" 
+                        class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                        title="Desactivar">
+                  <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredPlanes().length === 0 && !loading()">
+            <td colspan="6" class="p-8 text-center text-on-surface-variant">
+              <lucide-icon [img]="Shield" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+              <p class="text-body-md">No se encontraron planes</p>
+              <p class="text-body-sm mt-1">Intenta ajustar tu búsqueda o crea un nuevo plan</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #loadingTemplate>
+        <div class="p-8 text-center">
+          <lucide-icon [img]="Loader2" class="w-8 h-8 mx-auto text-secondary animate-spin"></lucide-icon>
+          <p class="text-body-md text-on-surface-variant mt-2">Cargando planes...</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Pagination -->
+    <div class="p-4 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-4" *ngIf="!loading() && totalPages() > 1">
+      <div class="text-body-sm text-on-surface-variant">
+        Mostrando {{ (currentPage() - 1) * pageSize + 1 }} a {{ Math.min(currentPage() * pageSize, filteredPlanes().length) }} de {{ filteredPlanes().length }} planes
+      </div>
+      <div class="flex items-center gap-1">
+        <button (click)="onPageChange(currentPage() - 1)" 
+                [disabled]="currentPage() === 1"
+                class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-icon [img]="ChevronLeft" class="w-5 h-5"></lucide-icon>
+        </button>
+        <ng-container *ngFor="let page of getPageNumbers(); let isFirst = first; let isLast = last">
+          <button *ngIf="page > 0; else ellipsis" 
+                  (click)="onPageChange(page)" 
+                  [class]="page === currentPage() ? 'bg-secondary text-on-secondary' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high'"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+            {{ page }}
+          </button>
+          <ng-template #ellipsis>
+            <span class="px-2 text-on-surface-variant/50">...</span>
+          </ng-template>
+        </ng-container>
+        <button (click)="onPageChange(currentPage() + 1)" 
+                [disabled]="currentPage() === totalPages()"
+                class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-icon [img]="ChevronRight" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Create/Edit Plan -->
+  <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h2 class="text-headline-md font-bold text-primary">
+          {{ editingPlan() ? 'Editar Plan' : 'Nuevo Plan' }}
+        </h2>
+        <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form [formGroup]="planForm" (ngSubmit)="onSubmitPlan()" class="p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Días por Semana -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Días por Semana</label>
+            <input type="number" formControlName="diasPorSemana" min="1" max="7"
+                   class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            <p *ngIf="planForm.get('diasPorSemana')?.invalid && planForm.get('diasPorSemana')?.touched" 
+               class="text-label-sm text-error mt-1">Requerido (1-7)</p>
+          </div>
+
+          <!-- Duración en días -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Duración (días)</label>
+            <input type="number" formControlName="duracionDias" min="1"
+                   class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            <p *ngIf="planForm.get('duracionDias')?.invalid && planForm.get('duracionDias')?.touched" 
+               class="text-label-sm text-error mt-1">La duración es requerida y debe ser mayor a 0</p>
+          </div>
+
+          <!-- Precio -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Precio (ARS)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-body-md text-on-surface-variant">$</span>
+              <input type="number" formControlName="precio" step="100" min="0"
+                     class="w-full pl-8 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            </div>
+            <p *ngIf="planForm.get('precio')?.invalid && planForm.get('precio')?.touched" 
+               class="text-label-sm text-error mt-1">El precio es requerido y debe ser mayor a 0</p>
+          </div>
+
+          <!-- Tipo de Membresía -->
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Tipo de Membresía</label>
+            <select formControlName="tipoMembresiaId"
+                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
+              <option value="">Seleccionar...</option>
+              <option value="1">Mensual</option>
+              <option value="2">Trimestral</option>
+              <option value="3">Anual</option>
+            </select>
+            <p *ngIf="planForm.get('tipoMembresiaId')?.invalid && planForm.get('tipoMembresiaId')?.touched" 
+               class="text-label-sm text-error mt-1">Seleccione un tipo</p>
+          </div>
+
+          <!-- Activo -->
+          <div class="flex items-center gap-3">
+            <input type="checkbox" formControlName="activo" id="activo"
+                   class="w-4 h-4 text-secondary focus:ring-secondary border-outline-variant rounded" />
+            <label for="activo" class="text-body-sm text-on-surface cursor-pointer">Plan activo</label>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeModal()" 
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="planForm.invalid || saving()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+            {{ editingPlan() ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

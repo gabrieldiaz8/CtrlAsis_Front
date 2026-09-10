@@ -1,0 +1,138 @@
+<div class="flex flex-col gap-6 max-w-[1400px] mx-auto w-full">
+  <!-- Page Header & Filters -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+    <div>
+      <h2 class="text-headline-lg font-headline-lg text-primary tracking-tight">Listado de Socios</h2>
+      <p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Gestiona el directorio de miembros, planes y estados de acceso.</p>
+    </div>
+    <div class="flex items-center gap-3 w-full sm:w-auto">
+      <!-- Search -->
+      <div class="relative w-full lg:w-64">
+        <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-outline w-5 h-5"></lucide-icon>
+        <input
+          type="text"
+          (input)="onSearchChange($event)"
+          placeholder="Buscar por DNI o Nombre..."
+          class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all text-on-surface"
+        />
+      </div>
+      <!-- Filter Dropdown -->
+      <button class="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-surface-container-lowest text-on-surface rounded-lg text-label-md font-label-md hover:bg-surface-container-low transition-colors whitespace-nowrap">
+        <lucide-icon [img]="Filter" class="w-4 h-4"></lucide-icon>
+        Filtros
+        <lucide-icon [img]="ChevronRight" class="w-4 h-4"></lucide-icon>
+      </button>
+      <!-- Primary Action -->
+      <button (click)="onNuevoSocio()" class="flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:bg-secondary-container hover:shadow-sm transition-all whitespace-nowrap">
+        <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
+        Nuevo Socio
+      </button>
+    </div>
+  </div>
+
+  <!-- Data Table Container -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
+    @if (loading()) {
+      <div class="flex justify-center items-center py-20">
+        <lucide-icon [img]="Loader2" class="animate-spin h-10 w-10 text-secondary" size="40"></lucide-icon>
+      </div>
+    } @else if (error()) {
+      <div class="flex justify-center items-center py-20 text-error">
+        <p>{{ error() }}</p>
+        <button (click)="loadSocios()" class="ml-4 px-4 py-2 bg-secondary text-on-secondary rounded-lg hover:opacity-90">Reintentar</button>
+      </div>
+    } @else {
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead class="bg-surface border-b border-outline-variant sticky top-0 z-10">
+            <tr>
+              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Socio</th>
+              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">DNI</th>
+              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Teléfono</th>
+              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Fecha Alta</th>
+              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Estado</th>
+              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            @for (socio of paginatedSocios(); track socio.id) {
+              <tr class="hover:bg-surface-container-low transition-colors duration-150" [class.bg-surface-bright]="$even">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full {{ getAvatarColor(socio.id) }} flex items-center justify-center text-label-md font-label-md">
+                      {{ getInitials(socio.nombre || '', socio.apellido || '') }}
+                    </div>
+                    <div>
+                      <p class="text-label-md font-label-md text-on-background">{{ socio.nombre }} {{ socio.apellido }}</p>
+                      <p class="text-body-sm font-body-sm text-on-surface-variant text-[12px] flex items-center gap-1">
+                        <lucide-icon [img]="Mail" class="w-3 h-3"></lucide-icon>
+                        Socio #{{ socio.id }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-body-sm font-body-sm text-on-background">{{ socio.dni }}</td>
+                <td class="px-4 py-3 text-body-sm font-body-sm text-on-background">{{ socio.telefono }}</td>
+                <td class="px-4 py-3 text-body-sm font-body-sm text-on-background">{{ socio.fechaAlta | date:'dd/MM/yyyy' }}</td>
+                <td class="px-4 py-3">
+                  @if (socio.activo !== undefined) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm border {{ socio.activo ? 'bg-[#D1FAE5] text-[#065F46] border-[#34D399]' : 'bg-error-container text-on-error-container border-[#FCA5A5]' }}">
+                      <lucide-icon [img]="socio.activo ? CheckCircle : XCircle" class="w-3.5 h-3.5"></lucide-icon>
+                      {{ socio.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  }
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <button (click)="onEditSocio(socio)" class="text-on-surface-variant hover:text-primary p-2 rounded-lg transition-colors" title="Editar">
+                      <lucide-icon [img]="User" class="w-5 h-5"></lucide-icon>
+                    </button>
+                    <button (click)="onDeleteSocio(socio)" class="text-on-surface-variant hover:text-error p-2 rounded-lg transition-colors" title="Eliminar">
+                      <lucide-icon [img]="XCircle" class="w-5 h-5"></lucide-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="px-4 py-12 text-center text-on-surface-variant">
+                  <lucide-icon [img]="Users" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/50"></lucide-icon>
+                  <p class="text-body-md">No se encontraron socios</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="bg-surface border-t border-outline-variant px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-body-sm font-body-sm text-on-surface-variant">
+          Mostrando
+          <span class="font-semibold text-on-background ml-1 mr-1">{{ (currentPage() - 1) * pageSize + 1 }}</span>
+          a
+          <span class="font-semibold text-on-background ml-1 mr-1">{{ Math.min(currentPage() * pageSize, filteredSocios().length) }}</span>
+          de
+          <span class="font-semibold text-on-background ml-1">{{ filteredSocios().length }}</span>
+          socios
+        </p>
+        <div class="flex gap-2">
+          <button
+            (click)="onPageChange(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+            class="p-2 text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <lucide-icon [img]="ChevronLeft" class="w-5 h-5"></lucide-icon>
+          </button>
+          <button
+            (click)="onPageChange(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+            class="p-2 text-on-surface-variant border border-outline-variant rounded-lg hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <lucide-icon [img]="ChevronRight" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

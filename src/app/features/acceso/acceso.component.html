@@ -1,0 +1,144 @@
+<div class="flex flex-col items-center justify-start max-w-5xl mx-auto w-full">
+  <!-- Input Section -->
+  <div class="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-sm border border-outline p-8 mb-8 text-center flex flex-col items-center">
+    <h2 class="text-headline-lg font-headline-lg text-primary mb-6">Ingreso de Socio</h2>
+
+    <form [formGroup]="checkinForm" (ngSubmit)="onValidate()" class="flex w-full gap-4 items-center">
+      <div class="relative flex-1">
+        <lucide-icon [img]="Badge" class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-3xl" size="28"></lucide-icon>
+        <input
+          formControlName="dni"
+          autofocus
+          class="w-full pl-14 pr-6 py-5 text-display-lg font-display-lg bg-surface border-2 border-outline-variant rounded-xl focus:border-secondary focus:ring-4 focus:ring-secondary-container outline-none transition-all text-center tracking-widest placeholder:text-surface-variant"
+          placeholder="Escanea o ingresa DNI"
+          type="text"
+        />
+      </div>
+      <button
+        type="submit"
+        [disabled]="checkinForm.invalid || loading()"
+        class="bg-secondary text-on-secondary px-8 py-5 rounded-xl text-headline-md font-headline-md font-bold hover:bg-secondary-container transition-colors shadow-sm flex items-center gap-2 h-full disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <lucide-icon [img]="CheckCircle" class="w-6 h-6" size="24"></lucide-icon>
+        Validar
+      </button>
+    </form>
+
+    <p class="text-body-md font-body-md text-on-surface-variant mt-4">El cursor debe estar en el campo de texto para usar el lector de código de barras.</p>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="flex gap-4 mb-6">
+    <button (click)="simulateResult('permitido')" class="px-4 py-2 bg-surface-container-high border border-outline-variant rounded text-label-md font-label-md hover:bg-surface-container-highest transition-colors">
+      Simular Permitido
+    </button>
+    <button (click)="simulateResult('rechazado')" class="px-4 py-2 bg-surface-container-high border border-outline-variant rounded text-label-md font-label-md hover:bg-surface-container-highest transition-colors">
+      Simular Rechazado
+    </button>
+    <button (click)="simulateResult('excepcion')" class="px-4 py-2 bg-surface-container-high border border-outline-variant rounded text-label-md font-label-md hover:bg-surface-container-highest transition-colors">
+      Simular Excepción
+    </button>
+  </div>
+
+  <!-- Result Areas -->
+  <div class="w-full" id="status-container">
+    <!-- PERMITIDO STATE -->
+    @if (resultState() === 'permitido' && socio()) {
+      <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-[#10B981] overflow-hidden animate-in fade-in zoom-in-95">
+        <div class="bg-[#10B981] text-white py-6 px-8 flex items-center justify-center gap-4">
+          <lucide-icon [img]="CheckCircle" class="w-12 h-12" size="40" style="font-variation-settings: 'FILL' 1;"></lucide-icon>
+          <h2 class="text-display-lg font-display-lg tracking-tight">ACCESO PERMITIDO</h2>
+        </div>
+        <div class="p-8 flex gap-8">
+          <img [src]="socio()?.foto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCVhnL7sJU5ba9GzEhp2MG9SRXYe6y1m1AhmtWkK-YWnTiW0_AhcG9qG5sXgQM7AT22hntRmrcFjv1bmibnVMN8kComm9v11zmfZzSvbsD-JfnsfNUXF2QNKIhHoMUN_ADTuJn00WHhMkFx2wwj-iX0vmCHNOR-yC_ssZ4y1AXNIPyBYqpqS_7hkH8nBXe43Fy1nRYOowKiW8JnUaLk26SfucSVGcnRp3bdXFUZmtgbjIrDPtYiESvb'" alt="Foto del Socio" class="w-48 h-48 rounded-lg object-cover border-4 border-surface-container-high shadow-sm" />
+          <div class="flex-1 flex flex-col justify-center">
+            <h3 class="text-headline-lg font-headline-lg text-primary mb-2">{{ socio()?.nombre }} {{ socio()?.apellido }}</h3>
+            <div class="text-body-lg font-body-lg text-on-surface-variant mb-6">DNI: {{ socio()?.dni }}</div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+                <div class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Plan Activo</div>
+                <div class="text-headline-md font-headline-md text-primary flex items-center gap-2">
+                  <lucide-icon [img]="Dumbbell" class="w-5 h-5 text-[#10B981]" size="20"></lucide-icon>
+                  {{ socio()?.planNombre || 'Musculación + Cardio' }}
+                </div>
+              </div>
+              <div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+                <div class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Vencimiento</div>
+                <div class="text-headline-md font-headline-md text-primary flex items-center gap-2">
+                  <lucide-icon [img]="Calendar" class="w-5 h-5 text-on-surface-variant" size="20"></lucide-icon>
+                  {{ socio()?.vencimiento | date:'dd MMM yyyy' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- RECHAZADO STATE -->
+    @if (resultState() === 'rechazado' && socio()) {
+      <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-error overflow-hidden animate-in fade-in zoom-in-95">
+        <div class="bg-error text-on-error py-6 px-8 flex items-center justify-center gap-4">
+          <lucide-icon [img]="XCircle" class="w-12 h-12" size="40" style="font-variation-settings: 'FILL' 1;"></lucide-icon>
+          <h2 class="text-display-lg font-display-lg tracking-tight">ACCESO DENEGADO</h2>
+        </div>
+        <div class="p-8 flex gap-8">
+          <div class="relative">
+            <img [src]="socio()?.foto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAOSH1mzs1flQu-D1NY4R0Y7kubZk3Hqsy9AnhhMaEyZcY3iZhLnPhTJ8-k2Yy4r2vJNKNYRLbxlvXXmeV7JsVVgBpT5J030JNGK43IK9lFQ2NxejbYnZZKuKVkQ6_XPQrKSdRxzn2qhpXWt5sqHj5VtMuouvlvjfzvCcNIipAXJaRUX03e57cfkl1QxAAZYuk8wBAwHEy6QWA4sQiJwqqCf-nnGkjnrYEdNrAIKDw2NT2Zs2Sz1NJA'" alt="Foto del Socio" class="w-48 h-48 rounded-lg object-cover border-4 border-error-container shadow-sm grayscale" />
+            <div class="absolute inset-0 bg-error/10 rounded-lg"></div>
+          </div>
+          <div class="flex-1 flex flex-col justify-center">
+            <h3 class="text-headline-lg font-headline-lg text-primary mb-2">{{ socio()?.nombre }} {{ socio()?.apellido }}</h3>
+            <div class="text-body-lg font-body-lg text-on-surface-variant mb-6">DNI: {{ socio()?.dni }}</div>
+            <div class="bg-error-container p-6 rounded-lg border border-error flex items-start gap-4">
+              <lucide-icon [img]="AlertTriangle" class="w-8 h-8 text-error" size="32"></lucide-icon>
+              <div>
+                <div class="text-headline-md font-headline-md text-error mb-1">Mensualidad Vencida</div>
+                <div class="text-body-lg font-body-lg text-error/80">El plan venció hace {{ socio()?.diasVencido || 24 }} días. Por favor, dirigir al socio a recepción para regularizar su pago.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- EXCEPCIÓN STATE -->
+    @if (resultState() === 'excepcion' && socio()) {
+      <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-[#F59E0B] overflow-hidden animate-in fade-in zoom-in-95">
+        <div class="bg-[#F59E0B] text-white py-6 px-8 flex items-center justify-center gap-4">
+          <lucide-icon [img]="Info" class="w-12 h-12" size="40" style="font-variation-settings: 'FILL' 1;"></lucide-icon>
+          <h2 class="text-display-lg font-display-lg tracking-tight">REVISIÓN REQUERIDA</h2>
+        </div>
+        <div class="p-8 flex gap-8">
+          <img [src]="socio()?.foto || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCEKu8gueVpMADb4Eq0aLLJzLZyLaFe_urJJy81an6mLsCNDBo1NNOWuRtU-b-DuM-EOi8tDxpJsvhjZAHabhMKXa0NMoM4F3kdR9gJBNZkSNi5h1rvqiMk-nnU8Dj9dgVVTjaPos6LyiDBbvQSmpahywWr6VpDzJmz7ecJeaDXyeTqMat52RDaQ4uoo3b2EdcIIB3eAXAFTrJAOWD9QMzebSbVTmZKKDAfyC1wOF9wODNBTcwjw3El'" alt="Foto del Socio" class="w-48 h-48 rounded-lg object-cover border-4 border-[#FDE68A] shadow-sm" />
+          <div class="flex-1 flex flex-col justify-center">
+            <h3 class="text-headline-lg font-headline-lg text-primary mb-2">{{ socio()?.nombre }} {{ socio()?.apellido }}</h3>
+            <div class="text-body-lg font-body-lg text-on-surface-variant mb-4">DNI: {{ socio()?.dni }}</div>
+            <div class="bg-[#FEF3C7] p-4 rounded-lg border border-[#FCD34D] flex items-start gap-3 mb-4">
+              <lucide-icon [img]="AlertTriangle" class="w-5 h-5 text-[#D97706]" size="20"></lucide-icon>
+              <div class="text-body-md font-body-md text-[#92400E]">Falta firmar exención de responsabilidad médica actualizada.</div>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-label-md font-label-md text-primary">Observación / Autorización (Opcional)</label>
+              <div class="flex gap-4">
+                <input type="text" placeholder="Ej: Firmó documento físico hoy..." class="flex-1 bg-surface border border-outline-variant rounded-lg px-4 py-2 text-body-md font-body-md focus:border-secondary outline-none transition-colors" />
+                <button class="bg-[#F59E0B] text-white px-6 py-2 rounded-lg text-label-md font-label-md font-bold hover:bg-[#D97706] transition-colors">
+                  Forzar Ingreso
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Default / Waiting state -->
+    @if (!resultState()) {
+      <div class="w-full bg-surface-container-lowest rounded-xl shadow-sm border border-outline p-8 text-center">
+        <lucide-icon [img]="BadgeCheck" class="w-16 h-16 text-on-surface-variant/50 mx-auto mb-4" size="64"></lucide-icon>
+        <h3 class="text-headline-md font-headline-md text-on-surface-variant mb-2">Esperando validación</h3>
+        <p class="text-body-md font-body-md text-on-surface-variant">Ingrese o escanee el DNI del socio para verificar su acceso</p>
+      </div>
+    }
+  </div>
+</div>

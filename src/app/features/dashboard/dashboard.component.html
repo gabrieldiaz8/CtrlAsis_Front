@@ -22,7 +22,7 @@
           <lucide-icon [img]="Users" class="text-secondary bg-secondary-fixed w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-headline-lg text-primary">{{ metricas()?.sociosActivos || 0 | number }}</span>
+          <span class="text-headline-lg font-display text-primary">{{ metricas()?.sociosActivos || 0 | number }}</span>
           <span class="text-label-sm font-label-sm text-[#059669] bg-[#d1fae5] px-2 py-0.5 rounded-full flex items-center gap-1">
             <lucide-icon [img]="TrendingUp" class="text-[14px]" size="14"></lucide-icon> +12%
           </span>
@@ -37,7 +37,7 @@
           <lucide-icon [img]="DollarSign" class="text-[#10B981] bg-[#d1fae5] w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-headline-lg text-primary">{{ metricas()?.ingresosMesActual || 0 | number }}</span>
+          <span class="text-headline-lg font-display text-primary">{{ metricas()?.ingresosMesActual || 0 | number }}</span>
           <span class="text-label-sm font-label-sm text-[#059669] bg-[#d1fae5] px-2 py-0.5 rounded-full flex items-center gap-1">
             <lucide-icon [img]="TrendingUp" class="text-[14px]" size="14"></lucide-icon> +5.2%
           </span>
@@ -52,7 +52,7 @@
           <lucide-icon [img]="Activity" class="text-tertiary-container bg-tertiary-fixed w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-headline-lg text-primary">{{ metricas()?.asistenciaSemanaActual || 0 | number }}</span>
+          <span class="text-headline-lg font-display text-primary">{{ metricas()?.asistenciaSemanaActual || 0 | number }}</span>
           <span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full flex items-center gap-1">
             <lucide-icon [img]="Minus" class="text-[14px]" size="14"></lucide-icon> =
           </span>
@@ -67,7 +67,7 @@
           <lucide-icon [img]="AlertTriangle" class="text-on-error-container bg-error-container w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-headline-lg text-primary">{{ metricas()?.membresiasPorVencer || 0 | number }}</span>
+          <span class="text-headline-lg font-display text-primary">{{ metricas()?.membresiasPorVencer || 0 | number }}</span>
           <span class="text-label-sm font-label-sm text-[#B45309] bg-[#FEF3C7] px-2 py-0.5 rounded-full flex items-center gap-1">
             Acción Req.
           </span>

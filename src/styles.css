@@ -3,23 +3,23 @@
 
 @theme {
   /* --- Colores (tokens de Material 3, tomados de src/app/assets/stitch-desing) --- */
-  --color-primary: #0a1422;
+  --color-primary: #113047;
   --color-on-primary: #ffffff;
-  --color-primary-container: #1f2937;
-  --color-on-primary-container: #8690a1;
-  --color-primary-fixed: #d9e3f6;
-  --color-primary-fixed-dim: #bdc7d9;
-  --color-on-primary-fixed: #121c2a;
-  --color-on-primary-fixed-variant: #3d4756;
+  --color-primary-container: #1d4561;
+  --color-on-primary-container: #c5d5e4;
+  --color-primary-fixed: #d3e3f4;
+  --color-primary-fixed-dim: #b7cade;
+  --color-on-primary-fixed: #0e283c;
+  --color-on-primary-fixed-variant: #41607c;
 
-  --color-secondary: #0058be;
+  --color-secondary: #b02a29;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #2170e4;
-  --color-on-secondary-container: #fefcff;
-  --color-secondary-fixed: #d8e2ff;
-  --color-secondary-fixed-dim: #adc6ff;
-  --color-on-secondary-fixed: #001a42;
-  --color-on-secondary-fixed-variant: #004395;
+  --color-secondary-container: #6d120b;
+  --color-on-secondary-container: #ffffff;
+  --color-secondary-fixed: #ffdad7;
+  --color-secondary-fixed-dim: #f0b8b3;
+  --color-on-secondary-fixed: #3d0502;
+  --color-on-secondary-fixed-variant: #7b322b;
 
   --color-tertiary: #031427;
   --color-on-tertiary: #ffffff;
@@ -35,28 +35,28 @@
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
 
-  --color-background: #f8f9fa;
-  --color-on-background: #191c1d;
+  --color-background: #fbf0d8;
+  --color-on-background: #2a2118;
 
-  --color-surface: #f8f9fa;
-  --color-on-surface: #191c1d;
-  --color-surface-variant: #e1e3e4;
-  --color-on-surface-variant: #44474c;
-  --color-surface-dim: #d9dadb;
-  --color-surface-bright: #f8f9fa;
+  --color-surface: #fbf0d8;
+  --color-on-surface: #2a2118;
+  --color-surface-variant: #efe3c7;
+  --color-on-surface-variant: #739ab9;
+  --color-surface-dim: #eadcb8;
+  --color-surface-bright: #fffdf4;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f3f4f5;
-  --color-surface-container: #edeeef;
-  --color-surface-container-high: #e7e8e9;
-  --color-surface-container-highest: #e1e3e4;
-  --color-surface-tint: #555f6f;
+  --color-surface-container-low: #fcf3dd;
+  --color-surface-container: #f9edd1;
+  --color-surface-container-high: #f3e4c4;
+  --color-surface-container-highest: #ecdcba;
+  --color-surface-tint: #113047;
 
-  --color-outline: #75777c;
-  --color-outline-variant: #c5c6cc;
+  --color-outline: #739ab9;
+  --color-outline-variant: #739ab9;
 
-  --color-inverse-primary: #bdc7d9;
-  --color-inverse-surface: #2e3132;
-  --color-inverse-on-surface: #f0f1f2;
+  --color-inverse-primary: #b6c9dd;
+  --color-inverse-surface: #312b22;
+  --color-inverse-on-surface: #fbf0d8;
 
   /* --- Espaciados custom (además de la escala default de Tailwind) --- */
   --spacing-xs: 4px;
@@ -77,6 +77,7 @@
   --radius-full: 0.75rem;
 
   /* --- Tipografía (font-family) --- */
+  --font-display: "Space Grotesk", sans-serif;
   --font-display-lg: "Inter", sans-serif;
   --font-headline-lg: "Inter", sans-serif;
   --font-headline-lg-mobile: "Inter", sans-serif;

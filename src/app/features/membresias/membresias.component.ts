@@ -285,11 +285,11 @@ export class MembresiasComponent implements OnInit {
     const lower = estado?.toLowerCase() || '';
     switch (lower) {
       case 'activa':
-        return { class: 'bg-[#D1FAE5] text-[#065F46] border border-[#34D399]', icon: CheckCircle, label: 'Activa' };
+        return { class: 'bg-success-container text-on-success-container border border-success', icon: CheckCircle, label: 'Activa' };
       case 'vencida':
-        return { class: 'bg-error-container text-on-error-container border border-[#FCA5A5]', icon: X, label: 'Vencida' };
+        return { class: 'bg-error-container text-on-error-container border border-error', icon: X, label: 'Vencida' };
       case 'suspendida':
-        return { class: 'bg-yellow-100 text-yellow-800 border border-yellow-200', icon: AlertCircle, label: 'Suspendida' };
+        return { class: 'bg-warning-container text-on-warning-container border border-warning-dim', icon: AlertCircle, label: 'Suspendida' };
       case 'cancelada':
         return { class: 'bg-surface-variant text-on-surface-variant border border-outline-variant', icon: Trash2, label: 'Cancelada' };
       default:

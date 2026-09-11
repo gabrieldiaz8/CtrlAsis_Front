@@ -2,7 +2,7 @@
   <!-- Page Header -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
     <div>
-      <h1 class="text-headline-lg font-bold text-primary">Pagos</h1>
+      <h1 class="text-headline-lg font-bold text-on-background">Pagos</h1>
       <p class="text-body-sm text-on-surface-variant mt-1">Historial de cobros y registro de nuevos pagos.</p>
     </div>
     <button (click)="openNewPagoModal()" class="bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
@@ -40,12 +40,12 @@
       <table class="w-full text-left border-collapse" *ngIf="!loading(); else loadingTemplate">
         <thead>
           <tr class="bg-surface-container-low border-b border-outline-variant">
-            <th class="p-3 text-label-md font-medium text-primary-container">Fecha</th>
-            <th class="p-3 text-label-md font-medium text-primary-container">Socio</th>
-            <th class="p-3 text-label-md font-medium text-primary-container">Plan</th>
-            <th class="p-3 text-label-md font-medium text-primary-container">Medio de Pago</th>
-            <th class="p-3 text-label-md font-medium text-primary-container text-right">Monto</th>
-            <th class="p-3 text-label-md font-medium text-primary-container text-right">Acciones</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Fecha</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Socio</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Plan</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Medio de Pago</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Monto</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
           </tr>
         </thead>
         <tbody class="text-body-sm">
@@ -59,7 +59,7 @@
                   {{ pago.socioNombre.charAt(0) || '?' }}
                 </div>
                 <div>
-                  <p class="font-medium text-primary">{{ pago.socioNombre }}</p>
+                  <p class="font-medium text-on-surface">{{ pago.socioNombre }}</p>
                   <p class="text-label-sm text-on-surface-variant">{{ pago.socioDni }}</p>
                 </div>
               </div>
@@ -71,7 +71,7 @@
                 <span>{{ pago.medioPagoNombre }}</span>
               </div>
             </td>
-            <td class="p-3 font-semibold text-primary text-right">{{ formatPrice(pago.monto) }}</td>
+            <td class="p-3 font-semibold text-on-surface text-right">{{ formatPrice(pago.monto) }}</td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-1">
                 <button (click)="viewPagoDetail(pago)" 
@@ -146,7 +146,7 @@
     <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
       <!-- Modal Header -->
       <div class="flex items-center justify-between p-6 border-b border-outline-variant">
-        <h2 class="text-headline-md font-bold text-primary">
+        <h2 class="text-headline-md font-bold text-on-surface">
           {{ editingPago() ? 'Editar Pago' : 'Registrar Nuevo Pago' }}
         </h2>
         <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
@@ -182,13 +182,13 @@
 
         <!-- Selected Socio Preview -->
         <div *ngIf="selectedSocio()" class="p-4 bg-surface-container-low border border-outline-variant rounded-lg flex items-start gap-4">
-          <div class="w-12 h-12 rounded bg-surface border border-outline-variant flex items-center justify-center text-label-md font-medium text-primary">
+          <div class="w-12 h-12 rounded bg-surface border border-outline-variant flex items-center justify-center text-label-md font-medium text-on-surface">
             {{ selectedSocio()!.nombre.charAt(0) || '' }}{{ selectedSocio()!.apellido.charAt(0) || '' }}
           </div>
           <div class="flex-1">
             <h3 class="text-body-md font-medium text-on-surface">{{ selectedSocio()!.nombre }} {{ selectedSocio()!.apellido }}</h3>
             <p class="text-label-sm text-on-surface-variant">Socio #{{ selectedSocio()!.id }} • DNI: {{ selectedSocio()!.dni }}</p>
-            <div class="mt-2 inline-flex items-center gap-1 text-label-sm" [ngClass]="selectedSocio()!.activo ? 'text-green-600' : 'text-error'">
+            <div class="mt-2 inline-flex items-center gap-1 text-label-sm" [ngClass]="selectedSocio()!.activo ? 'text-success' : 'text-error'">
               <lucide-icon [img]="CheckCircle" class="w-3 h-3" *ngIf="selectedSocio()!.activo"></lucide-icon>
               <lucide-icon [img]="X" class="w-3 h-3" *ngIf="!selectedSocio()!.activo"></lucide-icon>
               {{ selectedSocio()!.activo ? 'Activo' : 'Inactivo' }}

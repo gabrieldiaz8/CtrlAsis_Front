@@ -124,16 +124,16 @@ export class PlanesComponent implements OnInit {
 
   getPlanIconClass(tipo: string): string {
     switch (tipo?.toLowerCase()) {
-      case 'anual': return 'bg-amber-500';
-      case 'trimestral': return 'bg-blue-500';
+      case 'anual': return 'bg-secondary';
+      case 'trimestral': return 'bg-tertiary';
       default: return 'bg-primary';
     }
   }
 
   getTipoBadgeClass(tipo: string): string {
     switch (tipo?.toLowerCase()) {
-      case 'anual': return 'bg-amber-100 text-amber-800 border border-amber-200';
-      case 'trimestral': return 'bg-blue-100 text-blue-800 border border-blue-200';
+      case 'anual': return 'bg-warning-container text-on-warning-container border border-warning-dim';
+      case 'trimestral': return 'bg-surface-container-high text-on-surface-variant border border-outline-variant';
       default: return 'bg-primary-fixed text-on-primary-fixed-variant border border-primary-fixed-dim';
     }
   }

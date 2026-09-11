@@ -7,13 +7,13 @@
 
 /* Form focus states */
 input:focus {
-  box-shadow: 0 0 0 2px rgba(0, 88, 190, 0.2) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-secondary) 20%, transparent) !important;
 }
 
 /* Custom checkbox */
 input[type="checkbox"]:checked {
-  background-color: #0058be;
-  border-color: #0058be;
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
 }
 
 /* Animation for form container */

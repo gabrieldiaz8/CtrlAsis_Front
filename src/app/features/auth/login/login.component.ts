@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { LucideAngularModule, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-angular';
+import { LucideAngularModule, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, KeyRound } from 'lucide-angular';
 import { AuthService } from '@api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -23,6 +23,7 @@ export class LoginComponent {
   readonly EyeOff = EyeOff;
   readonly Loader2 = Loader2;
   readonly ArrowRight = ArrowRight;
+  readonly KeyRound = KeyRound;
 
   showPassword = signal(false);
   loading = signal(false);

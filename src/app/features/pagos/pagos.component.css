@@ -15,12 +15,12 @@
 }
 
 .overflow-x-auto::-webkit-scrollbar-thumb {
-  background-color: #c5c6cc;
+  background-color: var(--color-outline-variant);
   border-radius: 4px;
 }
 
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background-color: #75777c;
+  background-color: var(--color-text-muted);
 }
 
 /* Modal backdrop animation */
@@ -50,12 +50,12 @@
 
 /* Form focus states */
 input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 2px rgba(0, 88, 190, 0.2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 40%, transparent);
 }
 
 /* Table row hover effect */
 tbody tr:hover {
-  background-color: #edeeef;
+  background-color: var(--color-surface-container-low);
 }
 
 /* Badge styles */
@@ -67,17 +67,13 @@ tbody tr:hover {
 
 /* Pagination active state */
 button.bg-secondary {
-  box-shadow: 0 1px 3px rgba(0, 88, 190, 0.3);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .p-6 {
     padding: 1rem;
-  }
-  
-  .max-w-2xl {
-    max-width: 100%;
   }
   
   table {

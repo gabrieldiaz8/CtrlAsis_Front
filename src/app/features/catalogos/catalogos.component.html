@@ -2,7 +2,7 @@
   <!-- Page Header -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
     <div>
-      <h1 class="text-headline-lg font-bold text-primary">Catálogos</h1>
+      <h1 class="text-headline-lg font-bold text-on-background">Catálogos</h1>
       <p class="text-body-sm text-on-surface-variant mt-1">Administra rubros, medios de pago y tipos de membresía.</p>
     </div>
   </div>
@@ -14,7 +14,7 @@
         <button *ngFor="let tab of tabOptions" 
                 (click)="onTabChange(tab)"
                 [class]="activeTab() === tab 
-                  ? 'border-secondary text-secondary' 
+                  ? 'border-secondary text-on-surface' 
                   : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
                 class="flex items-center gap-2 px-6 py-4 border-b-2 -mb-px font-medium text-label-md transition-colors whitespace-nowrap relative">
           <lucide-icon [img]="getTabIcon(tab)" class="w-5 h-5"></lucide-icon>
@@ -53,23 +53,23 @@
         <table class="w-full text-left border-collapse" *ngIf="!loading(); else loadingTemplate">
           <thead>
             <tr class="bg-surface-container-low border-b border-outline-variant">
-              <th class="p-3 text-label-md font-medium text-primary-container">Nombre</th>
-              <th class="p-3 text-label-md font-medium text-primary-container" *ngIf="activeTab() === 'tipos-membresia'">Descripción</th>
-              <th class="p-3 text-label-md font-medium text-primary-container">Estado</th>
-              <th class="p-3 text-label-md font-medium text-primary-container text-right">Acciones</th>
+              <th class="p-3 text-label-md font-medium text-on-surface-variant">Nombre</th>
+              <th class="p-3 text-label-md font-medium text-on-surface-variant" *ngIf="activeTab() === 'tipos-membresia'">Descripción</th>
+              <th class="p-3 text-label-md font-medium text-on-surface-variant">Estado</th>
+              <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
             </tr>
           </thead>
           <tbody class="text-body-sm">
             <tr *ngFor="let item of paginatedItems(); let i = index" 
                 class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group"
                 [class.bg-background]="i % 2 === 1">
-              <td class="p-3 font-medium text-primary">{{ item.nombre }}</td>
+              <td class="p-3 font-medium text-on-surface">{{ item.nombre }}</td>
               <td class="p-3 text-on-surface-variant max-w-xs truncate" *ngIf="activeTab() === 'tipos-membresia'">
                 {{ getDescripcion(item) }}
               </td>
               <td class="p-3">
                 <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
-                      [ngClass]="item.activo ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-surface-variant text-on-surface-variant'">
+                      [ngClass]="item.activo ? 'bg-success-container text-on-success-container' : 'bg-surface-variant text-on-surface-variant'">
                   {{ item.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
@@ -143,7 +143,7 @@
     <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
       <!-- Modal Header -->
       <div class="flex items-center justify-between p-6 border-b border-outline-variant">
-        <h2 class="text-headline-md font-bold text-primary">
+        <h2 class="text-headline-md font-bold text-on-surface">
           {{ editingItem() ? 'Editar' : 'Nuevo' }} {{ getTabConfig().label.slice(0, -1) }}
         </h2>
         <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">

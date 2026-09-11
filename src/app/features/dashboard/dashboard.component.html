@@ -19,28 +19,33 @@
         <div class="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
         <div class="flex justify-between items-start z-10">
           <span class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Socios Activos</span>
-          <lucide-icon [img]="Users" class="text-secondary bg-secondary-fixed w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
+          <lucide-icon [img]="Users" class="text-on-primary bg-primary w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-primary">{{ metricas()?.sociosActivos || 0 | number }}</span>
-          <span class="text-label-sm font-label-sm text-[#059669] bg-[#d1fae5] px-2 py-0.5 rounded-full flex items-center gap-1">
-            <lucide-icon [img]="TrendingUp" class="text-[14px]" size="14"></lucide-icon> +12%
-          </span>
+          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.sociosActivos || 0 | number }}</span>
         </div>
       </div>
 
       <!-- KPI 2: Ingresos del Mes -->
       <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-[#10B981]/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <div class="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
         <div class="flex justify-between items-start z-10">
           <span class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Ingresos del Mes</span>
-          <lucide-icon [img]="DollarSign" class="text-[#10B981] bg-[#d1fae5] w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
+          <lucide-icon [img]="DollarSign" class="text-success bg-success-container w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-primary">{{ metricas()?.ingresosMesActual || 0 | number }}</span>
-          <span class="text-label-sm font-label-sm text-[#059669] bg-[#d1fae5] px-2 py-0.5 rounded-full flex items-center gap-1">
-            <lucide-icon [img]="TrendingUp" class="text-[14px]" size="14"></lucide-icon> +5.2%
-          </span>
+          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.ingresosMesActual || 0 | number }}</span>
+          @if (cambioIngresos !== null) {
+            @if (cambioIngresos > 0) {
+              <span class="text-label-sm font-label-sm text-on-success-container bg-success-container px-2 py-0.5 rounded-full flex items-center gap-1">
+                <lucide-icon [img]="TrendingUp" class="text-[14px]" size="14"></lucide-icon> {{ cambioIngresos | number:'1.1-1' }}%
+              </span>
+            } @else {
+              <span class="text-label-sm font-label-sm text-on-error-container bg-error-container px-2 py-0.5 rounded-full flex items-center gap-1">
+                <lucide-icon [img]="TrendingDown" class="text-[14px]" size="14"></lucide-icon> {{ cambioIngresos | number:'1.1-1' }}%
+              </span>
+            }
+          }
         </div>
       </div>
 
@@ -52,7 +57,7 @@
           <lucide-icon [img]="Activity" class="text-tertiary-container bg-tertiary-fixed w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-primary">{{ metricas()?.asistenciaSemanaActual || 0 | number }}</span>
+          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.asistenciaSemanaActual || 0 | number }}</span>
           <span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full flex items-center gap-1">
             <lucide-icon [img]="Minus" class="text-[14px]" size="14"></lucide-icon> =
           </span>
@@ -67,8 +72,8 @@
           <lucide-icon [img]="AlertTriangle" class="text-on-error-container bg-error-container w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
         </div>
         <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-primary">{{ metricas()?.membresiasPorVencer || 0 | number }}</span>
-          <span class="text-label-sm font-label-sm text-[#B45309] bg-[#FEF3C7] px-2 py-0.5 rounded-full flex items-center gap-1">
+          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.membresiasPorVencer || 0 | number }}</span>
+          <span class="text-label-sm font-label-sm text-on-warning-container bg-warning-container px-2 py-0.5 rounded-full flex items-center gap-1">
             Acción Req.
           </span>
         </div>
@@ -81,109 +86,81 @@
       <div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 flex flex-col">
         <div class="flex justify-between items-center mb-8">
           <div>
-            <h2 class="text-headline-md font-headline-md text-primary">Asistencia Diaria</h2>
+            <h2 class="text-headline-md font-headline-md text-on-surface">Asistencia Diaria</h2>
             <p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Comparativa de flujo de socios en los últimos 7 días</p>
           </div>
-          <select class="bg-surface border border-outline-variant text-label-md font-label-md text-primary rounded-lg px-3 py-1.5 focus:ring-secondary focus:border-secondary outline-none">
+          <select class="bg-surface border border-outline-variant text-label-md font-label-md text-on-surface rounded-lg px-3 py-1.5 focus:ring-secondary focus:border-secondary outline-none">
             <option>Esta Semana</option>
             <option>Semana Pasada</option>
           </select>
         </div>
 
-        <!-- CSS Bar Chart Representation -->
-        <div class="flex-1 flex items-end gap-2 sm:gap-4 h-64 mt-auto relative pt-4">
-          <!-- Y-Axis Grid Lines -->
-          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8">
-            <div class="w-full border-t border-outline-variant/30 flex justify-end"><span class="text-[10px] text-on-surface-variant -mt-4 pr-2">800</span></div>
-            <div class="w-full border-t border-outline-variant/30 flex justify-end"><span class="text-[10px] text-on-surface-variant -mt-4 pr-2">600</span></div>
-            <div class="w-full border-t border-outline-variant/30 flex justify-end"><span class="text-[10px] text-on-surface-variant -mt-4 pr-2">400</span></div>
-            <div class="w-full border-t border-outline-variant/30 flex justify-end"><span class="text-[10px] text-on-surface-variant -mt-4 pr-2">200</span></div>
-            <div class="w-full border-t border-outline-variant/30 flex justify-end"><span class="text-[10px] text-on-surface-variant -mt-4 pr-2">0</span></div>
-          </div>
-
-          <!-- Bars - Static data for now -->
-          <div class="flex-1 flex flex-col items-center group relative z-10">
-            <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm h-[45%] group-hover:bg-secondary transition-colors relative"></div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">Lun</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center group relative z-10">
-            <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm h-[65%] group-hover:bg-secondary transition-colors relative"></div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">Mar</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center group relative z-10">
-            <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm h-[80%] group-hover:bg-secondary transition-colors relative"></div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">Mié</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center group relative z-10">
-            <div class="w-full max-w-[48px] bg-secondary rounded-t-sm h-[95%] shadow-[0_0_15px_rgba(33,112,228,0.3)] relative">
-              <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-tertiary text-on-tertiary text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">780 Picos</div>
+        @if (semanaMax > 0) {
+          <!-- Dynamic Bar Chart -->
+          <div class="flex-1 flex items-end gap-2 sm:gap-4 h-64 mt-auto relative pt-4">
+            <!-- Y-Axis Grid Lines -->
+            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8">
+              @for (tick of yAxisTicks; track $index) {
+                <div class="w-full border-t border-outline-variant/30 flex justify-end">
+                  <span class="text-[10px] text-on-surface-variant -mt-4 pr-2">{{ formatTick(tick) }}</span>
+                </div>
+              }
             </div>
-            <span class="text-label-sm font-label-sm text-primary font-bold mt-3">Jue</span>
+
+            <!-- Bars from real data -->
+            @for (item of asistenciaSemanal(); track item.fecha) {
+              <div class="flex-1 flex flex-col items-center group relative z-10">
+                <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm transition-colors relative"
+                     [style.height.%]="barHeightPct(item.accesosPermitidos)">
+                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-tertiary text-on-tertiary text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{{ item.accesosPermitidos }} accesos</div>
+                </div>
+                <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">{{ getDayLabel(item.fecha) }}</span>
+              </div>
+            }
           </div>
-          <div class="flex-1 flex flex-col items-center group relative z-10">
-            <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm h-[55%] group-hover:bg-secondary transition-colors relative"></div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">Vie</span>
+        } @else {
+          <div class="flex-1 flex items-center justify-center text-body-sm font-body-sm text-on-surface-variant">
+            Sin accesos esta semana
           </div>
-          <div class="flex-1 flex flex-col items-center group relative z-10">
-            <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm h-[30%] group-hover:bg-secondary transition-colors relative"></div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">Sáb</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center group relative z-10">
-            <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm h-[20%] group-hover:bg-secondary transition-colors relative"></div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">Dom</span>
-          </div>
-        </div>
+        }
       </div>
 
       <!-- Chart 2: Ingresos Comparativos (Span 4) -->
       <div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 flex flex-col">
-        <div class="mb-6">
-          <h2 class="text-headline-md font-headline-md text-primary">Ingresos</h2>
-          <p class="text-body-sm font-body-sm text-on-surface-variant mt-1">vs Mes Anterior</p>
-        </div>
-
-        <!-- Simple Progress/Horizontal Bar Chart -->
-        <div class="flex-1 flex flex-col justify-center gap-8">
-          <!-- Current Month -->
-          <div class="flex flex-col gap-2">
-            <div class="flex justify-between items-end">
-              <span class="text-label-md font-label-md text-primary">Este Mes</span>
-              <span class="text-headline-md font-headline-md text-primary">${{ metricas()?.ingresosMesActual || 0 | number:'1.0-0' }}</span>
-            </div>
-            <div class="w-full h-4 bg-surface-container rounded-full overflow-hidden">
-              <div class="h-full bg-secondary rounded-full" style="width: 85%;"></div>
-            </div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant text-right">Proyección: $50k</span>
+        @if (ingresosMensuales().length > 0) {
+          <div class="mb-6">
+            <h2 class="text-headline-md font-headline-md text-on-surface">Ingresos</h2>
+            <p class="text-body-sm font-body-sm text-on-surface-variant mt-1">vs Mes Anterior</p>
           </div>
 
-          <!-- Previous Month -->
-          <div class="flex flex-col gap-2">
-            <div class="flex justify-between items-end">
-              <span class="text-label-md font-label-md text-on-surface-variant">Mes Anterior</span>
-              <span class="text-body-lg font-body-lg text-on-surface-variant">$38.2k</span>
+          <div class="flex-1 flex flex-col justify-center gap-8">
+            <!-- Current Month -->
+            <div class="flex flex-col gap-2">
+              <div class="flex justify-between items-end">
+                <span class="text-label-md font-label-md text-on-surface">Este Mes</span>
+                <span class="text-headline-md font-headline-md text-on-surface">{{ ingresosEsteMes | number:'1.0-0' }}</span>
+              </div>
+              <div class="w-full h-5 bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-secondary rounded-full" [style.width.%]="ingresosWidthPct(ingresosEsteMes)"></div>
+              </div>
             </div>
-            <div class="w-full h-4 bg-surface-container rounded-full overflow-hidden">
-              <div class="h-full bg-primary-container opacity-50 rounded-full" style="width: 70%;"></div>
-            </div>
-            <span class="text-label-sm font-label-sm text-on-surface-variant text-right">Finalizado</span>
-          </div>
 
-          <!-- Quick Breakdown -->
-          <div class="mt-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant/50 flex flex-col gap-3">
-            <div class="flex justify-between text-body-sm font-body-sm">
-              <span class="text-on-surface-variant flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-secondary"></div> Renovaciones</span>
-              <span class="text-primary font-bold">65%</span>
-            </div>
-            <div class="flex justify-between text-body-sm font-body-sm">
-              <span class="text-on-surface-variant flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#10B981]"></div> Nuevos</span>
-              <span class="text-primary font-bold">25%</span>
-            </div>
-            <div class="flex justify-between text-body-sm font-body-sm">
-              <span class="text-on-surface-variant flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-tertiary-container"></div> Extras (Tienda)</span>
-              <span class="text-primary font-bold">10%</span>
-            </div>
+            <!-- Previous Month (condicional) -->
+            @if (ingresosMesAnterior !== undefined) {
+              <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-end">
+                  <span class="text-label-md font-label-md text-on-surface-variant">Mes Anterior</span>
+                  <span class="text-body-lg font-body-lg text-on-surface-variant">{{ ingresosMesAnterior | number:'1.0-0' }}</span>
+                </div>
+                <div class="w-full h-5 bg-surface-container rounded-full overflow-hidden">
+                  <div class="h-full bg-secondary opacity-40 rounded-full" [style.width.%]="ingresosWidthPct(ingresosMesAnterior)"></div>
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        } @else {
+          <div class="flex items-center justify-center text-body-sm font-body-sm text-on-surface-variant py-8">Sin ingresos registrados</div>
+        }
       </div>
     </section>
   }

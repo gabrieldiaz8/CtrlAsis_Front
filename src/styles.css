@@ -1,62 +1,103 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
 
+/* Dark mode por clase: activa el selector .dark para poder usar variantes dark: */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* --- Colores (tokens de Material 3, tomados de src/app/assets/stitch-desing) --- */
-  --color-primary: #113047;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #1d4561;
-  --color-on-primary-container: #c5d5e4;
-  --color-primary-fixed: #d3e3f4;
-  --color-primary-fixed-dim: #b7cade;
-  --color-on-primary-fixed: #0e283c;
-  --color-on-primary-fixed-variant: #41607c;
+  /* ============================================================
+     Paleta de marca (manual de identidad visual)
+       - Crema      #F4F2E8 (RGB 244,242,232)
+       - Gris claro #B0B0B0 (RGB 176,176,176)
+       - Amarillo   #FFDF00 (RGB 255,223,0) — acento de marca, NO cambia
+       - Gris carbón #413F3F (RGB 65,63,63)
+       - Negro      #1C1C1C (RGB 28,28,28)
+     Los valores siguientes son el esquema LIGHT. El modo oscuro se
+     aplica re-definiendo los mismos custom properties bajo `.dark`
+     (las utilities de Tailwind emiten `var(--color-*)`, así que el
+     cambio de tema no necesita duplicar componentes).
+     ============================================================ */
 
-  --color-secondary: #b02a29;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #6d120b;
-  --color-on-secondary-container: #ffffff;
-  --color-secondary-fixed: #ffdad7;
-  --color-secondary-fixed-dim: #f0b8b3;
-  --color-on-secondary-fixed: #3d0502;
-  --color-on-secondary-fixed-variant: #7b322b;
+  /* --- Semánticos canónicos (usar nuevos desarrollos) --- */
+  --color-background: #F4F2E8;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #B0B0B0;
+  --color-primary: #FFDF00;
+  --color-text: #1C1C1C;
+  --color-text-muted: #413F3F;
+  --color-border: #B0B0B0;
 
-  --color-tertiary: #031427;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #19293d;
-  --color-on-tertiary-container: #8090a8;
-  --color-tertiary-fixed: #d3e4fe;
-  --color-tertiary-fixed-dim: #b7c8e1;
-  --color-on-tertiary-fixed: #0b1c30;
-  --color-on-tertiary-fixed-variant: #38485d;
+  /* --- Fondos y superficies --- */
+  --color-on-background: #1C1C1C;
+  --color-on-surface: #1C1C1C;
+  --color-surface-bright: #FFFFFF;
+  --color-surface-dim: #EEEAD9;
+  --color-surface-variant: #E7E3D4;
+  --color-on-surface-variant: #413F3F;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-low: #FAF7EC;
+  --color-surface-container: #F4F2E8;
+  --color-surface-container-high: #EBE8DA;
+  --color-surface-container-highest: #E2DFCE;
+  --color-surface-tint: #FFDF00;
 
-  --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
+  /* --- Acento de marca (primary / secondary = amarillo) --- */
+  --color-primary-container: #FFF3B0;
+  --color-on-primary-container: #1C1C1C;
+  --color-primary-fixed: #FFEF9E;
+  --color-on-primary-fixed: #1C1C1C;
+  --color-primary-fixed-dim: #EEDF8F;
+  --color-on-primary-fixed-variant: #413F3F;
 
-  --color-background: #fbf0d8;
-  --color-on-background: #2a2118;
+  --color-secondary: #FFDF00;
+  --color-on-secondary: #1C1C1C;
+  --color-secondary-container: #1C1C1C;
+  --color-on-secondary-container: #FFDF00;
+  --color-secondary-fixed: #FFDF00;
+  --color-on-secondary-fixed: #1C1C1C;
+  --color-secondary-fixed-dim: #D6BB00;
+  --color-on-secondary-fixed-variant: #8A7A00;
 
-  --color-surface: #fbf0d8;
-  --color-on-surface: #2a2118;
-  --color-surface-variant: #efe3c7;
-  --color-on-surface-variant: #739ab9;
-  --color-surface-dim: #eadcb8;
-  --color-surface-bright: #fffdf4;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #fcf3dd;
-  --color-surface-container: #f9edd1;
-  --color-surface-container-high: #f3e4c4;
-  --color-surface-container-highest: #ecdcba;
-  --color-surface-tint: #113047;
+  /* --- Neutros de apoyo (tooltips, íconos, avatares) --- */
+  --color-tertiary: #413F3F;
+  --color-on-tertiary: #F4F2E8;
+  --color-tertiary-container: #E7E3D4;
+  --color-on-tertiary-container: #2A2929;
+  --color-tertiary-fixed: #413F3F;
+  --color-on-tertiary-fixed: #F4F2E8;
+  --color-tertiary-fixed-dim: #C8C3B2;
 
-  --color-outline: #739ab9;
-  --color-outline-variant: #739ab9;
+  /* --- Estados semánticos: success / warning / danger --- */
+  --color-success: #1B7F3B;
+  --color-on-success: #FFFFFF;
+  --color-success-container: #D6F0D3;
+  --color-on-success-container: #0E3D22;
 
-  --color-inverse-primary: #b6c9dd;
-  --color-inverse-surface: #312b22;
-  --color-inverse-on-surface: #fbf0d8;
+  --color-danger: #C32E2E;
+  --color-on-danger: #FFFFFF;
+  --color-danger-container: #FFDAD9;
+  --color-on-danger-container: #8B1616;
+
+  --color-error: #C32E2E;
+  --color-on-error: #FFFFFF;
+  --color-error-container: #FFDAD9;
+  --color-on-error-container: #8B1616;
+
+  --color-warning: #B26A00;
+  --color-on-warning: #FFFFFF;
+  --color-warning-container: #FBEBC5;
+  --color-on-warning-container: #4A2B00;
+  --color-warning-dim: #D9A315;
+  --color-warning-hover: #8A5500;
+
+  /* --- Bordes --- */
+  --color-outline: #B0B0B0;
+  --color-outline-variant: #D6D3C6;
+
+  /* --- Inversos (para chips/sobres sobre primary) --- */
+  --color-inverse-primary: #FFDF00;
+  --color-inverse-surface: #1C1C1C;
+  --color-inverse-on-surface: #F4F2E8;
 
   /* --- Espaciados custom (además de la escala default de Tailwind) --- */
   --spacing-xs: 4px;
@@ -129,6 +170,123 @@
   --text-label-sm--font-weight: 500;
 }
 
+/* ============================================================
+   DARK MODE
+   Se activa agregando la clase `.dark` al <html> (lo hace
+   ThemeService). Re-define los tokens de color; los componentes
+   no necesitan variantes dark: porque todas las utilities de
+   Tailwind resuelven a var(--color-*).
+   ============================================================ */
+.dark {
+  /* Semánticos canónicos */
+  --color-background: #1C1C1C;
+  --color-surface: #413F3F;
+  --color-surface-muted: #413F3F;
+  --color-primary: #FFDF00;
+  --color-text: #F4F2E8;
+  --color-text-muted: #B0B0B0;
+  --color-border: #413F3F;
+
+  /* Fondos y superficies */
+  --color-on-background: #F4F2E8;
+  --color-on-surface: #F4F2E8;
+  --color-surface-bright: #4A4848;
+  --color-surface-dim: #2E2C2C;
+  --color-surface-variant: #3A3838;
+  --color-on-surface-variant: #B0B0B0;
+  --color-surface-container-lowest: #4A4848;
+  --color-surface-container-low: #454343;
+  --color-surface-container: #504E4E;
+  --color-surface-container-high: #5A5858;
+  --color-surface-container-highest: #646262;
+  --color-surface-tint: #FFDF00;
+
+  /* Acento de marca (no cambia) */
+  --color-primary-container: #7A6D1F;
+  --color-on-primary-container: #1C1C1C;
+  --color-primary-fixed: #A8962A;
+  --color-on-primary-fixed: #F4F2E8;
+  --color-primary-fixed-dim: #5E5A20;
+  --color-on-primary-fixed-variant: #F4F2E8;
+
+  --color-secondary: #FFDF00;
+  --color-on-secondary: #1C1C1C;
+  --color-secondary-container: #1C1C1C;
+  --color-on-secondary-container: #FFDF00;
+  --color-secondary-fixed: #FFDF00;
+  --color-on-secondary-fixed: #1C1C1C;
+  --color-secondary-fixed-dim: #C7AC00;
+  --color-on-secondary-fixed-variant: #C9C4B0;
+
+  /* Neutros de apoyo */
+  --color-tertiary: #F4F2E8;
+  --color-on-tertiary: #1C1C1C;
+  --color-tertiary-container: #555252;
+  --color-on-tertiary-container: #F4F2E8;
+  --color-tertiary-fixed: #C7C2B2;
+  --color-on-tertiary-fixed: #1C1C1C;
+  --color-tertiary-fixed-dim: #8F8A78;
+
+  /* Estados semánticos */
+  --color-success: #5FCE83;
+  --color-on-success: #0F3D1C;
+  --color-success-container: #1E4830;
+  --color-on-success-container: #BDECCB;
+
+  --color-danger: #FF6B6B;
+  --color-on-danger: #4A1010;
+  --color-danger-container: #5E1B1B;
+  --color-on-danger-container: #FFDAD9;
+
+  --color-error: #FF6B6B;
+  --color-on-error: #4A1010;
+  --color-error-container: #5E1B1B;
+  --color-on-error-container: #FFDAD9;
+
+  --color-warning: #FFC53D;
+  --color-on-warning: #4A2B00;
+  --color-warning-container: #5A4015;
+  --color-on-warning-container: #FBEBC5;
+  --color-warning-dim: #B07D10;
+  --color-warning-hover: #D9A315;
+
+  /* Bordes */
+  --color-outline: #413F3F;
+  --color-outline-variant: #4D4A4A;
+
+  /* Inversos */
+  --color-inverse-primary: #FFDF00;
+  --color-inverse-surface: #F4F2E8;
+  --color-inverse-on-surface: #1C1C1C;
+}
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
 body {
   font-family: 'Inter', sans-serif;
 }
+
+/* Tailwind v4 resuelve max-w-<key> con ["--max-width","--spacing","--container"].
+   Los tokens --spacing-xs..2xl (arriba) capturan el nombre antes que
+   --container-* y dejaban max-w-2xl en 48px (columna angosta). Re-anclamos
+   max-w a la escala default de container. Va fuera de @layer: el CSS plano
+   gana a las utilities de Tailwind (emitidas en @layer utilities). */
+.max-w-3xs { max-width: 16rem; }
+.max-w-2xs { max-width: 18rem; }
+.max-w-xs { max-width: 20rem; }
+.max-w-sm { max-width: 24rem; }
+.max-w-md { max-width: 28rem; }
+.max-w-lg { max-width: 32rem; }
+.max-w-xl { max-width: 36rem; }
+.max-w-2xl { max-width: 42rem; }
+.max-w-3xl { max-width: 48rem; }
+.max-w-4xl { max-width: 56rem; }
+.max-w-5xl { max-width: 64rem; }
+.max-w-6xl { max-width: 72rem; }
+.max-w-7xl { max-width: 80rem; }

@@ -2,7 +2,7 @@
   <!-- Page Header & Filters -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
     <div>
-      <h2 class="text-headline-lg font-headline-lg text-primary tracking-tight">Listado de Socios</h2>
+      <h2 class="text-headline-lg font-headline-lg text-on-background tracking-tight">Listado de Socios</h2>
       <p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Gestiona el directorio de miembros, planes y estados de acceso.</p>
     </div>
     <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -55,7 +55,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant">
-            @for (socio of paginatedSocios(); track socio.id) {
+            @for (socio of socios(); track socio.id) {
               <tr class="hover:bg-surface-container-low transition-colors duration-150" [class.bg-surface-bright]="$even">
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-3">
@@ -76,7 +76,7 @@
                 <td class="px-4 py-3 text-body-sm font-body-sm text-on-background">{{ socio.fechaAlta | date:'dd/MM/yyyy' }}</td>
                 <td class="px-4 py-3">
                   @if (socio.activo !== undefined) {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm border {{ socio.activo ? 'bg-[#D1FAE5] text-[#065F46] border-[#34D399]' : 'bg-error-container text-on-error-container border-[#FCA5A5]' }}">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm border {{ socio.activo ? 'bg-success-container text-on-success-container border-success' : 'bg-error-container text-on-error-container border-error' }}">
                       <lucide-icon [img]="socio.activo ? CheckCircle : XCircle" class="w-3.5 h-3.5"></lucide-icon>
                       {{ socio.activo ? 'Activo' : 'Inactivo' }}
                     </span>
@@ -111,9 +111,9 @@
           Mostrando
           <span class="font-semibold text-on-background ml-1 mr-1">{{ (currentPage() - 1) * pageSize + 1 }}</span>
           a
-          <span class="font-semibold text-on-background ml-1 mr-1">{{ Math.min(currentPage() * pageSize, filteredSocios().length) }}</span>
+          <span class="font-semibold text-on-background ml-1 mr-1">{{ Math.min(currentPage() * pageSize, totalItems()) }}</span>
           de
-          <span class="font-semibold text-on-background ml-1">{{ filteredSocios().length }}</span>
+          <span class="font-semibold text-on-background ml-1">{{ totalItems() }}</span>
           socios
         </p>
         <div class="flex gap-2">

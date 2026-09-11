@@ -9,35 +9,49 @@
       <lucide-icon [img]="sidebarCollapsed() ? X : Menu" class="w-5 h-5"></lucide-icon>
     </button>
 
-    <h1 class="text-headline-md font-headline-md font-bold text-primary hidden sm:block">{{ pageTitle() }}</h1>
+    <h1 class="text-headline-md font-headline-md font-bold text-on-surface hidden sm:block">{{ pageTitle() }}</h1>
   </div>
 
   <!-- Right Actions -->
   <div class="flex items-center gap-4">
     <!-- Search -->
-    <div class="relative group hidden lg:block">
-      <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-secondary transition-colors w-5 h-5"></lucide-icon>
+    <form
+      (ngSubmit)="buscar()"
+      class="relative group hidden lg:block"
+    >
+      <button
+        type="submit"
+        aria-label="Buscar"
+        class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-secondary transition-colors w-5 h-5 cursor-pointer"
+      >
+        <lucide-icon [img]="Search" class="w-5 h-5"></lucide-icon>
+      </button>
       <input
+        [formControl]="searchControl"
         type="text"
         placeholder="Buscar socios, pagos..."
         class="w-64 pl-10 pr-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest text-body-sm font-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all shadow-sm"
       />
-    </div>
+    </form>
 
     <!-- Quick Check-in Action -->
-    <button class="hidden md:block text-secondary border-b-2 border-secondary pb-1 text-label-md font-label-md hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 px-2">
+    <button (click)="onQuickCheckin()" class="hidden md:block text-secondary border-b-2 border-secondary pb-1 text-label-md font-label-md hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 px-2">
       Check-in Rápido
     </button>
 
     <!-- Icon Actions -->
     <div class="flex items-center gap-2">
       <button
-        (click)="toggleNotifications()"
-        class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 relative"
-        aria-label="Notificaciones"
+        (click)="themeService.toggle()"
+        class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70"
+        [attr.aria-label]="themeService.mode() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        title="Cambiar tema"
       >
-        <lucide-icon [img]="Bell" class="w-5 h-5"></lucide-icon>
-        <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+        @if (themeService.mode() === 'dark') {
+          <lucide-icon [img]="Sun" class="w-5 h-5"></lucide-icon>
+        } @else {
+          <lucide-icon [img]="Moon" class="w-5 h-5"></lucide-icon>
+        }
       </button>
 
       <button
@@ -66,23 +80,9 @@
       @if (showProfileMenu()) {
         <div class="absolute right-0 mt-2 w-48 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg py-2 z-50 animate-in fade-in-0 zoom-in-95">
           <div class="px-4 py-3 border-b border-outline-variant">
-            <p class="text-label-md font-label-md text-primary">{{ userName() }}</p>
-            <p class="text-label-sm font-label-sm text-on-surface-variant">Administrador</p>
+            <p class="text-label-md font-label-md text-on-surface">{{ userName() }}</p>
+            <p class="text-label-sm font-label-sm text-on-surface-variant">{{ userRole() }}</p>
           </div>
-          <a
-            href="#"
-            class="flex items-center gap-3 px-4 py-2 text-label-md font-label-md text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
-          >
-            <lucide-icon [img]="User" class="w-4 h-4"></lucide-icon>
-            Mi Perfil
-          </a>
-          <a
-            href="#"
-            class="flex items-center gap-3 px-4 py-2 text-label-md font-label-md text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
-          >
-            <lucide-icon [img]="HelpCircle" class="w-4 h-4"></lucide-icon>
-            Ayuda
-          </a>
           <hr class="my-2 border-outline-variant" />
           <button
             (click)="onLogout()"

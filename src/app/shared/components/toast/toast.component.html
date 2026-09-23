@@ -1,0 +1,25 @@
+<div class="toast-container" aria-live="polite" aria-atomic="false">
+  @for (toast of toasts(); track toast.id) {
+    <div class="toast-card toast-{{ toast.type }}" [class.leaving]="toast.leaving" role="alert">
+      <lucide-icon [img]="iconFor(toast.type)" class="toast-icon" size="20"></lucide-icon>
+
+      <div class="toast-content">
+        @if (toast.title) {
+          <p class="toast-title">{{ toast.title }}</p>
+        }
+        <p class="toast-message">{{ toast.message }}</p>
+      </div>
+
+      <button type="button" class="toast-close" aria-label="Cerrar notificación" (click)="dismiss(toast)">
+        <lucide-icon [img]="closeIcon" size="16"></lucide-icon>
+      </button>
+
+      <div
+        class="toast-progress"
+        [style.animation-duration.ms]="toast.duration"
+        (animationend)="onProgressEnd(toast)"
+        aria-hidden="true"
+      ></div>
+    </div>
+  }
+</div>

@@ -1,0 +1,151 @@
+<div *ngIf="open()" @modalOverlay class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="onBackdropClick($event)">
+  <div @modalPanel role="dialog" aria-modal="true" aria-label="Registrar pago" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+      <div>
+        <h2 class="text-headline-md font-bold text-on-surface">Registrar Pago</h2>
+        <p class="text-label-sm text-on-surface-variant mt-0.5">Asociá el cobro a una membresía</p>
+      </div>
+      <button type="button" (click)="close()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="pagoForm" (ngSubmit)="submit()" class="p-6 space-y-5">
+      <!-- Socio / membresía context -->
+      <ng-container *ngIf="membresia(); else searchBlock">
+        <div class="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-2">
+          <p class="text-label-sm font-medium text-on-surface-variant">Socio y membresía</p>
+          <p class="text-body-md font-semibold text-on-surface">{{ membresia()!.socioNombre }}</p>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-label-sm text-on-surface-variant">
+            <span>Plan: <span class="font-medium text-on-surface">{{ membresia()!.planNombre }}</span></span>
+            <span>Estado: <span class="font-medium capitalize">{{ membresia()!.estado }}</span></span>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #searchBlock>
+        <!-- Buscar socio -->
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Socio</label>
+          <ng-container *ngIf="selectedSocio(); else socioSearchInput">
+            <div class="flex items-center justify-between gap-3 p-3.5 bg-surface-container-low border border-outline-variant rounded-lg">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium shrink-0">
+                  {{ selectedSocio()!.nombre.charAt(0) }}{{ selectedSocio()!.apellido.charAt(0) }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-body-md font-medium text-on-surface truncate">{{ selectedSocio()!.nombre }} {{ selectedSocio()!.apellido }}</p>
+                  <p class="text-label-sm text-on-surface-variant">DNI: {{ selectedSocio()!.dni }}</p>
+                </div>
+              </div>
+              <button type="button" (click)="clearSocio()" class="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container-low transition-colors shrink-0">
+                <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
+              </button>
+            </div>
+          </ng-container>
+          <ng-template #socioSearchInput>
+            <div class="relative">
+              <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+              <input
+                type="text"
+                (input)="onSocioInputChange($event)"
+                placeholder="Buscar por nombre, apellido o DNI..."
+                aria-label="Buscar socio por nombre, apellido o DNI"
+                class="w-full pl-10 pr-10 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+              />
+              <lucide-icon [img]="Loader2" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary w-5 h-5 animate-spin" *ngIf="socioSearching()"></lucide-icon>
+            </div>
+
+            <!-- Resultados -->
+            <div *ngIf="socioResults().length > 0" class="mt-2 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg overflow-hidden">
+              <button type="button" *ngFor="let socio of socioResults()" (click)="selectSocio(socio)"
+                      class="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container-low transition-colors border-b border-outline-variant last:border-b-0">
+                <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium shrink-0">
+                  {{ socio.nombre.charAt(0) }}{{ socio.apellido.charAt(0) }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-body-md font-medium text-on-surface truncate">{{ socio.nombre }} {{ socio.apellido }}</p>
+                  <p class="text-label-sm text-on-surface-variant">DNI: {{ socio.dni }}</p>
+                </div>
+              </button>
+            </div>
+            <p *ngIf="!socioSearching() && socioResults().length === 0 && pagoForm.get('membresiaId')?.touched"
+               class="text-label-sm text-on-surface-variant mt-1">No se encontraron resultados</p>
+          </ng-template>
+        </div>
+      </ng-template>
+
+      <!-- Membresía -->
+      <div>
+        <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Membresía a pagar</label>
+        <select formControlName="membresiaId"
+                aria-label="Membresía a pagar"
+                [disabled]="membresias().length === 0 || saving()"
+                class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-50">
+          <option value="">Seleccionar membresía...</option>
+          <option *ngFor="let m of membresias()" [value]="m.id">{{ m.socioNombre }} - {{ m.planNombre }}</option>
+        </select>
+        <p *ngIf="membresias().length === 0 && !membresia()" class="text-label-sm text-on-surface-variant mt-1">
+          Buscá un socio para listar sus membresías activas
+        </p>
+        <p *ngIf="pagoForm.get('membresiaId')?.invalid && pagoForm.get('membresiaId')?.touched" class="text-label-sm text-error mt-1">
+          Seleccioná una membresía
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <!-- Medio de pago -->
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Medio de pago</label>
+          <select formControlName="medioPagoId" aria-label="Medio de pago" [disabled]="saving()"
+                  class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-50">
+            <option value="">Seleccionar medio...</option>
+            <option *ngFor="let medio of mediosPago()" [value]="medio.id">{{ medio.nombre }}</option>
+          </select>
+          <p *ngIf="pagoForm.get('medioPagoId')?.invalid && pagoForm.get('medioPagoId')?.touched" class="text-label-sm text-error mt-1">
+            Seleccioná un medio de pago
+          </p>
+        </div>
+
+        <!-- Fecha -->
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Fecha de pago</label>
+          <div class="relative">
+            <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+            <input type="date" formControlName="fechaPago" aria-label="Fecha de pago"
+                   class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Monto destacado -->
+      <div class="p-5 bg-surface-container-low border border-outline-variant rounded-xl">
+        <label class="block text-label-sm font-medium text-on-surface-variant mb-3">Monto a registrar</label>
+        <div class="flex items-center gap-3 border-2 border-outline-variant rounded-xl px-5 py-4 bg-surface-container-lowest focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+          <span class="text-headline-md font-display font-bold text-primary">$</span>
+          <input type="number" formControlName="monto" min="1" step="100" placeholder="0,00" aria-label="Monto a registrar"
+                 class="w-full bg-transparent text-headline-lg font-display font-bold outline-none placeholder:text-on-surface-variant/40 [appearance:textfield]"
+                 [class.text-primary]="getMontoValido()"
+                 [class.text-on-surface]="!getMontoValido()" />
+        </div>
+        <p *ngIf="pagoForm.get('monto')?.invalid && pagoForm.get('monto')?.touched" class="text-label-sm text-error mt-2">
+          El monto es obligatorio y debe ser mayor a $0
+        </p>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+        <button type="button" (click)="close()"
+                class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button type="submit"
+                [disabled]="pagoForm.invalid || saving()"
+                class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+          Registrar Cobro
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

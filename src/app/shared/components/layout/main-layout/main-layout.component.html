@@ -15,8 +15,10 @@
       (logout)="onLogout()"
     ></app-navbar>
 
-    <main class="flex-1 p-margin-desktop overflow-y-auto">
-      <router-outlet></router-outlet>
+    <main id="main-content" tabindex="-1" aria-label="Contenido principal" class="flex-1 p-margin-desktop overflow-y-auto">
+      <div class="relative w-full h-full" [@routeFade]="routeState(outlet)">
+        <router-outlet #outlet="outlet"></router-outlet>
+      </div>
     </main>
   </div>
 </div>

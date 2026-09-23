@@ -13,6 +13,8 @@ export interface CreateUsuarioDto {
     email: string;
     password: string;
     rol: CreateUsuarioDto.RolEnum;
+    nombre?: string;
+    apellido?: string;
 }
 export namespace CreateUsuarioDto {
     export const RolEnum = {

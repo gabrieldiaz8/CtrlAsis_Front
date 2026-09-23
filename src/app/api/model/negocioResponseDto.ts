@@ -14,5 +14,10 @@ export interface NegocioResponseDto {
     nombre: string;
     rubroId: string;
     rubroNombre: string;
+    direccion?: string;
+    telefono?: string;
+    email?: string;
+    horarios?: string;
+    logo?: string;
 }
 

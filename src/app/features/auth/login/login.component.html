@@ -7,7 +7,7 @@
   <div class="absolute top-0 left-0 w-48 h-48 md:w-64 md:h-64 bg-tertiary-fixed rounded-br-full opacity-20 pointer-events-none mix-blend-multiply blur-3xl"></div>
 
   <!-- Main Content Canvas -->
-  <main class="w-full max-w-[1024px] relative z-10 flex flex-col md:flex-row items-center justify-center gap-xl md:gap-2xl py-10">
+  <main id="main-content" tabindex="-1" aria-label="Acceso al sistema" class="w-full max-w-[1024px] relative z-10 flex flex-col md:flex-row items-center justify-center gap-xl md:gap-2xl py-10">
     <!-- Left Side: Brand Identity (desktop only) -->
     <div class="hidden md:flex flex-col items-start justify-center flex-1 max-w-[400px]">
       <div class="bg-primary text-on-primary w-16 h-16 rounded-xl flex items-center justify-center mb-lg shadow-[0_10px_15px_rgba(0,0,0,0.1)]">
@@ -49,10 +49,11 @@
                 placeholder="tu@negocio.com"
                 autocomplete="email"
                 [class.border-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                [attr.aria-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched ? true : null"
               />
             </div>
             <p *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" 
-               class="text-label-sm text-error mt-1.5">Ingresa un correo electrónico válido</p>
+               class="text-label-sm text-error mt-1.5" role="alert">Ingresa un correo electrónico válido</p>
           </div>
 
           <!-- Password Field -->
@@ -70,6 +71,7 @@
                 placeholder="••••••••"
                 autocomplete="current-password"
                 [class.border-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                [attr.aria-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched ? true : null"
               />
               <button 
                 type="button"
@@ -80,16 +82,9 @@
               </button>
             </div>
             <p *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" 
-               class="text-label-sm text-error mt-1.5">La contraseña debe tener al menos 6 caracteres</p>
+               class="text-label-sm text-error mt-1.5" role="alert">La contraseña debe tener al menos 6 caracteres</p>
           </div>
 
-          <!-- Error Message -->
-          <div *ngIf="error()" class="p-3 bg-error-container text-on-error-container text-label-sm rounded-lg flex items-center gap-2" role="alert">
-            <lucide-icon [img]="Loader2" class="w-4 h-4"></lucide-icon>
-            {{ error() }}
-          </div>
-
-          <!-- Actions -->
           <div class="flex items-center justify-between pt-2">
             <div class="flex items-center">
               <input 

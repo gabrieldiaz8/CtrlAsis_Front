@@ -1,26 +1,41 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, Observable, debounceTime, distinctUntilChanged, forkJoin, map } from 'rxjs';
-import { LucideAngularModule, Users, Search, Filter, Plus, MoreVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2 } from 'lucide-angular';
+import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map } from 'rxjs';
+import { LucideAngularModule, Users, Search, Filter, Plus, MoreVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
-import { SociosService, SocioResponseDto } from '@api';
+import { SociosService, SocioResponseDto, CreateSocioDto, UpdateSocioDto } from '@api';
+import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto } from '@api';
+import { PlanesMembresiaService, PlanMembresiaResponseDto } from '@api';
+import { PagosService, PagoResponseDto } from '@api';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ToastService } from '@core/services/toast.service';
+import { HasRoleDirective } from '@core/directives/has-role.directive';
+import { PagoFormModalComponent } from '@shared/components';
+import { modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations';
 
 @Component({
   selector: 'app-socios',
   standalone: true,
-  imports: [LucideAngularModule, CommonModule, FormsModule, DatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [LucideAngularModule, CommonModule, ReactiveFormsModule, FormsModule, DatePipe, HasRoleDirective, PagoFormModalComponent],
+  animations: [staggerGrid, modalOverlay, modalPanel],
   templateUrl: './socios.component.html',
   styleUrl: './socios.component.css'
 })
 export class SociosComponent implements OnInit {
   private layout = inject(MainLayoutComponent);
   private sociosService = inject(SociosService);
+  private membresiasService = inject(MembresiasService);
+  private planesService = inject(PlanesMembresiaService);
+  private pagosService = inject(PagosService);
   private route = inject(ActivatedRoute);
+  private fb = inject(FormBuilder);
+  private toast = inject(ToastService);
 
   private search$ = new Subject<string>();
+  private sociosRequest: Subscription | null = null;
 
   readonly Users = Users;
   readonly Search = Search;
@@ -36,6 +51,17 @@ export class SociosComponent implements OnInit {
   readonly CheckCircle = CheckCircle;
   readonly XCircle = XCircle;
   readonly Loader2 = Loader2;
+  readonly X = X;
+  readonly Eye = Eye;
+  readonly CreditCard = CreditCard;
+  readonly Shield = Shield;
+  readonly RefreshCw = RefreshCw;
+  readonly Clock = Clock;
+  readonly RotateCcw = RotateCcw;
+  readonly Wallet = Wallet;
+  readonly DollarSign = DollarSign;
+  readonly Landmark = Landmark;
+  readonly Receipt = Receipt;
 
   socios = signal<SocioResponseDto[]>([]);
   loading = signal(true);
@@ -45,8 +71,62 @@ export class SociosComponent implements OnInit {
   pageSize = 10;
   totalItems = signal(0);
 
+  showModal = signal(false);
+  editingSocio = signal<SocioResponseDto | null>(null);
+  saving = signal(false);
+
+  socioForm = this.fb.nonNullable.group({
+    nombre: ['', [Validators.required]],
+    apellido: ['', [Validators.required]],
+    dni: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+    telefono: [''],
+    fechaAlta: [this.getToday(), [Validators.required]]
+  });
+
+  // Detalle de socio (tab Datos / Membresías / Pagos)
+  showSocioDetail = signal(false);
+  detailSocio = signal<SocioResponseDto | null>(null);
+  detailTab = signal<'datos' | 'membresias' | 'pagos'>('datos');
+  socioMembresias = signal<MembresiaResponseDto[]>([]);
+  socioMembresiasLoading = signal(false);
+  socioMembresiasError = signal<string | null>(null);
+  socioMembresiasLoaded = signal(false);
+  socioPagos = signal<PagoResponseDto[]>([]);
+  socioPagosLoading = signal(false);
+  socioPagosError = signal<string | null>(null);
+  socioPagosLoaded = signal(false);
+  showSocioPagoForm = signal(false);
+
+  totalPagosSocio = computed(() =>
+    this.socioPagos().reduce((acc, p) => acc + (p.monto ?? 0), 0)
+  );
+
+  // Crear membresía desde el socio
+  showSocioMembresiaModal = signal(false);
+  socioPlanId = signal('');
+  socioFechaInicio = signal(this.getToday());
+  socialMembresiaSaving = signal(false);
+
+  planes = signal<PlanMembresiaResponseDto[]>([]);
+  planesActivos = computed(() => this.planes().filter(p => p.activo));
+
+  socioFechaFinPreview = computed(() => {
+    const plan = this.getPlan(this.socioPlanId());
+    if (!plan) return null;
+    const inicio = new Date(this.socioFechaInicio());
+    inicio.setHours(12, 0, 0, 0);
+    const fin = new Date(inicio);
+    fin.setDate(fin.getDate() + plan.duracionDias);
+    return fin.toISOString().split('T')[0];
+  });
+
   ngOnInit() {
     this.layout.setPageTitle('Socios');
+
+    this.planesService.planesMembresiaControllerFindAll().subscribe({
+      next: (data) => this.planes.set(data || []),
+      error: () => console.error('Error loading planes')
+    });
 
     this.search$
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
@@ -94,7 +174,8 @@ export class SociosComponent implements OnInit {
       request = this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, undefined, this.pageSize, page);
     }
 
-    request.subscribe({
+    this.sociosRequest?.unsubscribe();
+    this.sociosRequest = request.subscribe({
       next: (response) => {
         this.socios.set(response.data || response);
         this.totalItems.set(response.total ?? response.length);
@@ -103,6 +184,7 @@ export class SociosComponent implements OnInit {
       error: (err) => {
         this.error.set('Error al cargar los socios');
         this.loading.set(false);
+        this.toast.error('No se pudieron cargar los socios', { title: 'Error' });
         console.error('Error loading socios:', err);
       }
     });
@@ -140,13 +222,18 @@ export class SociosComponent implements OnInit {
   }
 
   getEstadoBadge(estado: string): { class: string, icon: any, label: string } {
-    switch (estado) {
-      case 'ACTIVO':
-        return { class: 'bg-success-container text-on-success-container border border-success', icon: CheckCircle, label: 'Activo' };
-      case 'VENCIDO':
-        return { class: 'bg-error-container text-on-error-container border border-error', icon: XCircle, label: 'Vencido' };
-      case 'SUSPENDIDO':
-        return { class: 'bg-surface-variant text-on-surface-variant border border-outline-variant', icon: AlertCircle, label: 'Suspendido' };
+    switch (estado?.toLowerCase()) {
+      case 'activo':
+      case 'activa':
+        return { class: 'bg-success-container text-on-success-container border border-success', icon: CheckCircle, label: 'Activa' };
+      case 'vencido':
+      case 'vencida':
+        return { class: 'bg-error-container text-on-error-container border border-error', icon: XCircle, label: 'Vencida' };
+      case 'suspendido':
+      case 'suspendida':
+        return { class: 'bg-warning-container text-on-warning-container border border-warning-dim', icon: AlertCircle, label: 'Suspendida' };
+      case 'cancelada':
+        return { class: 'bg-surface-variant text-on-surface-variant border border-outline-variant', icon: X, label: 'Cancelada' };
       default:
         return { class: 'bg-surface-container-high text-on-surface-variant border border-outline-variant', icon: AlertCircle, label: estado };
     }
@@ -181,17 +268,309 @@ export class SociosComponent implements OnInit {
   }
 
   onNuevoSocio() {
-    console.log('Nuevo socio');
+    this.editingSocio.set(null);
+    this.socioForm.reset({
+      nombre: '',
+      apellido: '',
+      dni: '',
+      telefono: '',
+      fechaAlta: this.getToday()
+    });
+    this.showModal.set(true);
   }
 
   onEditSocio(socio: SocioResponseDto) {
-    console.log('Editar socio', socio);
+    this.editingSocio.set(socio);
+    this.socioForm.reset({
+      nombre: socio.nombre,
+      apellido: socio.apellido,
+      dni: socio.dni,
+      telefono: socio.telefono || '',
+      fechaAlta: socio.fechaAlta?.split('T')[0] || this.getToday()
+    });
+    this.showModal.set(true);
+  }
+
+  closeModal() {
+    this.showModal.set(false);
+    this.editingSocio.set(null);
+    this.saving.set(false);
+    this.socioForm.reset();
+  }
+
+  onBackdropClick(event: MouseEvent) {
+    if (event.target !== event.currentTarget) return;
+    if (this.showSocioDetail()) {
+      this.closeSocioDetail();
+    } else if (this.showSocioMembresiaModal()) {
+      this.closeSocioMembresiaModal();
+    } else if (this.showModal()) {
+      this.closeModal();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKeydown() {
+    if (this.showSocioPagoForm()) {
+      return;
+    }
+    if (this.showSocioDetail()) {
+      this.closeSocioDetail();
+    } else if (this.showSocioMembresiaModal()) {
+      this.closeSocioMembresiaModal();
+    } else if (this.showModal()) {
+      this.closeModal();
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Detalle de socio (Datos / Membresías)
+  // ------------------------------------------------------------
+  openSocioDetail(socio: SocioResponseDto) {
+    this.detailSocio.set(socio);
+    this.detailTab.set('datos');
+    this.showSocioDetail.set(true);
+  }
+
+  closeSocioDetail() {
+    this.showSocioDetail.set(false);
+    this.detailSocio.set(null);
+  }
+
+  onDetailTabChange(tab: 'datos' | 'membresias' | 'pagos') {
+    this.detailTab.set(tab);
+    if (tab === 'membresias' && !this.socioMembresiasLoaded()) {
+      this.loadSocioMembresias();
+    }
+    if (tab === 'pagos' && this.detailSocio() && !this.socioPagosLoaded()) {
+      this.loadSocioPagos();
+    }
+  }
+
+  loadSocioPagos() {
+    const socio = this.detailSocio();
+    if (!socio) return;
+
+    this.socioPagosLoading.set(true);
+    this.socioPagosError.set(null);
+
+    this.pagosService.pagosControllerFindBySocio(String(socio.id)).subscribe({
+      next: (pagos) => {
+        this.socioPagos.set(pagos || []);
+        this.socioPagosLoading.set(false);
+        this.socioPagosLoaded.set(true);
+      },
+      error: (err) => {
+        this.socioPagosError.set('No se pudieron cargar los pagos del socio');
+        this.socioPagosLoading.set(false);
+        console.error('Error loading socio pagos:', err);
+      }
+    });
+  }
+
+  openSocioRegistrarPago() {
+    this.showSocioPagoForm.set(true);
+  }
+
+  onSocioPagoRegistrado() {
+    const socio = this.detailSocio();
+    if (!socio) return;
+    this.socioPagosLoaded.set(false);
+    this.socioPagos.set([]);
+    this.loadSocioPagos();
+  }
+
+  getMedioIcono(nombre: string): any {
+    const lower = nombre?.toLowerCase() || '';
+    if (lower.includes('efectivo')) return this.DollarSign;
+    if (lower.includes('tarjeta')) return this.CreditCard;
+    if (lower.includes('transfer')) return this.Landmark;
+    return this.Receipt;
+  }
+
+  loadSocioMembresias() {
+    const socio = this.detailSocio();
+    if (!socio) return;
+
+    this.socioMembresiasLoading.set(true);
+    this.socioMembresiasError.set(null);
+
+    this.membresiasService.membresiasControllerFindAll(String(socio.id), undefined, 50, 0).subscribe({
+      next: (response) => {
+        this.socioMembresias.set(response.content || response.data || response);
+        this.socioMembresiasLoading.set(false);
+        this.socioMembresiasLoaded.set(true);
+      },
+      error: (err) => {
+        this.socioMembresiasError.set('No se pudieron cargar las membresías del socio');
+        this.socioMembresiasLoading.set(false);
+        console.error('Error loading socio membresias:', err);
+      }
+    });
+  }
+
+  // ------------------------------------------------------------
+  // Crear membresía desde el socio
+  // ------------------------------------------------------------
+  openSocioMembresiaModal() {
+    this.socioPlanId.set('');
+    this.socioFechaInicio.set(this.getToday());
+    this.socialMembresiaSaving.set(false);
+    this.showSocioMembresiaModal.set(true);
+  }
+
+  closeSocioMembresiaModal() {
+    this.showSocioMembresiaModal.set(false);
+    this.socioPlanId.set('');
+  }
+
+  crearMembresiaSocio() {
+    const socio = this.detailSocio();
+    if (!socio) return;
+
+    const planId = this.socioPlanId();
+    if (!planId) {
+      this.toast.warning('Seleccioná un plan para la membresía', { title: 'Plan requerido' });
+      return;
+    }
+
+    const prevista = this.socioFechaFinPreview();
+    this.socialMembresiaSaving.set(true);
+
+    const dto: CreateMembresiaDto = {
+      socioId: String(socio.id),
+      planId,
+      fechaInicio: this.socioFechaInicio(),
+      fechaFin: prevista || this.socioFechaInicio(),
+      estado: 'activa'
+    };
+
+    this.membresiasService.membresiasControllerCreate(dto).subscribe({
+      next: () => {
+        this.socialMembresiaSaving.set(false);
+        this.closeSocioMembresiaModal();
+        this.socioMembresiasLoaded.set(false);
+        this.socioMembresias.set([]);
+        this.loadSocioMembresias();
+        this.toast.success('Membresía creada correctamente', { title: 'Creada' });
+      },
+      error: (err) => {
+        this.socialMembresiaSaving.set(false);
+        this.toast.error(err.error?.message || 'Error al crear la membresía', { title: 'Error' });
+        console.error('Error creating membresia:', err);
+      }
+    });
+  }
+
+  // ------------------------------------------------------------
+  // Helpers de membresías (compartidos con la vista Membresías)
+  // ------------------------------------------------------------
+  getPlan(planId: string | undefined): PlanMembresiaResponseDto | undefined {
+    if (!planId) return undefined;
+    return this.planes().find(p => p.id === planId);
+  }
+
+  getPlanTipo(planId: string | undefined): string {
+    return this.getPlan(planId)?.tipoMembresiaNombre || '—';
+  }
+
+  getDiasRestantes(fechaFin: string | Date | undefined): number {
+    if (!fechaFin) return 0;
+    const fin = new Date(fechaFin);
+    fin.setHours(0, 0, 0, 0);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const diffMs = fin.getTime() - hoy.getTime();
+    return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  }
+
+  isPorVencer(m: MembresiaResponseDto): boolean {
+    return m.estado === 'activa' && this.getDiasRestantes(m.fechaFin) <= 7;
+  }
+
+  formatMoney(monto: number | undefined): string {
+    if (monto == null) return '';
+    return '$ ' + monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  formatFechaCompleta(fecha: string | Date | null | undefined): string {
+    if (!fecha) return '-';
+    const d = new Date(fecha);
+    return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  contarMembresiasPorEstado(estado: string): number {
+    return this.socioMembresias().filter(m => m.estado === estado).length;
+  }
+
+  onSubmitSocio() {
+    if (this.socioForm.invalid) {
+      this.socioForm.markAllAsTouched();
+      return;
+    }
+
+    this.saving.set(true);
+
+    const formData = this.socioForm.getRawValue();
+    const dto: CreateSocioDto = {
+      dni: formData.dni,
+      nombre: formData.nombre,
+      apellido: formData.apellido,
+      telefono: formData.telefono,
+      fechaAlta: formData.fechaAlta
+    };
+
+    const editing = this.editingSocio();
+    const request = editing
+      ? this.sociosService.sociosControllerUpdate(editing.id, dto as UpdateSocioDto)
+      : this.sociosService.sociosControllerCreate(dto);
+
+    request.subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.loadSocios();
+        this.closeModal();
+        this.toast.success(
+          editing ? 'Socio actualizado correctamente' : 'Socio creado correctamente',
+          { title: editing ? 'Actualizado' : 'Creado' }
+        );
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.toast.error(
+          err.error?.message || (editing ? 'Error al actualizar el socio' : 'Error al crear el socio'),
+          { title: 'Error' }
+        );
+        console.error(editing ? 'Error updating socio:' : 'Error creating socio:', err);
+      }
+    });
   }
 
   onDeleteSocio(socio: SocioResponseDto) {
     if (confirm(`¿Eliminar a ${socio.nombre} ${socio.apellido}?`)) {
-      console.log('Eliminar socio', socio.id);
+      this.sociosService.sociosControllerDesactivar(socio.id).subscribe({
+        next: (desactivado) => {
+          this.socios.update(list => list.map(s => s.id === desactivado.id ? { ...s, activo: false } : s));
+          this.toast.success('Socio desactivado correctamente', { title: 'Desactivado' });
+        },
+        error: (err) => {
+          this.toast.error('No se pudo desactivar el socio', { title: 'Error' });
+          console.error('Error deactivating socio:', err);
+        }
+      });
     }
+  }
+
+  fieldError(field: string): string | null {
+    const control = this.socioForm.get(field);
+    if (!control || !control.invalid || !(control.dirty || control.touched)) return null;
+    if (control.hasError('required')) return 'Este campo es obligatorio';
+    if (control.hasError('pattern')) return 'Ingrese solo números';
+    return 'Valor inválido';
+  }
+
+  getToday(): string {
+    return new Date().toISOString().split('T')[0];
   }
 
   protected readonly Math = Math;

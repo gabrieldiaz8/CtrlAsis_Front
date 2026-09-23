@@ -29,13 +29,14 @@
       <input
         [formControl]="searchControl"
         type="text"
+        aria-label="Buscar socios, pagos..."
         placeholder="Buscar socios, pagos..."
         class="w-64 pl-10 pr-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest text-body-sm font-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all shadow-sm"
       />
     </form>
 
     <!-- Quick Check-in Action -->
-    <button (click)="onQuickCheckin()" class="hidden md:block text-secondary border-b-2 border-secondary pb-1 text-label-md font-label-md hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 px-2">
+    <button (click)="onQuickCheckin()" class="hidden md:block text-on-surface border-b-2 border-on-surface pb-1 text-label-md font-label-md hover:bg-surface-container-low transition-all cursor-pointer active:opacity-70 px-2">
       Check-in Rápido
     </button>
 
@@ -68,17 +69,18 @@
         (click)="toggleProfileMenu()"
         class="w-9 h-9 rounded-full overflow-hidden border border-outline-variant shadow-sm cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
         aria-label="Perfil de usuario"
-        aria-expanded="false"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="showProfileMenu()"
       >
         @if (userAvatar()) {
-          <img [src]="userAvatar()" class="w-full h-full object-cover" alt="Avatar" />
+          <img [src]="userAvatar()" decoding="async" class="w-full h-full object-cover" alt="Avatar" />
         } @else {
           <lucide-icon [img]="User" class="w-5 h-5 text-on-surface-variant"></lucide-icon>
         }
       </button>
 
       @if (showProfileMenu()) {
-        <div class="absolute right-0 mt-2 w-48 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg py-2 z-50 animate-in fade-in-0 zoom-in-95">
+        <div @fadeZoom class="absolute right-0 mt-2 w-48 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg py-2 z-50">
           <div class="px-4 py-3 border-b border-outline-variant">
             <p class="text-label-md font-label-md text-on-surface">{{ userName() }}</p>
             <p class="text-label-sm font-label-sm text-on-surface-variant">{{ userRole() }}</p>

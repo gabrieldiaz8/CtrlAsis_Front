@@ -1,14 +1,19 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed } from '@angular/core';
 import { LucideAngularModule, Calendar, Plus, Search, Filter, MoreVertical, ChevronLeft, ChevronRight, Edit, Trash2, DollarSign, Loader2, Shield, Star, Crown, CheckCircle, X } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
 import { PlanesMembresiaService, PlanMembresiaResponseDto, CreatePlanMembresiaDto, UpdatePlanMembresiaDto } from '@api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ToastService } from '@core/services/toast.service';
+import { RoleService } from '@core/services/role.service';
+import { modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations';
 
 @Component({
   selector: 'app-planes',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, CommonModule, FormsModule, ReactiveFormsModule],
+  animations: [staggerGrid, modalOverlay, modalPanel],
   templateUrl: './planes.component.html',
   styleUrl: './planes.component.css'
 })
@@ -16,6 +21,8 @@ export class PlanesComponent implements OnInit {
   private layout = inject(MainLayoutComponent);
   private planesService = inject(PlanesMembresiaService);
   private fb = inject(FormBuilder);
+  private toast = inject(ToastService);
+  private roleService = inject(RoleService);
 
   readonly Calendar = Calendar;
   readonly Plus = Plus;
@@ -44,6 +51,8 @@ export class PlanesComponent implements OnInit {
   editingPlan = signal<PlanMembresiaResponseDto | null>(null);
   saving = signal(false);
 
+  canManagePlanes = computed(() => this.roleService.hasAnyRole(['dueno', 'super_admin']));
+
   planForm = this.fb.nonNullable.group({
     diasPorSemana: [5, [Validators.required, Validators.min(1), Validators.max(7)]],
     duracionDias: [30, [Validators.required, Validators.min(1)]],
@@ -69,6 +78,7 @@ export class PlanesComponent implements OnInit {
       error: (err) => {
         this.error.set('Error al cargar los planes');
         this.loading.set(false);
+        this.toast.error('No se pudieron cargar los planes', { title: 'Error' });
         console.error('Error loading planes:', err);
       }
     });
@@ -203,10 +213,11 @@ export class PlanesComponent implements OnInit {
           this.planes.update(list => list.map(p => p.id === updated.id ? updated : p));
           this.closeModal();
           this.saving.set(false);
+          this.toast.success('Plan actualizado correctamente', { title: 'Actualizado' });
         },
         error: (err) => {
-          this.error.set('Error al actualizar el plan');
           this.saving.set(false);
+          this.toast.error(err.error?.message || 'Error al actualizar el plan', { title: 'Error' });
           console.error('Error updating plan:', err);
         }
       });
@@ -216,10 +227,11 @@ export class PlanesComponent implements OnInit {
           this.planes.update(list => [created, ...list]);
           this.closeModal();
           this.saving.set(false);
+          this.toast.success('Plan creado correctamente', { title: 'Creado' });
         },
         error: (err) => {
-          this.error.set('Error al crear el plan');
           this.saving.set(false);
+          this.toast.error(err.error?.message || 'Error al crear el plan', { title: 'Error' });
           console.error('Error creating plan:', err);
         }
       });
@@ -231,9 +243,10 @@ export class PlanesComponent implements OnInit {
       this.planesService.planesMembresiaControllerDesactivar(String(plan.id)).subscribe({
         next: (deactivated) => {
           this.planes.update(list => list.map(p => p.id === deactivated.id ? deactivated : p));
+          this.toast.success('Plan desactivado correctamente', { title: 'Desactivado' });
         },
         error: (err) => {
-          this.error.set('Error al desactivar el plan');
+          this.toast.error('No se pudo desactivar el plan', { title: 'Error' });
           console.error('Error deactivating plan:', err);
         }
       });

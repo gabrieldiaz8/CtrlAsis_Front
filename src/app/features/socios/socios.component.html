@@ -13,6 +13,7 @@
           type="text"
           (input)="onSearchChange($event)"
           placeholder="Buscar por DNI o Nombre..."
+          aria-label="Buscar socios por DNI o nombre"
           class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all text-on-surface"
         />
       </div>
@@ -23,7 +24,7 @@
         <lucide-icon [img]="ChevronRight" class="w-4 h-4"></lucide-icon>
       </button>
       <!-- Primary Action -->
-      <button (click)="onNuevoSocio()" class="flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:bg-secondary-container hover:shadow-sm transition-all whitespace-nowrap">
+      <button (click)="onNuevoSocio()" *hasRole="['administrador', 'dueno', 'super_admin']" class="micro-btn flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:bg-secondary-container hover:shadow-sm transition-all whitespace-nowrap">
         <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
         Nuevo Socio
       </button>
@@ -33,8 +34,33 @@
   <!-- Data Table Container -->
   <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
     @if (loading()) {
-      <div class="flex justify-center items-center py-20">
-        <lucide-icon [img]="Loader2" class="animate-spin h-10 w-10 text-secondary" size="40"></lucide-icon>
+      <div class="p-6">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead>
+            <tr>
+              @for (col of ['Socio', 'DNI', 'Teléfono', 'Fecha Alta', 'Estado', 'Acciones']; track col) {
+                <th class="px-4 py-3"><div class="skeleton h-4 w-20"></div></th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant">
+            @for (row of [1, 2, 3, 4, 5]; track row) {
+              <tr>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="skeleton h-10 w-10 rounded-full"></div>
+                    <div><div class="skeleton h-4 w-36 mb-2"></div><div class="skeleton h-3 w-24"></div></div>
+                  </div>
+                </td>
+                <td class="px-4 py-3"><div class="skeleton h-4 w-24"></div></td>
+                <td class="px-4 py-3"><div class="skeleton h-4 w-28"></div></td>
+                <td class="px-4 py-3"><div class="skeleton h-4 w-20"></div></td>
+                <td class="px-4 py-3"><div class="skeleton h-6 w-16 rounded-full"></div></td>
+                <td class="px-4 py-3"><div class="skeleton h-5 w-16 ml-auto"></div></td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     } @else if (error()) {
       <div class="flex justify-center items-center py-20 text-error">
@@ -54,7 +80,7 @@
               <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-outline-variant">
+          <tbody class="divide-y divide-outline-variant" [@staggerGrid]="socios()">
             @for (socio of socios(); track socio.id) {
               <tr class="hover:bg-surface-container-low transition-colors duration-150" [class.bg-surface-bright]="$even">
                 <td class="px-4 py-3">
@@ -84,10 +110,13 @@
                 </td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <button (click)="onEditSocio(socio)" class="text-on-surface-variant hover:text-primary p-2 rounded-lg transition-colors" title="Editar">
+                    <button (click)="openSocioDetail(socio)" class="text-on-surface-variant hover:text-primary p-2 rounded-lg transition-colors" title="Ver detalle y membresías" aria-label="Ver detalle del socio">
+                      <lucide-icon [img]="Eye" class="w-5 h-5"></lucide-icon>
+                    </button>
+                    <button (click)="onEditSocio(socio)" *hasRole="['administrador', 'dueno', 'super_admin']" class="text-on-surface-variant hover:text-primary p-2 rounded-lg transition-colors" title="Editar" aria-label="Editar socio">
                       <lucide-icon [img]="User" class="w-5 h-5"></lucide-icon>
                     </button>
-                    <button (click)="onDeleteSocio(socio)" class="text-on-surface-variant hover:text-error p-2 rounded-lg transition-colors" title="Eliminar">
+                    <button (click)="onDeleteSocio(socio)" *hasRole="['administrador', 'dueno', 'super_admin']" class="text-on-surface-variant hover:text-error p-2 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar socio">
                       <lucide-icon [img]="XCircle" class="w-5 h-5"></lucide-icon>
                     </button>
                   </div>
@@ -135,4 +164,390 @@
       </div>
     }
   </div>
+
+  <!-- Modal Nuevo / Editar Socio -->
+  <div *ngIf="showModal()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="onBackdropClick($event)">
+<div @modalPanel role="dialog" aria-modal="true" aria-label="Formulario de socio" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+          <h2 class="text-headline-md font-bold text-on-surface">
+            {{ editingSocio() ? 'Editar Socio' : 'Nuevo Socio' }}
+          </h2>
+          <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+            <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- Modal Form -->
+        <form [formGroup]="socioForm" (ngSubmit)="onSubmitSocio()" class="p-6 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Nombre -->
+            <div>
+              <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Nombre</label>
+              <input type="text" formControlName="nombre" placeholder="Nombre del socio" aria-label="Nombre del socio"
+                     class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+              <p *ngIf="fieldError('nombre')" class="text-label-sm text-error mt-1">{{ fieldError('nombre') }}</p>
+            </div>
+
+            <!-- Apellido -->
+            <div>
+              <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Apellido</label>
+              <input type="text" formControlName="apellido" placeholder="Apellido del socio" aria-label="Apellido del socio"
+                     class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+              <p *ngIf="fieldError('apellido')" class="text-label-sm text-error mt-1">{{ fieldError('apellido') }}</p>
+            </div>
+
+            <!-- DNI -->
+            <div>
+              <label class="block text-label-sm font-medium text-on-surface-variant mb-1">DNI</label>
+              <input type="text" formControlName="dni" inputmode="numeric" placeholder="Número de documento" aria-label="DNI del socio"
+                     class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+              <p *ngIf="fieldError('dni')" class="text-label-sm text-error mt-1">{{ fieldError('dni') }}</p>
+            </div>
+
+            <!-- Teléfono -->
+            <div>
+              <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Teléfono</label>
+              <input type="text" formControlName="telefono" placeholder="Opcional" aria-label="Teléfono del socio"
+                     class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            </div>
+
+            <!-- Fecha Alta -->
+            <div class="sm:col-span-2">
+              <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Fecha de Alta</label>
+              <input type="date" formControlName="fechaAlta" aria-label="Fecha de alta"
+                     class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+              <p *ngIf="fieldError('fechaAlta')" class="text-label-sm text-error mt-1">{{ fieldError('fechaAlta') }}</p>
+            </div>
+          </div>
+
+          <!-- Modal Actions -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+            <button type="button" (click)="closeModal()"
+                    class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="socioForm.invalid || saving()"
+                    class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+              {{ editingSocio() ? 'Actualizar' : 'Crear Socio' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  <!-- ====================== MODAL DETALLE DE SOCIO ====================== -->
+  <div *ngIf="showSocioDetail() && detailSocio()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="onBackdropClick($event)">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Detalle del socio" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-md font-medium">
+            {{ getInitials(detailSocio()!.nombre, detailSocio()!.apellido) }}
+          </div>
+          <div>
+            <h2 class="text-headline-md font-bold text-on-surface">{{ detailSocio()!.nombre }} {{ detailSocio()!.apellido }}</h2>
+            <p class="text-label-sm text-on-surface-variant">Socio #{{ detailSocio()!.id }} · DNI {{ detailSocio()!.dni }}</p>
+          </div>
+        </div>
+        <button (click)="closeSocioDetail()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-outline-variant shrink-0">
+        <nav class="flex px-6" aria-label="Detalle de socio">
+          <button (click)="onDetailTabChange('datos')"
+                  [class]="detailTab() === 'datos' ? 'border-secondary text-on-surface' : 'border-transparent text-on-surface-variant hover:text-on-surface'"
+                  class="flex items-center gap-2 px-4 py-3 border-b-2 -mb-px font-medium text-label-md transition-colors">
+            <lucide-icon [img]="User" class="w-5 h-5"></lucide-icon>
+            Datos del socio
+          </button>
+          <button (click)="onDetailTabChange('membresias')"
+                  [class]="detailTab() === 'membresias' ? 'border-secondary text-on-surface' : 'border-transparent text-on-surface-variant hover:text-on-surface'"
+                  class="flex items-center gap-2 px-4 py-3 border-b-2 -mb-px font-medium text-label-md transition-colors">
+            <lucide-icon [img]="CreditCard" class="w-5 h-5"></lucide-icon>
+            Membresías
+            <span *ngIf="socioMembresias().length > 0" class="px-2 py-0.5 text-label-sm rounded-full bg-surface-container-high text-on-surface-variant">
+              {{ socioMembresias().length }}
+            </span>
+          </button>
+          <button (click)="onDetailTabChange('pagos')"
+                  [class]="detailTab() === 'pagos' ? 'border-secondary text-on-surface' : 'border-transparent text-on-surface-variant hover:text-on-surface'"
+                  class="flex items-center gap-2 px-4 py-3 border-b-2 -mb-px font-medium text-label-md transition-colors">
+            <lucide-icon [img]="Wallet" class="w-5 h-5"></lucide-icon>
+            Pagos
+            <span *ngIf="socioPagos().length > 0" class="px-2 py-0.5 text-label-sm rounded-full bg-surface-container-high text-on-surface-variant">
+              {{ socioPagos().length }}
+            </span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <!-- Tab Datos -->
+        <div *ngIf="detailTab() === 'datos'" class="p-6 space-y-6">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm border" [ngClass]="detailSocio()!.activo ? 'bg-success-container text-on-success-container border-success' : 'bg-error-container text-on-error-container border-error'">
+              <lucide-icon [img]="detailSocio()!.activo ? CheckCircle : XCircle" class="w-3.5 h-3.5"></lucide-icon>
+              {{ detailSocio()!.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm bg-surface-container-high text-on-surface-variant">
+              <lucide-icon [img]="Calendar" class="w-3.5 h-3.5"></lucide-icon>
+              Alta: {{ formatFechaCompleta(detailSocio()!.fechaAlta) }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+              <p class="text-label-sm font-medium text-on-surface-variant mb-1">Nombre y apellido</p>
+              <p class="text-body-md text-on-surface">{{ detailSocio()!.nombre }} {{ detailSocio()!.apellido }}</p>
+            </div>
+            <div>
+              <p class="text-label-sm font-medium text-on-surface-variant mb-1">DNI</p>
+              <p class="text-body-md text-on-surface">{{ detailSocio()!.dni }}</p>
+            </div>
+            <div>
+              <p class="text-label-sm font-medium text-on-surface-variant mb-1">Teléfono</p>
+              <p class="text-body-md text-on-surface">{{ detailSocio()!.telefono || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-label-sm font-medium text-on-surface-variant mb-1">Fecha de alta</p>
+              <p class="text-body-md text-on-surface">{{ formatFechaCompleta(detailSocio()!.fechaAlta) }}</p>
+            </div>
+            <div>
+              <p class="text-label-sm font-medium text-on-surface-variant mb-1">Membresías registradas</p>
+              <p class="text-body-md font-semibold text-on-surface">{{ socioMembresias().length }} <span class="font-normal text-on-surface-variant">históricas</span></p>
+            </div>
+            <div>
+              <p class="text-label-sm font-medium text-on-surface-variant mb-1">Activas</p>
+              <p class="text-body-md font-semibold text-success">{{ contarMembresiasPorEstado('activa') }}</p>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-4 border-t border-outline-variant">
+            <button (click)="closeSocioDetail()"
+                    class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+              Cerrar
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Membresías -->
+        <div *ngIf="detailTab() === 'membresias'" class="p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <p class="text-body-sm text-on-surface-variant">
+              {{ socioMembresias().length > 0 ? 'Historial de membresías del socio' : 'Sin membresías registradas' }}
+            </p>
+            <button (click)="openSocioMembresiaModal()"
+                    class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-sm text-label-md font-medium">
+              <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
+              Nueva Membresía
+            </button>
+          </div>
+
+          @if (socioMembresiasLoading()) {
+            <div class="space-y-3">
+              @for (row of [1, 2, 3]; track row) {
+                <div class="bg-surface rounded-xl border border-outline-variant p-4 space-y-3">
+                  <div class="flex items-center gap-3">
+                    <div class="skeleton h-9 w-9 rounded-full"></div>
+                    <div class="flex-1"><div class="skeleton h-4 w-32 mb-2"></div><div class="skeleton h-3 w-24"></div></div>
+                  </div>
+                  <div class="flex justify-between"><div class="skeleton h-4 w-28"></div><div class="skeleton h-4 w-16"></div></div>
+                </div>
+              }
+            </div>
+          } @else if (socioMembresiasError()) {
+            <div class="p-8 text-center">
+              <p class="text-body-sm text-on-surface-variant">{{ socioMembresiasError() }}</p>
+              <button (click)="loadSocioMembresias()"
+                      class="micro-btn mt-3 inline-flex items-center gap-2 px-4 py-2 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+                <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
+                Reintentar
+              </button>
+            </div>
+          } @else if (socioMembresias().length === 0) {
+            <div class="flex flex-col items-center justify-center py-12 text-center">
+              <lucide-icon [img]="Shield" class="w-12 h-12 mb-3 text-on-surface-variant/30"></lucide-icon>
+              <p class="text-body-md font-medium text-on-surface">Este socio no tiene membresías</p>
+              <p class="text-body-sm mt-1 text-on-surface-variant">Creá la primera usando el botón superior</p>
+            </div>
+          } @else {
+            <div class="divide-y divide-outline-variant border border-outline-variant rounded-lg overflow-hidden" [@staggerGrid]="socioMembresias()">
+              <div *ngFor="let m of socioMembresias()" class="p-4 bg-surface-container-lowest">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p class="text-body-md font-semibold text-on-surface">{{ m.planNombre }}</p>
+                    <p class="text-label-sm text-on-surface-variant">{{ getPlanTipo(m.planId) }} · {{ m.diasPorSemana }} días/semana</p>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-label-sm font-medium whitespace-nowrap"
+                          [ngClass]="getEstadoBadge(m.estado).class">
+                      <lucide-icon [img]="getEstadoBadge(m.estado).icon" class="w-3 h-3"></lucide-icon>
+                      {{ getEstadoBadge(m.estado).label }}
+                    </span>
+                    <span *ngIf="isPorVencer(m)"
+                          class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-label-sm font-medium bg-warning-container text-on-warning-container border border-warning-dim whitespace-nowrap">
+                      <lucide-icon [img]="Clock" class="w-3 h-3"></lucide-icon>
+                      Vence en {{ getDiasRestantes(m.fechaFin) }}d
+                    </span>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-label-sm text-on-surface-variant">
+                  <span class="inline-flex items-center gap-1.5">
+                    <lucide-icon [img]="Calendar" class="w-3.5 h-3.5"></lucide-icon>
+                    {{ formatFechaCompleta(m.fechaInicio) }} → {{ formatFechaCompleta(m.fechaFin) }}
+                  </span>
+                  <span *ngIf="m.estado === 'activa'" class="font-semibold" [ngClass]="isPorVencer(m) ? 'text-warning' : 'text-on-surface'">
+                    {{ getDiasRestantes(m.fechaFin) }} días restantes
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Tab Pagos -->
+        <div *ngIf="detailTab() === 'pagos'" class="p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <p class="text-body-sm text-on-surface-variant">
+              {{ socioPagos().length > 0 ? 'Historial de pagos del socio' : 'Sin pagos registrados' }}
+            </p>
+            <button (click)="openSocioRegistrarPago()"
+                    class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-sm text-label-md font-medium">
+              <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
+              Registrar Pago
+            </button>
+          </div>
+
+          @if (socioPagosLoading()) {
+            <div class="space-y-3">
+              @for (row of [1, 2, 3]; track row) {
+                <div class="bg-surface rounded-xl border border-outline-variant p-4 space-y-3">
+                  <div class="flex items-center gap-3">
+                    <div class="skeleton h-9 w-9 rounded-full"></div>
+                    <div class="flex-1"><div class="skeleton h-4 w-32 mb-2"></div><div class="skeleton h-3 w-24"></div></div>
+                  </div>
+                  <div class="flex justify-between"><div class="skeleton h-4 w-28"></div><div class="skeleton h-4 w-16"></div></div>
+                </div>
+              }
+            </div>
+          } @else if (socioPagosError()) {
+            <div class="p-8 text-center">
+              <p class="text-body-sm text-on-surface-variant">{{ socioPagosError() }}</p>
+              <button (click)="loadSocioPagos()"
+                      class="micro-btn mt-3 inline-flex items-center gap-2 px-4 py-2 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+                <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
+                Reintentar
+              </button>
+            </div>
+          } @else if (socioPagos().length === 0) {
+            <div class="flex flex-col items-center justify-center py-12 text-center">
+              <lucide-icon [img]="Wallet" class="w-12 h-12 mb-3 text-on-surface-variant/30"></lucide-icon>
+              <p class="text-body-md font-medium text-on-surface">Este socio no tiene pagos registrados</p>
+              <p class="text-body-sm mt-1 text-on-surface-variant">Registrá el primero con el botón superior</p>
+            </div>
+          } @else {
+            <div class="rounded-lg bg-primary-fixed-dim/40 border border-primary/30 px-4 py-3 flex items-center justify-between">
+              <p class="text-label-sm font-medium text-on-surface-variant">Total abonado</p>
+              <p class="text-headline-md font-display font-bold text-primary">{{ formatMoney(totalPagosSocio()) }}</p>
+            </div>
+
+            <div class="divide-y divide-outline-variant border border-outline-variant rounded-lg overflow-hidden" [@staggerGrid]="socioPagos()">
+              <div *ngFor="let pago of socioPagos()" class="p-4 bg-surface-container-lowest">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="flex items-center gap-2 text-label-sm text-on-surface-variant">
+                    <lucide-icon [img]="getMedioIcono(pago.medioPagoNombre)" class="w-4 h-4"></lucide-icon>
+                    {{ pago.medioPagoNombre }}
+                    <span class="mx-1">·</span>
+                    {{ formatFechaCompleta(pago.fechaPago) }}
+                  </span>
+                  <span class="font-display font-bold text-on-surface whitespace-nowrap">{{ formatMoney(pago.monto) }}</span>
+                </div>
+                <div class="mt-1 text-label-sm text-on-surface-variant">
+                  Plan: <span class="font-medium text-on-surface">{{ pago.planNombre }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== MODAL NUEVA MEMBRESÍA (desde socio) ====================== -->
+  <div *ngIf="showSocioMembresiaModal() && detailSocio()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="onBackdropClick($event)">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Nueva membresía" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <div>
+          <h2 class="text-headline-md font-bold text-on-surface">Nueva Membresía</h2>
+          <p class="text-label-sm text-on-surface-variant mt-0.5">Para {{ detailSocio()!.nombre }} {{ detailSocio()!.apellido }}</p>
+        </div>
+        <button (click)="closeSocioMembresiaModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Plan de Membresía</label>
+          <div class="grid grid-cols-1 gap-2.5">
+            <button *ngFor="let plan of planesActivos()"
+                    type="button"
+                    (click)="socioPlanId.set(plan.id)"
+                    [class]="socioPlanId() === plan.id
+                      ? 'border-secondary bg-secondary-container text-on-secondary-container'
+                      : 'border-outline-variant bg-surface hover:border-secondary/50'"
+                    class="micro-btn text-left p-3.5 rounded-xl border-2 transition-colors flex items-center justify-between gap-3">
+              <div>
+                <p class="text-body-md font-semibold">{{ plan.tipoMembresiaNombre }}</p>
+                <p class="text-label-sm text-on-surface-variant">{{ plan.diasPorSemana }} días/semana · {{ plan.duracionDias }} días</p>
+              </div>
+              <span class="text-body-lg font-display font-bold whitespace-nowrap">{{ formatMoney(plan.precio) }}</span>
+            </button>
+          </div>
+          <p *ngIf="planesActivos().length === 0" class="text-body-sm text-on-surface-variant mt-2">
+            No hay planes activos disponibles. Creá un plan desde la sección Planes.
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Fecha de inicio</label>
+          <div class="relative">
+            <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+            <input type="date" [ngModel]="socioFechaInicio()" (ngModelChange)="socioFechaInicio.set($event)"
+                   class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+          </div>
+        </div>
+
+        <div *ngIf="socioFechaFinPreview()" class="p-3.5 bg-surface-container-low border border-outline-variant rounded-lg flex items-center gap-3">
+          <lucide-icon [img]="Calendar" class="w-5 h-5 text-secondary shrink-0"></lucide-icon>
+          <p class="text-label-sm text-on-surface-variant">
+            La membresía vencerá el <span class="font-semibold text-on-surface">{{ formatFechaCompleta(socioFechaFinPreview()) }}</span>
+            ({{ getPlan(socioPlanId())?.duracionDias }} días)
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeSocioMembresiaModal()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="button" (click)="crearMembresiaSocio()"
+                  [disabled]="!socioPlanId() || socialMembresiaSaving()"
+                  class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="socialMembresiaSaving()"></lucide-icon>
+            Crear Membresía
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal registrar pago (compartido) -->
+  <app-pago-form-modal [open]="showSocioPagoForm()" [socio]="detailSocio()"
+                       (saved)="onSocioPagoRegistrado()" (dismissed)="showSocioPagoForm.set(false)">
+  </app-pago-form-modal>
 </div>

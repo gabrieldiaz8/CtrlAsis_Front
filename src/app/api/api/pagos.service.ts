@@ -115,14 +115,16 @@ export class PagosService extends BaseService {
      * @param socioId Filtrar por socio
      * @param limit 
      * @param page 
+     * @param fechaDesde Filtrar pagos desde esta fecha (yyyy-MM-dd)
+     * @param fechaHasta Filtrar pagos hasta esta fecha (yyyy-MM-dd)
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -157,6 +159,24 @@ export class PagosService extends BaseService {
             localVarQueryParameters,
             'page',
             <any>page,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'fechaDesde',
+            <any>fechaDesde,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'fechaHasta',
+            <any>fechaHasta,
             QueryParamStyle.Form,
             true,
         );

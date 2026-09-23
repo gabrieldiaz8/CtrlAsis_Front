@@ -17,6 +17,8 @@ export interface UsuarioResponseDto {
     activo: boolean;
     fechaCreacion: string;
     fechaActualizacion: string;
+    nombre?: string;
+    apellido?: string;
 }
 export namespace UsuarioResponseDto {
     export const RolEnum = {

@@ -1,16 +1,20 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed } from '@angular/core';
 import { LucideAngularModule, Plus, Search, ChevronLeft, ChevronRight, Loader2, MoreVertical, Edit, Trash2, X, CheckCircle, Tag, CreditCard, BadgeCheck, Tag as TagIcon, Loader } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
 import { CatalogosService, RubroResponseDto, MedioPagoResponseDto, TipoMembresiaResponseDto, CreateRubroDto, CreateMedioPagoDto, CreateTipoMembresiaDto, UpdateRubroDto, UpdateMedioPagoDto, UpdateTipoMembresiaDto } from '@api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ToastService } from '@core/services/toast.service';
+import { crossfade, modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations';
 
 type CatalogoType = 'rubros' | 'medios-pago' | 'tipos-membresia';
 
 @Component({
   selector: 'app-catalogos',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, CommonModule, FormsModule, ReactiveFormsModule],
+  animations: [staggerGrid, crossfade, modalOverlay, modalPanel],
   templateUrl: './catalogos.component.html',
   styleUrl: './catalogos.component.css'
 })
@@ -18,6 +22,7 @@ export class CatalogosComponent implements OnInit {
   private layout = inject(MainLayoutComponent);
   private catalogosService = inject(CatalogosService);
   private fb = inject(FormBuilder);
+  private toast = inject(ToastService);
 
   readonly Plus = Plus;
   readonly Search = Search;
@@ -66,12 +71,12 @@ export class CatalogosComponent implements OnInit {
     
     this.catalogosService.catalogosControllerFindAllRubrosAdmin().subscribe({
       next: (data) => this.rubros.set(data),
-      error: () => console.error('Error loading rubros')
+      error: () => this.toast.error('No se pudieron cargar los rubros', { title: 'Error' })
     });
 
     this.catalogosService.catalogosControllerFindAllMediosPagoAdmin().subscribe({
       next: (data) => this.mediosPago.set(data),
-      error: () => console.error('Error loading medios de pago')
+      error: () => this.toast.error('No se pudieron cargar los medios de pago', { title: 'Error' })
     });
 
     this.catalogosService.catalogosControllerFindAllTiposMembresiaAdmin().subscribe({
@@ -80,7 +85,7 @@ export class CatalogosComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        console.error('Error loading tipos membresia');
+        this.toast.error('No se pudieron cargar los tipos de membresía', { title: 'Error' });
         this.loading.set(false);
       }
     });
@@ -227,9 +232,11 @@ export class CatalogosComponent implements OnInit {
           getListSignal.update(list => list.map(i => i.id === updated.id ? updated : i));
           this.closeModal();
           this.saving.set(false);
+          this.toast.success(`${this.getTabConfig().label}: "${formData.nombre}" actualizado correctamente`, { title: 'Actualizado' });
         },
         error: (err) => {
           this.saving.set(false);
+          this.toast.error('No se pudo actualizar el elemento', { title: 'Error' });
           console.error('Error updating:', err);
         }
       });
@@ -252,9 +259,11 @@ export class CatalogosComponent implements OnInit {
           getListSignal.update(list => [created, ...list]);
           this.closeModal();
           this.saving.set(false);
+          this.toast.success(`${this.getTabConfig().label}: "${formData.nombre}" creado correctamente`, { title: 'Creado' });
         },
         error: (err) => {
           this.saving.set(false);
+          this.toast.error('No se pudo crear el elemento', { title: 'Error' });
           console.error('Error creating:', err);
         }
       });
@@ -275,8 +284,12 @@ export class CatalogosComponent implements OnInit {
       desactivarFn(String(item.id)).subscribe({
         next: (deactivated) => {
           getListSignal.update(list => list.map(i => i.id === deactivated.id ? deactivated : i));
+          this.toast.success(`${this.getTabConfig().label}: "${item.nombre}" desactivado`, { title: 'Desactivado' });
         },
-        error: (err) => console.error('Error deactivating:', err)
+        error: (err) => {
+          this.toast.error('No se pudo desactivar el elemento', { title: 'Error' });
+          console.error('Error deactivating:', err);
+        }
       });
     }
   }

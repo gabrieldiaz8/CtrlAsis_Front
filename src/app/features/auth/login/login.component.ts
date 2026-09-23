@@ -1,13 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { LucideAngularModule, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight, KeyRound } from 'lucide-angular';
 import { AuthService } from '@api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastService } from '@core/services/toast.service';
+import { RoleService } from '@core/services/role.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
@@ -16,6 +19,8 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private toast = inject(ToastService);
+  private roleService = inject(RoleService);
 
   readonly Mail = Mail;
   readonly Lock = Lock;
@@ -27,7 +32,6 @@ export class LoginComponent {
 
   showPassword = signal(false);
   loading = signal(false);
-  error = signal<string | null>(null);
   rememberMe = signal(false);
 
   loginForm = this.fb.nonNullable.group({
@@ -42,7 +46,6 @@ export class LoginComponent {
     }
 
     this.loading.set(true);
-    this.error.set(null);
 
     const { email, password } = this.loginForm.getRawValue();
 
@@ -66,11 +69,12 @@ export class LoginComponent {
         }
         
         this.loading.set(false);
+        this.roleService.refresh();
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err.error?.message || 'Credenciales inválidas. Intente nuevamente.');
+        this.toast.error(err.error?.message || 'Credenciales inválidas. Intente nuevamente.', { title: 'Error de acceso' });
         console.error('Login error:', err);
       }
     });

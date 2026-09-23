@@ -1,167 +1,511 @@
-<div class="flex flex-col gap-6 max-w-[1400px] mx-auto">
-  <!-- Loading State -->
-  @if (loading()) {
-    <div class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-secondary border-t-transparent"></div>
+<div class="p-6 max-w-screen-2xl mx-auto w-full">
+  <!-- ===== Encabezado + selector de rango ===== -->
+  <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-serif font-semibold text-primary">Métricas Generales</h1>
+      <p class="text-sm text-primary-muted mt-1">{{ rangoLabel() }}</p>
     </div>
-  } @else if (error()) {
-    <div class="bg-error-container border border-error rounded-xl p-6 text-center">
-      <p class="text-error">{{ error() }}</p>
-      <button (click)="loadMetricas()" class="mt-4 px-4 py-2 bg-error text-on-error rounded-lg hover:opacity-90 transition-opacity">
-        Reintentar
-      </button>
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
+      <div class="segmented-control">
+        @for (op of rangoOptions; track op.value) {
+          <button
+            type="button"
+            class="segmented-btn"
+            [class.active]="rango() === op.value"
+            (click)="setRango(op.value)">
+            {{ op.label }}
+          </button>
+        }
+      </div>
+      <div class="flex items-center gap-2">
+        @if (rango() === 'personalizado') {
+          <input
+            type="date"
+            class="date-input"
+            [value]="customDesde()"
+            (input)="onCustomDesdeChange($event)" />
+          <span class="text-primary-muted text-sm">→</span>
+          <input
+            type="date"
+            class="date-input"
+            [value]="customHasta()"
+            (input)="onCustomHastaChange($event)" />
+          <button type="button" class="micro-btn" (click)="applyCustomRange()">Aplicar</button>
+        }
+        <button
+          type="button"
+          class="micro-btn icon-btn"
+          title="Refrescar datos"
+          aria-label="Refrescar datos"
+          (click)="loadAll()">
+          <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
+        </button>
+      </div>
     </div>
-  } @else {
-    <!-- KPI Grid -->
-    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter">
-      <!-- KPI 1: Socios Activos -->
-      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-        <div class="flex justify-between items-start z-10">
-          <span class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Socios Activos</span>
-          <lucide-icon [img]="Users" class="text-on-primary bg-primary w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
-        </div>
-        <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.sociosActivos || 0 | number }}</span>
+  </div>
+
+  <!-- ===== KPIs ===== -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6" [@staggerGrid]="resumen()">
+    @if (resumenLoading()) {
+      @for (item of [1, 2, 3, 4]; track item) {
+        <div class="skeleton h-[112px] rounded-card"></div>
+      }
+    } @else if (resumenError()) {
+      <div class="skeleton h-[112px] rounded-card lg:col-span-3 xl:col-span-4">
+        <div class="inset-state">
+          <lucide-icon [img]="AlertTriangle" class="w-5 h-5 text-warning-dim"></lucide-icon>
+          <p>No se pudieron cargar los indicadores.</p>
+          <button type="button" class="micro-btn" (click)="loadMetricas()">Reintentar</button>
         </div>
       </div>
-
-      <!-- KPI 2: Ingresos del Mes -->
-      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-        <div class="flex justify-between items-start z-10">
-          <span class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Ingresos del Mes</span>
-          <lucide-icon [img]="DollarSign" class="text-success bg-success-container w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
+    } @else {
+      <!-- Socios activos -->
+      <div class="micro-card p-4 flex flex-col gap-3">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="kpi-icon kpi-primary">
+              <lucide-icon [img]="Users" class="w-5 h-5"></lucide-icon>
+            </div>
+            <p class="text-sm text-primary-muted">Socios activos</p>
+          </div>
+          <div class="kpi-trend neutral">Estable</div>
         </div>
-        <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.ingresosMesActual || 0 | number }}</span>
-          @if (cambioIngresos !== null) {
-            @if (cambioIngresos > 0) {
-              <span class="text-label-sm font-label-sm text-on-success-container bg-success-container px-2 py-0.5 rounded-full flex items-center gap-1">
-                <lucide-icon [img]="TrendingUp" class="text-[14px]" size="14"></lucide-icon> {{ cambioIngresos | number:'1.1-1' }}%
-              </span>
-            } @else {
-              <span class="text-label-sm font-label-sm text-on-error-container bg-error-container px-2 py-0.5 rounded-full flex items-center gap-1">
-                <lucide-icon [img]="TrendingDown" class="text-[14px]" size="14"></lucide-icon> {{ cambioIngresos | number:'1.1-1' }}%
-              </span>
-            }
+        <p class="text-3xl font-serif font-semibold text-primary leading-none">{{ sociosCount().toLocaleString('es-AR') }}</p>
+      </div>
+
+      <!-- Ingresos mes -->
+      @if (canSeeIngresos()) {
+        <div class="micro-card p-4 flex flex-col gap-3">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="kpi-icon kpi-secondary">
+                <lucide-icon [img]="DollarSign" class="w-5 h-5"></lucide-icon>
+              </div>
+              <p class="text-sm text-primary-muted">Ingresos del mes</p>
+            </div>
+            <div class="kpi-trend">
+              @if (cambioIngresos !== null) {
+                @if (cambioIngresos >= 0) {
+                  <lucide-icon [img]="TrendingUp" class="w-3.5 h-3.5"></lucide-icon>
+                } @else {
+                  <lucide-icon [img]="TrendingDown" class="w-3.5 h-3.5"></lucide-icon>
+                }
+                {{ Math.abs(cambioIngresos).toFixed(0) }}%
+              }
+            </div>
+          </div>
+          <p class="text-3xl font-serif font-semibold text-primary leading-none">${{ ingresosCount().toLocaleString('es-AR') }}</p>
+          @if (!sparklineEmpty('ingresos')) {
+            <div class="h-8">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+                <path [attr.d]="sparklineAreaPath(sparklineValues('ingresos'))" fill="url(#sparkSecondaryGrad)" opacity="0.35"></path>
+                <path [attr.d]="sparklinePath(sparklineValues('ingresos'))" fill="none" stroke="var(--color-secondary)" stroke-width="1.5" class="spark-draw"></path>
+              </svg>
+              <defs>
+                <linearGradient id="sparkSecondaryGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--color-secondary)" stop-opacity="0.5"></stop>
+                  <stop offset="100%" stop-color="var(--color-secondary)" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+            </div>
           }
         </div>
-      </div>
+      }
 
-      <!-- KPI 3: Asistencia Semanal -->
-      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-tertiary-fixed/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-        <div class="flex justify-between items-start z-10">
-          <span class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Asistencia Semanal</span>
-          <lucide-icon [img]="Activity" class="text-tertiary-container bg-tertiary-fixed w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
-        </div>
-        <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.asistenciaSemanaActual || 0 | number }}</span>
-          <span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full flex items-center gap-1">
-            <lucide-icon [img]="Minus" class="text-[14px]" size="14"></lucide-icon> =
-          </span>
-        </div>
-      </div>
-
-      <!-- KPI 4: Por Vencer (7d) -->
-      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-error-container/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-        <div class="flex justify-between items-start z-10">
-          <span class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Por Vencer (7d)</span>
-          <lucide-icon [img]="AlertTriangle" class="text-on-error-container bg-error-container w-8 h-8 flex items-center justify-center rounded-lg" size="24"></lucide-icon>
-        </div>
-        <div class="flex items-baseline gap-3 z-10">
-          <span class="text-headline-lg font-display text-on-surface">{{ metricas()?.membresiasPorVencer || 0 | number }}</span>
-          <span class="text-label-sm font-label-sm text-on-warning-container bg-warning-container px-2 py-0.5 rounded-full flex items-center gap-1">
-            Acción Req.
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Charts Bento Grid -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-      <!-- Chart 1: Asistencia (Span 8) -->
-      <div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 flex flex-col">
-        <div class="flex justify-between items-center mb-8">
-          <div>
-            <h2 class="text-headline-md font-headline-md text-on-surface">Asistencia Diaria</h2>
-            <p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Comparativa de flujo de socios en los últimos 7 días</p>
+      <!-- Asistencia -->
+      <div class="micro-card p-4 flex flex-col gap-3">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="kpi-icon kpi-tertiary">
+              <lucide-icon [img]="Activity" class="w-5 h-5"></lucide-icon>
+            </div>
+            <p class="text-sm text-primary-muted">Asistencias semana</p>
           </div>
-          <select class="bg-surface border border-outline-variant text-label-md font-label-md text-on-surface rounded-lg px-3 py-1.5 focus:ring-secondary focus:border-secondary outline-none">
-            <option>Esta Semana</option>
-            <option>Semana Pasada</option>
-          </select>
+          <div class="kpi-trend neutral">Últimos 7 días</div>
         </div>
+        <p class="text-3xl font-serif font-semibold text-primary leading-none">{{ asistenciaCount().toLocaleString('es-AR') }}</p>
+        @if (!sparklineEmpty('asistencia')) {
+          <div class="h-8">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+              <path [attr.d]="sparklineAreaPath(sparklineValues('asistencia'))" fill="url(#sparkPrimaryGrad)" opacity="0.35"></path>
+              <path [attr.d]="sparklinePath(sparklineValues('asistencia'))" fill="none" stroke="var(--color-primary)" stroke-width="1.5" class="spark-draw"></path>
+            </svg>
+            <defs>
+              <linearGradient id="sparkPrimaryGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.5"></stop>
+                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+          </div>
+        }
+      </div>
 
-        @if (semanaMax > 0) {
-          <!-- Dynamic Bar Chart -->
-          <div class="flex-1 flex items-end gap-2 sm:gap-4 h-64 mt-auto relative pt-4">
-            <!-- Y-Axis Grid Lines -->
-            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8">
-              @for (tick of yAxisTicks; track $index) {
-                <div class="w-full border-t border-outline-variant/30 flex justify-end">
-                  <span class="text-[10px] text-on-surface-variant -mt-4 pr-2">{{ formatTick(tick) }}</span>
+      <!-- Por vencer -->
+      <div class="micro-card p-4 flex flex-col gap-3">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="kpi-icon kpi-warning">
+              <lucide-icon [img]="Calendar" class="w-5 h-5"></lucide-icon>
+            </div>
+            <p class="text-sm text-primary-muted">Membresías por vencer</p>
+          </div>
+          <div class="kpi-trend warning">Próximos 30 días</div>
+        </div>
+        <p class="text-3xl font-serif font-semibold text-primary leading-none">{{ porVencerCount().toLocaleString('es-AR') }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- ===== Fila principal: Asistencia (gráfico) + Actividad reciente ===== -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+
+    <!-- Asistencia semanal -->
+    <div class="micro-card p-5 lg:col-span-7" [@crossfade]="rango()">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h2 class="font-serif font-semibold text-primary">Asistencia semanal</h2>
+          <p class="text-sm text-primary-muted">Accesos permitidos por día · tocá una barra para ver el detalle</p>
+        </div>
+        <div class="inline-flex items-center gap-1.5 text-xs text-primary-muted px-2.5 py-1 rounded-full bg-surface-container-high border border-outline-variant flex-shrink-0" [hidden]="asistencia().length === 0">
+          <span class="w-2 h-2 rounded-full bg-primary"></span>
+          <span>Permitidos</span>
+        </div>
+      </div>
+
+      @if (asistenciaLoading()) {
+        <div class="flex items-end gap-2 h-56 justify-between">
+          @for (i of [0, 1, 2, 3, 4, 5, 6]; track i) {
+            <div class="skeleton w-8 flex-1 rounded-t-[6px]" [style.height]="(35 + (i * 23) % 55) + '%'"></div>
+          }
+        </div>
+      } @else if (asistenciaError()) {
+        <div class="inset-state h-56">
+          <lucide-icon [img]="AlertTriangle" class="w-5 h-5 text-warning-dim"></lucide-icon>
+          <p>No se pudieron cargar las asistencias.</p>
+          <button type="button" class="micro-btn" (click)="loadMetricas()">Reintentar</button>
+        </div>
+      } @else if (asistencia().length === 0 || semanaMax === 0) {
+        <div class="inset-state h-56">
+          <lucide-icon [img]="Activity" class="w-5 h-5 text-primary-muted"></lucide-icon>
+          <p>No hay asistencias registradas para este período.</p>
+        </div>
+      } @else {
+        <div class="chart-wrap">
+          <div class="y-axis">
+            @for (t of yAxisTicks; track t) {
+              <span>{{ formatTick(t) }}</span>
+            }
+          </div>
+          <div class="plot">
+            <div class="gridlines">
+              @for (t of yAxisTicks; track t) {
+                <div class="gridline"></div>
+              }
+            </div>
+            <div class="bars">
+              @for (item of asistencia(); track item.fecha) {
+                <div
+                  class="bar-col"
+                  role="button"
+                  tabindex="0"
+                  (click)="onBarClick(item)"
+                  (keydown.enter)="onBarClick(item)"
+                  [attr.aria-label]="getDayLabel(item.fecha) + ': ' + item.accesosPermitidos + ' accesos'">
+                  <div class="bar-tooltip">
+                    <span class="font-semibold">{{ getDayLabel(item.fecha) }}</span>
+                    <span>{{ item.accesosPermitidos }} accesos permitidos</span>
+                    <span class="text-primary-muted text-xs">Tocar para detalle</span>
+                  </div>
+                  <span
+                    class="bar-value"
+                    [hidden]="item.accesosPermitidos <= 0">
+                    {{ item.accesosPermitidos }}
+                  </span>
+                  <div
+                    class="bar-fill"
+                    [style.height.%]="barHeightPct(item.accesosPermitidos)"
+                    [class.hover-raise]="barHeightPct(item.accesosPermitidos) > 0"></div>
+                  <span class="bar-label">{{ getDayLabel(item.fecha) }}</span>
                 </div>
               }
             </div>
+          </div>
+        </div>
+      }
+    </div>
 
-            <!-- Bars from real data -->
-            @for (item of asistenciaSemanal(); track item.fecha) {
-              <div class="flex-1 flex flex-col items-center group relative z-10">
-                <div class="w-full max-w-[48px] bg-secondary-fixed rounded-t-sm transition-colors relative"
-                     [style.height.%]="barHeightPct(item.accesosPermitidos)">
-                  <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-tertiary text-on-tertiary text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{{ item.accesosPermitidos }} accesos</div>
-                </div>
-                <span class="text-label-sm font-label-sm text-on-surface-variant mt-3">{{ getDayLabel(item.fecha) }}</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="flex-1 flex items-center justify-center text-body-sm font-body-sm text-on-surface-variant">
-            Sin accesos esta semana
-          </div>
-        }
+    <!-- Actividad reciente -->
+    <div class="micro-card p-5 lg:col-span-5" [@crossfade]="rango()">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h2 class="font-serif font-semibold text-primary">Actividad reciente</h2>
+          <p class="text-sm text-primary-muted">Accesos, pagos y membresías del día</p>
+        </div>
+        <div class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-surface-container-high border border-outline-variant flex-shrink-0">
+          <lucide-icon [img]="CalendarDays" class="w-4 h-4 text-secondary"></lucide-icon>
+        </div>
       </div>
 
-      <!-- Chart 2: Ingresos Comparativos (Span 4) -->
-      <div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 flex flex-col">
-        @if (ingresosMensuales().length > 0) {
-          <div class="mb-6">
-            <h2 class="text-headline-md font-headline-md text-on-surface">Ingresos</h2>
-            <p class="text-body-sm font-body-sm text-on-surface-variant mt-1">vs Mes Anterior</p>
-          </div>
-
-          <div class="flex-1 flex flex-col justify-center gap-8">
-            <!-- Current Month -->
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between items-end">
-                <span class="text-label-md font-label-md text-on-surface">Este Mes</span>
-                <span class="text-headline-md font-headline-md text-on-surface">{{ ingresosEsteMes | number:'1.0-0' }}</span>
-              </div>
-              <div class="w-full h-5 bg-surface-container rounded-full overflow-hidden">
-                <div class="h-full bg-secondary rounded-full" [style.width.%]="ingresosWidthPct(ingresosEsteMes)"></div>
+      @if (actividadLoading()) {
+        <div class="flex flex-col gap-3">
+          @for (i of [0, 1, 2, 3, 4]; track i) {
+            <div class="flex items-center gap-3">
+              <div class="skeleton w-9 h-9 rounded-full shrink-0"></div>
+              <div class="flex-1 space-y-1.5">
+                <div class="skeleton h-3 w-1/2 rounded-full"></div>
+                <div class="skeleton h-2.5 w-2/3 rounded-full"></div>
               </div>
             </div>
-
-            <!-- Previous Month (condicional) -->
-            @if (ingresosMesAnterior !== undefined) {
-              <div class="flex flex-col gap-2">
-                <div class="flex justify-between items-end">
-                  <span class="text-label-md font-label-md text-on-surface-variant">Mes Anterior</span>
-                  <span class="text-body-lg font-body-lg text-on-surface-variant">{{ ingresosMesAnterior | number:'1.0-0' }}</span>
-                </div>
-                <div class="w-full h-5 bg-surface-container rounded-full overflow-hidden">
-                  <div class="h-full bg-secondary opacity-40 rounded-full" [style.width.%]="ingresosWidthPct(ingresosMesAnterior)"></div>
-                </div>
+          }
+        </div>
+      } @else if (actividadError()) {
+        <div class="inset-state">
+          <lucide-icon [img]="AlertTriangle" class="w-5 h-5 text-warning-dim"></lucide-icon>
+          <p>No se pudo cargar la actividad reciente.</p>
+          <button type="button" class="micro-btn" (click)="loadActividad()">Reintentar</button>
+        </div>
+      } @else if (actividad().length === 0) {
+        <div class="inset-state h-56">
+          <lucide-icon [img]="Activity" class="w-5 h-5 text-primary-muted"></lucide-icon>
+          <p>Aún no hay movimiento registrado en el día de hoy.</p>
+        </div>
+      } @else {
+        <div class="relative">
+          @for (item of actividad(); track item.id) {
+            <div class="tl-item">
+              <div class="tl-marker" [class.acceso]="item.tipo === 'acceso'" [class.pago]="item.tipo === 'pago'" [class.membresia]="item.tipo === 'membresia'">
+                @if (item.tipo === 'acceso') {
+                  @if (item.resultado === 'rechazado') {
+                    <lucide-icon [img]="UserX" class="w-4 h-4"></lucide-icon>
+                  } @else {
+                    <lucide-icon [img]="UserCheck" class="w-4 h-4"></lucide-icon>
+                  }
+                } @else if (item.tipo === 'pago') {
+                  <lucide-icon [img]="Wallet" class="w-4 h-4"></lucide-icon>
+                } @else {
+                  <lucide-icon [img]="BadgeCheck" class="w-4 h-4"></lucide-icon>
+                }
               </div>
+              <div class="tl-body">
+                <p class="text-sm font-medium text-primary">{{ item.titulo }}</p>
+                <p class="text-xs text-primary-muted">{{ item.detalle }}</p>
+                <p class="text-[11px] text-primary-muted/70 mt-0.5">{{ timeAgo(item.fecha) }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ===== Fila secundaria: Ingresos (línea) + Resumen financiero ===== -->
+  @if (canSeeIngresos()) {
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+      <!-- Evolución de ingresos -->
+      <div class="micro-card p-5 lg:col-span-7" [@crossfade]="rango()">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h2 class="font-serif font-semibold text-primary">Evolución de ingresos</h2>
+            <p class="text-sm text-primary-muted">Últimos {{ ingresos6().length }} períodos mensuales</p>
+          </div>
+          <div class="inline-flex items-center gap-1.5 text-xs text-primary-muted px-2.5 py-1 rounded-full bg-surface-container-high border border-outline-variant flex-shrink-0">
+            <span class="w-2 h-2 rounded-full bg-secondary"></span>
+            <span>Ingresos</span>
+          </div>
+        </div>
+
+        @if (ingresosLoading()) {
+          <div class="flex items-end gap-2 h-48 justify-between">
+            @for (i of [0, 1, 2, 3, 4, 5]; track i) {
+              <div class="skeleton w-8 flex-1 rounded-t-[6px]" [style.height]="(25 + (i * 17) % 45) + '%'"></div>
             }
           </div>
+        } @else if (ingresosError()) {
+          <div class="inset-state h-48">
+            <lucide-icon [img]="AlertTriangle" class="w-5 h-5 text-warning-dim"></lucide-icon>
+            <p>No se pudieron cargar los ingresos.</p>
+            <button type="button" class="micro-btn" (click)="loadMetricas()">Reintentar</button>
+          </div>
+        } @else if (linePoints().length < 2) {
+          <div class="inset-state h-48">
+            <lucide-icon [img]="DollarSign" class="w-5 h-5 text-primary-muted"></lucide-icon>
+            <p>Aún no hay suficientes datos para mostrar la evolución de ingresos.</p>
+          </div>
         } @else {
-          <div class="flex items-center justify-center text-body-sm font-body-sm text-on-surface-variant py-8">Sin ingresos registrados</div>
+          <div class="relative h-48" [@crossfade]="rango()">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full line-plot">
+              <defs>
+                <linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--color-secondary)" stop-opacity="0.35"></stop>
+                  <stop offset="100%" stop-color="var(--color-secondary)" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+              @for (t of lineYAxisTicks; track t) {
+                <line class="plot-gridline" [attr.y1]="100 - (t / lineYAxisTicks[0]) * 100" [attr.y2]="100 - (t / lineYAxisTicks[0]) * 100" x1="0" x2="100"></line>
+              }
+              <path [attr.d]="lineAreaPath()" fill="url(#lineAreaGrad)"></path>
+              <path [attr.d]="linePath()" fill="none" stroke="var(--color-secondary)" stroke-width="1" class="line-draw" vector-effect="non-scaling-stroke"></path>
+            </svg>
+            <div class="line-labels">
+              @for (p of linePoints(); track p.xLabel) {
+                <div
+                  class="line-label"
+                  [attr.style]="'left:' + p.left + '%'"
+                  (mouseenter)="hoverPoint.set(linePoints().indexOf(p))"
+                  (mouseleave)="hoverPoint.set(null)">
+                  <div class="line-hit"></div>
+                  <div class="line-dot" [class.strong]="p.left === 100"></div>
+                  <div class="line-tip" [hidden]="hoverPoint() !== linePoints().indexOf(p)">
+                    <span class="font-semibold">{{ p.label }}</span>
+                    <span>${{ formatMoney(p.value) }}</span>
+                  </div>
+                  <span class="line-x-tick">{{ p.label }}</span>
+                </div>
+              }
+            </div>
+            <div class="line-y-ticks">
+              @for (t of lineYAxisTicks; track t) {
+                <span [attr.style]="'bottom:' + ((t / lineYAxisTicks[0]) * 100) + '%'">{{ formatTick(t) }}</span>
+              }
+            </div>
+          </div>
         }
       </div>
-    </section>
+
+      <!-- Resumen financiero -->
+      <div class="micro-card p-5 lg:col-span-5" [@crossfade]="rango()">
+        <h2 class="font-serif font-semibold text-primary mb-4">Resumen financiero</h2>
+
+        @if (ingresosLoading()) {
+          <div class="flex flex-col gap-3">
+            <div class="skeleton h-4 w-1/2 rounded-full"></div>
+            <div class="skeleton h-16 rounded-lg"></div>
+            <div class="skeleton h-4 w-2/3 rounded-full"></div>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-5">
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-sm text-primary-muted">Ingresos del período</p>
+                <p class="text-2xl font-serif font-semibold text-primary mt-1">${{ formatMoney(ingresosEsteMes) }}</p>
+              </div>
+              @if (cambioIngresos !== null) {
+                <div class="kpi-trend">
+                  @if (cambioIngresos >= 0) {
+                    <lucide-icon [img]="TrendingUp" class="w-3.5 h-3.5"></lucide-icon>
+                  } @else {
+                    <lucide-icon [img]="TrendingDown" class="w-3.5 h-3.5"></lucide-icon>
+                  }
+                  {{ Math.abs(cambioIngresos).toFixed(0) }}%
+                </div>
+              }
+            </div>
+            <div class="fin-border"></div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-primary-muted">Período anterior</span>
+              <span class="text-primary font-medium">${{ formatMoney(ingresosMesAnterior) }}</span>
+            </div>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="ingresosMesAnterior > 0 ? Math.min(100, Math.round((ingresosEsteMes / ingresosMesAnterior) * 100)) : 0"></div>
+            </div>
+            <p class="text-xs text-primary-muted">
+              @if (cambioIngresos !== null) {
+                @if (cambioIngresos >= 0) {
+                  Los ingresos del período están <span class="text-success">por encima</span> del período anterior.
+                } @else {
+                  Los ingresos del período están <span class="text-error">por debajo</span> del período anterior.
+                }
+              } @else {
+                No hay datos suficientes del período anterior para comparar.
+              }
+            </p>
+          </div>
+        }
+      </div>
+    </div>
   }
 </div>
+
+<!-- ===== Modal drill-down de asistencia ===== -->
+<div *ngIf="selectedDay()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="closeDayModal()">
+  @let day = selectedDay()!;
+  <div @modalPanel role="dialog" aria-modal="true" aria-label="Detalle de asistencia del día" class="bg-surface-container-lowest rounded-card shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="kpi-icon kpi-tertiary">
+            <lucide-icon [img]="Activity" class="w-5 h-5"></lucide-icon>
+          </div>
+          <div>
+            <h3 class="font-serif font-semibold text-primary text-lg">Accesos del día</h3>
+            <p class="text-sm text-primary-muted capitalize">{{ getFullDayLabel(day.fecha) }}</p>
+          </div>
+        </div>
+        <button type="button" class="w-8 h-8 rounded-lg flex items-center justify-center text-primary-muted transition-colors hover:bg-surface-container-high hover:text-primary" aria-label="Cerrar" (click)="closeDayModal()">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="px-5 py-4">
+        <div class="flex items-center justify-between mb-5 p-4 rounded-lg bg-surface-container-high">
+          <span class="text-sm text-primary-muted">Accesos permitidos</span>
+          <span class="text-2xl font-serif font-semibold text-primary">{{ day.count }}</span>
+        </div>
+
+        @if (day.esHoy) {
+          @if (dayAccesosLoading()) {
+            <div class="flex flex-col gap-3">
+              @for (i of [0, 1, 2, 3]; track i) {
+                <div class="flex items-center gap-3">
+                  <div class="skeleton w-8 h-8 rounded-full shrink-0"></div>
+                  <div class="flex-1 space-y-1.5">
+                    <div class="skeleton h-3 w-1/3 rounded-full"></div>
+                    <div class="skeleton h-2.5 w-1/2 rounded-full"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (dayAccesosError()) {
+            <div class="inset-state">
+              <lucide-icon [img]="AlertTriangle" class="w-5 h-5 text-warning-dim"></lucide-icon>
+              <p>No se pudieron cargar los accesos del día.</p>
+              <button type="button" class="micro-btn" (click)="onBarClick(day)">Reintentar</button>
+            </div>
+          } @else if (dayAccesos().length === 0) {
+            <p class="text-sm text-primary-muted text-center py-6">No se registraron accesos en este día.</p>
+          } @else {
+            <div class="max-h-72 overflow-y-auto space-y-2">
+              @for (a of dayAccesos(); track a.id) {
+                <div class="flex items-center justify-between gap-3 rounded-lg border border-outline-variant px-3 py-2.5">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="tl-marker" [class.acceso]="true">
+                      @if (a.resultado === 'rechazado') {
+                        <lucide-icon [img]="UserX" class="w-4 h-4"></lucide-icon>
+                      } @else {
+                        <lucide-icon [img]="UserCheck" class="w-4 h-4"></lucide-icon>
+                      }
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-primary truncate">{{ a.socioNombre || 'Socio' }}</p>
+                      <p class="text-xs text-primary-muted">{{ formatHora(a.fechaHora) }}</p>
+                    </div>
+                  </div>
+                  <span class="result-badge" [class.permitido]="a.resultado === 'permitido'" [class.rechazado]="a.resultado === 'rechazado'" [class.excepcion]="a.resultado === 'excepcion'">
+                    {{ resultadoLabel(a.resultado) || 'Acceso' }}
+                  </span>
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <div class="text-center py-4">
+            <lucide-icon [img]="CalendarDays" class="w-6 h-6 text-primary-muted mx-auto mb-2"></lucide-icon>
+            <p class="text-sm text-primary">El detalle histórico por día solo está disponible para hoy desde esta vista.</p>
+            <button type="button" class="micro-btn mt-4" (click)="openAcceso()">Ir a Control de Acceso</button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>

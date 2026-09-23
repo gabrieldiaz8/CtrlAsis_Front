@@ -5,7 +5,7 @@
       <h1 class="text-headline-lg font-bold text-on-background">Gestión de Planes</h1>
       <p class="text-body-sm text-on-surface-variant mt-1">Configura y administra los planes de membresía disponibles.</p>
     </div>
-    <button (click)="openNewPlanModal()" class="bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+    <button (click)="openNewPlanModal()" [disabled]="!canManagePlanes()" [title]="canManagePlanes() ? 'Añadir Plan' : 'Solo el dueño puede modificar planes'" class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
       <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
       <span class="text-label-md font-medium">Añadir Plan</span>
     </button>
@@ -21,6 +21,7 @@
           type="text"
           (input)="onSearchChange($event)"
           placeholder="Buscar planes..."
+          aria-label="Buscar planes"
           class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
         />
       </div>
@@ -48,7 +49,7 @@
             <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
           </tr>
         </thead>
-        <tbody class="text-body-sm">
+        <tbody class="text-body-sm" [@staggerGrid]="paginatedPlanes()">
           <tr *ngFor="let plan of paginatedPlanes(); let i = index" 
               class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group"
               [class.bg-background]="i % 2 === 1">
@@ -69,20 +70,24 @@
             <td class="p-3 font-semibold text-on-surface">{{ formatPrice(plan.precio) }}</td>
             <td class="p-3">
               <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
-                    [ngClass]="plan.activo ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-error-container text-on-error-container'">
+                    [ngClass]="plan.activo ? 'bg-success-container text-on-success-container' : 'bg-error-container text-on-error-container'">
                 {{ plan.activo ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-1">
                 <button (click)="openEditPlanModal(plan)" 
-                        class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
-                        title="Editar">
+                        [disabled]="!canManagePlanes()"
+                        [title]="canManagePlanes() ? 'Editar' : 'Solo el dueño puede modificar planes'"
+                        aria-label="Editar plan"
+                        class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed">
                   <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
                 </button>
                 <button (click)="onDeletePlan(plan)" 
-                        class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
-                        title="Desactivar">
+                        [disabled]="!canManagePlanes()"
+                        [title]="canManagePlanes() ? 'Desactivar' : 'Solo el dueño puede modificar planes'"
+                        aria-label="Desactivar plan"
+                        class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed">
                   <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
                 </button>
               </div>
@@ -99,9 +104,33 @@
       </table>
 
       <ng-template #loadingTemplate>
-        <div class="p-8 text-center">
-          <lucide-icon [img]="Loader2" class="w-8 h-8 mx-auto text-secondary animate-spin"></lucide-icon>
-          <p class="text-body-md text-on-surface-variant mt-2">Cargando planes...</p>
+        <div class="p-6">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                @for (col of ['Tipo', 'Días/Semana', 'Duración', 'Precio', 'Estado', 'Acciones']; track col) {
+                  <th class="p-3"><div class="skeleton h-4 w-20"></div></th>
+                }
+              </tr>
+            </thead>
+            <tbody class="text-body-sm">
+              @for (row of [1, 2, 3]; track row) {
+                <tr class="border-b border-outline-variant">
+                  <td class="p-3">
+                    <div class="flex items-center gap-3">
+                      <div class="skeleton h-10 w-10 rounded-lg"></div>
+                      <div><div class="skeleton h-4 w-28 mb-2"></div><div class="skeleton h-3 w-16"></div></div>
+                    </div>
+                  </td>
+                  <td class="p-3"><div class="skeleton h-4 w-10"></div></td>
+                  <td class="p-3"><div class="skeleton h-4 w-12"></div></td>
+                  <td class="p-3"><div class="skeleton h-4 w-16"></div></td>
+                  <td class="p-3"><div class="skeleton h-6 w-16 rounded-full"></div></td>
+                  <td class="p-3 text-right"><div class="skeleton h-5 w-16 ml-auto"></div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       </ng-template>
     </div>
@@ -138,8 +167,8 @@
   </div>
 
   <!-- Modal for Create/Edit Plan -->
-  <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+  <div *ngIf="showModal()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Formulario de plan" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
       <!-- Modal Header -->
       <div class="flex items-center justify-between p-6 border-b border-outline-variant">
         <h2 class="text-headline-md font-bold text-on-surface">
@@ -212,7 +241,7 @@
             Cancelar
           </button>
           <button type="submit" [disabled]="planForm.invalid || saving()"
-                  class="px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                  class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
             {{ editingPlan() ? 'Actualizar' : 'Crear' }}
           </button>

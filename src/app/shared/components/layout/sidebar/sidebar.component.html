@@ -1,4 +1,4 @@
-<nav class="h-screen w-64 fixed left-0 top-0 bg-surface-variant border-r border-outline-variant shadow-sm flex flex-col py-6 px-4 z-50 transition-all duration-300" [class.w-20]="collapsed()">
+<nav aria-label="Navegación principal" class="h-screen w-64 fixed left-0 top-0 bg-surface-variant border-r border-outline-variant shadow-sm flex flex-col py-6 px-4 z-50 transition-all duration-300" [class.w-20]="collapsed()">
   <!-- Brand -->
   <div class="mb-10 px-2 flex flex-col gap-1">
     <span class="text-headline-md font-display font-bold text-on-surface truncate">FitFlow Manager</span>
@@ -26,12 +26,12 @@
   <!-- CTA & Avatar Bottom -->
   <div class="mt-auto flex flex-col gap-6 border-t border-outline/30 pt-4">
     @if (!collapsed()) {
-      <button class="w-full bg-secondary text-on-secondary py-3 rounded-xl text-label-md font-label-md font-bold shadow-sm hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center gap-2">
+      <button *hasRole="['administrador', 'dueno', 'super_admin']" class="micro-btn w-full bg-secondary text-on-secondary py-3 rounded-xl text-label-md font-label-md font-bold shadow-sm hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center gap-2">
         <lucide-icon [img]="Plus" class="w-5 h-5" style="font-variation-settings: 'wght' 600;"></lucide-icon>
         <span>Nuevo Socio</span>
       </button>
     } @else {
-      <button class="w-full bg-secondary text-on-secondary py-3 rounded-xl text-label-md font-label-md font-bold shadow-sm hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center gap-2" title="Nuevo Socio">
+      <button *hasRole="['administrador', 'dueno', 'super_admin']" class="w-full bg-secondary text-on-secondary py-3 rounded-xl text-label-md font-label-md font-bold shadow-sm hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center justify-center gap-2" title="Nuevo Socio" aria-label="Nuevo Socio">
         <lucide-icon [img]="Plus" class="w-5 h-5" style="font-variation-settings: 'wght' 600;"></lucide-icon>
       </button>
     }
@@ -67,6 +67,7 @@
         (click)="onLogout()"
         class="w-full flex items-center justify-center px-4 py-3 rounded-xl text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors duration-200 cursor-pointer active:opacity-70"
         title="Cerrar Sesión"
+        aria-label="Cerrar Sesión"
       >
         <lucide-icon [img]="LogOut" class="text-xl"></lucide-icon>
       </button>

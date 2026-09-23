@@ -4,6 +4,14 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": ["src/app/core/*"],
+      "@shared/*": ["src/app/shared/*"],
+      "@features/*": ["src/app/features/*"],
+      "@api": ["src/app/api/index.ts"],
+      "@api/*": ["src/app/api/*"]
+    },
     "types": [
       "vitest/globals"
     ]

@@ -14,6 +14,7 @@ export * from './loginResponseDto';
 export * from './medioPagoResponseDto';
 export * from './membresiaResponseDto';
 export * from './membresiasControllerCancelarRequest';
+export * from './membresiasControllerRenovarRequest';
 export * from './metricasResumenDto';
 export * from './negocioResponseDto';
 export * from './pagoResponseDto';

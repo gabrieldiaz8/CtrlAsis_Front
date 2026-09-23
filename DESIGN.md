@@ -128,6 +128,33 @@ Todos los tokens se definen en `src/styles.css`: los valores **Light** dentro de
 
 > Nota: los tokens `text`, `text-muted`, `border` y `surface-muted` generan utilities de nombre literales (`text-text`, `border-border`) que no se usan en los componentes; existen solo como mapeo de la solicitud original. Usar los tokens `on-*/outline` para contenido y bordes.
 
+## Notificaciones (toast)
+
+Sistema global de feedback desplegado en `app.html` (`<app-toast-container />`).
+
+### Servicio — `ToastService` (`core/services/toast.service.ts`)
+
+- Singleton (`providedIn: 'root'`). Signal reactiva `toasts` con la cola visible.
+- API: `success(message, opts)`, `error(...)`, `warning(...)`, `info(...)`; `opts = { title?, duration? }`.
+- Máximo **3 toasts visibles** (el más antiguo sale con animación al entrar uno nuevo).
+- Auto-dismiss por defecto **4000 ms**; cierre manual con botón X o tecla `Escape`.
+- La salida anima con la clase `leaving` (~200 ms) antes de quitarse del estado.
+
+### Componente — `ToastComponent` (`shared/components/toast/`)
+
+- Posición: **top-right** en desktop, **top-center** en móvil (breakpoint 640px).
+- Tipos por tokens del tema:
+  | Tipo | Icono | Fondo / borde / texto |
+  |------|-------|-----------------------|
+  | `success` | CheckCircle | `success-container` / `success` / `on-success-container` |
+  | `error` | XCircle | `error-container` / `error` / `on-error-container` |
+  | `warning` | AlertTriangle | `warning-container` / `warning` / `on-warning-container` |
+  | `info` | Info | `tertiary-container` / `tertiary` / `on-tertiary-container` |
+- Barra de progreso inferior con el acento del tipo; al hacer **hover se pausa** el auto-dismiss (`animation-play-state`). Al terminar la barra se cierra el toast.
+- Entrada: *slide-in-right* con rebote (desktop) y *slide-in-top* con rebote (móvil). Sin hex nuevos: todo vía `var(--color-*)`.
+- Accesibilidad: cada toast con `role="alert"`, contenedor `aria-live="polite" aria-atomic="false"`, botón de cierre con `aria-label`, y cierre con `Escape`. Z-index `100` (por encima de modales `z-50`).
+- Uso (reemplaza alerts inline): cargas/fallos de página, validación de acceso, CRUD de socios y todos los formularios (membresías, pagos, planes, catálogos, configuración, login).
+
 ## Tema claro/oscuro
 
 ### Implementación
@@ -147,3 +174,37 @@ Clave `ctrlasis_theme` en `localStorage`, con valores `light`/`dark`. Si no exis
 3. Usarlo en componentes con la utility generada: `bg-marca-cool-tone`, `text-marca-cool-tone`, `border-marca-cool-tone`.
 
 Nunca añadir hex directamente en un componente — editar siempre `styles.css` para mantener ambos temas.
+
+## Accesibilidad (WCAG AA)
+
+Lineamientos que aplica todo el frontend.
+
+### Contraste verificado
+
+Ratios de contraste calculados sobre las superficies reales de uso (se conservan tras aplicar luz/oscuro):
+
+| Par de tokens | Ratio | Cumple AA |
+|---------------|-------|-----------|
+| `on-surface` (`#1C1C1C`) sobre `surface` (`#FFFFFF`) | 15.4:1 | Sí (texto/UI) |
+| `on-surface` sobre `background` (`#F4F2E8`) | ~14.7:1 | Sí |
+| `on-surface` sobre `secondary-container` (`#1C1C1C`) | 21.0:1 | Sí |
+| `on-secondary` (`#1C1C1C`) sobre `secondary` (`#FFDF00`) | ~18.4:1 | Sí |
+| `on-surface-variant` (`#413F3F`) sobre `surface-container-low` (`#FAF7EC`) | ~9.4:1 | Sí |
+| `on-surface-variant` (`#413F3F`) sobre `surface` (`#FFFFFF`) | ~10.6:1 | Sí |
+| Amarillo (`#FFDF00`) como texto sobre blanco | ~1.3:1 | **No — prohibido** |
+
+Reglas derivadas:
+- **Prohibido** texto o ícono `primary`/`secondary` (amarillo) sobre fondos claros. Los CTAs usan el par invertido (`bg-secondary text-on-secondary`).
+- Feedbacks de estados usar los pares `on-*-container` (nunca texto del color saturado directo sobre superficie).
+- Placeholders con opacidad (`/50`, `/40`) quedan exentos por ser texto decorativo con campo asociado con nombre accesible.
+
+### Prácticas obligatorias
+
+- **Foco visible**: `:focus-visible` con outline de 2px (`styles.css`, bloque `ACCESIBILIDAD`). Nunca quitar outline sin alternativa.
+- **Reduced motion**: respetar `prefers-reduced-motion` (bloque global en `styles.css`).
+- **Landmarks**: `<main id="main-content" tabindex="-1">` en cada página (target del skip link "Saltar al contenido principal" en `app.html`); `<nav aria-label="Navegación principal">` en sidebar; una sola `h1` por página provista por Navbar.
+- **Modales**: todo overlay usa `@modalOverlay`/`@modalPanel` con `role="dialog" aria-modal="true"` + `aria-label` descriptivo (activa el focus-trap global `appA11yDialogManager`). Foco inicial al primer control del diálogo; cierre con `Escape` donde aplique.
+- **Formularios**: cada control con nombre accesible (label asociado con `for`/`id` o `aria-label`); `aria-invalid` en controles inválidos tocados y `role="alert"` en mensajes de error.
+- **Botones de ícono**: siempre `aria-label` explícito (nunca depender solo de `title`).
+- **Pestañas**: `role="tablist"` con `aria-selected` en el botón activo.
+- **Live regions**: resultados/notificaciones críticas con `role="status" aria-live="polite"` (p. ej. resultado de validación de acceso) y toasts ya declarados en la sección superior.

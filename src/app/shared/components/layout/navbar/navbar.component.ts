@@ -1,14 +1,17 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { LucideAngularModule, Search, HelpCircle, Menu, X, User, LogOut, ChevronDown, Sun, Moon } from 'lucide-angular';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '@core/services/theme.service';
+import { fadeZoom } from '@shared/utils/animations';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, LucideAngularModule, ReactiveFormsModule],
+  animations: [fadeZoom],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })

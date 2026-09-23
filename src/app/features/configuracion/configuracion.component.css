@@ -7,7 +7,7 @@
 
 /* Form focus states */
 input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-secondary) 40%, transparent);
 }
 
 /* Select with icon */
@@ -19,25 +19,17 @@ select.appearance-none {
   padding-right: 2.5rem;
 }
 
-/* Animation for form container */
-.bg-surface-container-lowest {
-  animation: fadeInUp 0.4s ease-out;
+/* Scrollbars sutiles para la navegación interna */
+aside::-webkit-scrollbar, .overflow-x-auto::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+aside::-webkit-scrollbar-thumb, .overflow-x-auto::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-outline-variant) 80%, transparent);
+  border-radius: 9999px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .p-6.md\\:p-8 {
-    padding: 1.5rem;
-  }
+aside::-webkit-scrollbar-track, .overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
 }

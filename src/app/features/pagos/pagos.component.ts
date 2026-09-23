@@ -1,18 +1,24 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
-import { LucideAngularModule, Plus, Search, Filter, ChevronLeft, ChevronRight, Loader2, CreditCard, DollarSign, Calendar, User, MoreVertical, Edit, Trash2, Eye, ArrowLeft, ArrowRight, X, CheckCircle, Radio } from 'lucide-angular';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed } from '@angular/core';
+import { LucideAngularModule, Plus, Search, Filter, ChevronLeft, ChevronRight, Loader2, CreditCard, DollarSign, Calendar, User, Eye, ArrowLeft, ArrowRight, X, CheckCircle, Download, ChevronUp, ChevronDown, Wallet, Landmark, Receipt, RefreshCw } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
-import { PagosService, PagoResponseDto, CreatePagoDto } from '@api';
+import { PagosService, PagoResponseDto } from '@api';
 import { SociosService, SocioResponseDto } from '@api';
-import { MembresiasService, MembresiaResponseDto } from '@api';
 import { CatalogosService, MedioPagoResponseDto } from '@api';
+import { PagoFormModalComponent } from '@shared/components';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ToastService } from '@core/services/toast.service';
+import { modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+
+type SortColumn = 'fecha' | 'socio' | 'plan' | 'medio' | 'monto';
 
 @Component({
   selector: 'app-pagos',
   standalone: true,
-  imports: [LucideAngularModule, CommonModule, FormsModule, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [LucideAngularModule, CommonModule, PagoFormModalComponent],
+  animations: [staggerGrid, modalOverlay, modalPanel],
   templateUrl: './pagos.component.html',
   styleUrl: './pagos.component.css'
 })
@@ -20,10 +26,11 @@ export class PagosComponent implements OnInit {
   private layout = inject(MainLayoutComponent);
   private pagosService = inject(PagosService);
   private sociosService = inject(SociosService);
-  private membresiasService = inject(MembresiasService);
   private catalogosService = inject(CatalogosService);
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
+  private toast = inject(ToastService);
+
+  private socioFiltroSearch$ = new Subject<string>();
+  private socioFiltroRequest: Subscription | null = null;
 
   readonly Plus = Plus;
   readonly Search = Search;
@@ -35,95 +42,238 @@ export class PagosComponent implements OnInit {
   readonly DollarSign = DollarSign;
   readonly Calendar = Calendar;
   readonly User = User;
-  readonly MoreVertical = MoreVertical;
-  readonly Edit = Edit;
-  readonly Trash2 = Trash2;
   readonly Eye = Eye;
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly X = X;
   readonly CheckCircle = CheckCircle;
-  readonly Radio = Radio;
+  readonly Download = Download;
+  readonly ChevronUp = ChevronUp;
+  readonly ChevronDown = ChevronDown;
+  readonly Wallet = Wallet;
+  readonly Landmark = Landmark;
+  readonly Receipt = Receipt;
+  readonly RefreshCw = RefreshCw;
 
+  // Datos
   pagos = signal<PagoResponseDto[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  // Filtros
   searchTerm = signal('');
+  filtroFechaDesde = signal('');
+  filtroFechaHasta = signal('');
+  filtroMedios = signal<string[]>([]);
+  filtroSocio = signal<SocioResponseDto | null>(null);
+  socioQuery = signal('');
+  socioResults = signal<SocioResponseDto[]>([]);
+  socioSearching = signal(false);
+  mediosPago = signal<MedioPagoResponseDto[]>([]);
+
+  // Orden
+  sortColumn = signal<SortColumn>('fecha');
+  sortDir = signal<'asc' | 'desc'>('desc');
+
+  // Paginación
   currentPage = signal(1);
   pageSize = 10;
   totalItems = signal(0);
-  
-  showModal = signal(false);
-  modalMode = signal<'list' | 'create'>('list');
-  editingPago = signal<PagoResponseDto | null>(null);
-  saving = signal(false);
-  searchingSocio = signal(false);
-  selectedSocio = signal<SocioResponseDto | null>(null);
-  socioSearchTerm = signal('');
 
-  membresias = signal<MembresiaResponseDto[]>([]);
-  mediosPago = signal<MedioPagoResponseDto[]>([]);
-  loadingCatalogs = signal(false);
+  // Registro / detalle
+  showRegistro = signal(false);
+  registroSocio = signal<SocioResponseDto | null>(null);
+  showDetail = signal(false);
+  detailPago = signal<PagoResponseDto | null>(null);
+  detailLoading = signal(false);
+  detailError = signal<string | null>(null);
 
-  pagoForm = this.fb.nonNullable.group({
-    membresiaId: ['', [Validators.required]],
-    medioPagoId: ['', [Validators.required]],
-    monto: [0, [Validators.required, Validators.min(1)]],
-    fechaPago: [new Date().toISOString().split('T')[0], [Validators.required]]
-  });
+  constructor() {
+    this.socioFiltroSearch$
+      .pipe(takeUntilDestroyed(), debounceTime(300), distinctUntilChanged())
+      .subscribe((term) => this.searchSociosFiltro(term));
+  }
 
   ngOnInit() {
     this.layout.setPageTitle('Pagos');
-    this.loadCatalogs();
+    this.loadMediosPago();
     this.loadPagos();
   }
 
-  loadCatalogs() {
-    this.loadingCatalogs.set(true);
-    
-    this.membresiasService.membresiasControllerFindAll(undefined, undefined, 100, 0).subscribe({
-      next: (response) => {
-        const data = response.content || response;
-        this.membresias.set(data.filter((mem: any) => mem.estado === 'activa' || mem.estado === 'ACTIVA'));
-      },
-      error: () => console.error('Error loading membresias')
-    });
-
+  loadMediosPago() {
     this.catalogosService.catalogosControllerFindAllMediosPago().subscribe({
-      next: (data) => this.mediosPago.set(data),
+      next: (data) => this.mediosPago.set(data || []),
       error: () => console.error('Error loading medios de pago')
     });
-
-    setTimeout(() => this.loadingCatalogs.set(false), 300);
   }
 
   loadPagos() {
     this.loading.set(true);
     this.error.set(null);
-    
-    this.pagosService.pagosControllerFindAll(undefined, undefined, this.pageSize, this.currentPage() - 1).subscribe({
+
+    this.pagosService.pagosControllerFindAll(
+      undefined,
+      this.filtroSocio()?.id || undefined,
+      this.pageSize,
+      this.currentPage() - 1,
+      this.filtroFechaDesde() || undefined,
+      this.filtroFechaHasta() || undefined
+    ).subscribe({
       next: (response) => {
         this.pagos.set(response.content || response);
-        this.totalItems.set(response.totalElements || response.length);
+        this.totalItems.set(response.totalElements ?? response.total ?? response.length);
         this.loading.set(false);
       },
       error: (err) => {
         this.error.set('Error al cargar los pagos');
         this.loading.set(false);
+        this.toast.error('No se pudieron cargar los pagos', { title: 'Error' });
         console.error('Error loading pagos:', err);
       }
     });
   }
 
+  // ------------------------------------------------------------
+  // Filtros
+  // ------------------------------------------------------------
+  onSearchChange(event: Event) {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  onFechaDesdeChange(event: Event) {
+    this.filtroFechaDesde.set((event.target as HTMLInputElement).value);
+    this.currentPage.set(1);
+    this.loadPagos();
+  }
+
+  onFechaHastaChange(event: Event) {
+    this.filtroFechaHasta.set((event.target as HTMLInputElement).value);
+    this.currentPage.set(1);
+    this.loadPagos();
+  }
+
+  isMedioSelected(id: string): boolean {
+    return this.filtroMedios().includes(id);
+  }
+
+  toggleMedio(id: string) {
+    const current = this.filtroMedios();
+    if (current.includes(id)) {
+      this.filtroMedios.set(current.filter((m) => m !== id));
+    } else {
+      this.filtroMedios.set([...current, id]);
+    }
+    this.currentPage.set(1);
+  }
+
+  onSocioFiltroInput(event: Event) {
+    const term = (event.target as HTMLInputElement).value;
+    this.socioQuery.set(term);
+    if (!term.trim()) {
+      this.socioResults.set([]);
+      return;
+    }
+    this.socioFiltroSearch$.next(term);
+  }
+
+  searchSociosFiltro(term: string) {
+    this.socioSearching.set(true);
+    this.socioFiltroRequest?.unsubscribe();
+    this.socioFiltroRequest = this.sociosService.sociosControllerFindAll(term, term, term, undefined, 6, 0).subscribe({
+      next: (response) => {
+        this.socioResults.set((response.content || response) as SocioResponseDto[]);
+        this.socioSearching.set(false);
+      },
+      error: () => this.socioSearching.set(false)
+    });
+  }
+
+  selectSocioFiltro(socio: SocioResponseDto) {
+    this.filtroSocio.set(socio);
+    this.socioQuery.set(`${socio.nombre} ${socio.apellido}`);
+    this.socioResults.set([]);
+    this.currentPage.set(1);
+    this.loadPagos();
+  }
+
+  clearSocioFiltro() {
+    this.filtroSocio.set(null);
+    this.socioQuery.set('');
+    this.socioResults.set([]);
+    this.currentPage.set(1);
+    this.loadPagos();
+  }
+
+  hasActiveFilters = computed(() =>
+    !!this.searchTerm() ||
+    !!this.filtroFechaDesde() ||
+    !!this.filtroFechaHasta() ||
+    this.filtroMedios().length > 0 ||
+    !!this.filtroSocio()
+  );
+
+  clearFilters() {
+    this.searchTerm.set('');
+    this.filtroFechaDesde.set('');
+    this.filtroFechaHasta.set('');
+    this.filtroMedios.set([]);
+    this.filtroSocio.set(null);
+    this.socioQuery.set('');
+    this.socioResults.set([]);
+    this.currentPage.set(1);
+    this.loadPagos();
+  }
+
+  // ------------------------------------------------------------
+  // Orden
+  // ------------------------------------------------------------
+  onSort(col: SortColumn) {
+    if (this.sortColumn() === col) {
+      this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortColumn.set(col);
+      this.sortDir.set(col === 'monto' ? 'desc' : 'asc');
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Filas filtradas / totalizador
+  // ------------------------------------------------------------
   filteredPagos = computed(() => {
+    let result = this.pagos();
+
+    const medios = this.filtroMedios();
+    if (medios.length > 0) {
+      result = result.filter((p) => medios.includes(p.medioPagoId));
+    }
+
     const term = this.searchTerm().toLowerCase();
-    return this.pagos().filter(p =>
-      p.socioNombre?.toLowerCase().includes(term) ||
-      p.socioDni?.includes(term) ||
-      p.planNombre?.toLowerCase().includes(term) ||
-      p.medioPagoNombre?.toLowerCase().includes(term)
-    );
+    if (term) {
+      result = result.filter((p) =>
+        p.socioNombre?.toLowerCase().includes(term) ||
+        p.socioDni?.toLowerCase().includes(term) ||
+        p.planNombre?.toLowerCase().includes(term) ||
+        p.medioPagoNombre?.toLowerCase().includes(term)
+      );
+    }
+
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    const col = this.sortColumn();
+    return [...result].sort((a, b) => {
+      switch (col) {
+        case 'fecha': return (a.fechaPago || '').localeCompare(b.fechaPago || '') * dir;
+        case 'socio': return (a.socioNombre || '').localeCompare(b.socioNombre || '') * dir;
+        case 'plan': return (a.planNombre || '').localeCompare(b.planNombre || '') * dir;
+        case 'medio': return (a.medioPagoNombre || '').localeCompare(b.medioPagoNombre || '') * dir;
+        case 'monto': return ((a.monto ?? 0) - (b.monto ?? 0)) * dir;
+        default: return 0;
+      }
+    });
   });
+
+  totalFiltrado = computed(() =>
+    this.filteredPagos().reduce((acc, p) => acc + (p.monto ?? 0), 0)
+  );
 
   totalPages = computed(() => Math.ceil(this.totalItems() / this.pageSize));
 
@@ -131,7 +281,7 @@ export class PagosComponent implements OnInit {
     const total = this.totalPages();
     const current = this.currentPage();
     const pages: number[] = [];
-    
+
     if (total <= 7) {
       for (let i = 1; i <= total; i++) pages.push(i);
     } else {
@@ -146,11 +296,6 @@ export class PagosComponent implements OnInit {
     return pages;
   });
 
-  onSearchChange(event: Event) {
-    this.searchTerm.set((event.target as HTMLInputElement).value);
-    this.currentPage.set(1);
-  }
-
   onPageChange(page: number) {
     if (page === -1 || page === -2) return;
     if (page >= 1 && page <= this.totalPages()) {
@@ -159,117 +304,90 @@ export class PagosComponent implements OnInit {
     }
   }
 
-  openNewPagoModal() {
-    this.modalMode.set('create');
-    this.editingPago.set(null);
-    this.selectedSocio.set(null);
-    this.socioSearchTerm.set('');
-    this.pagoForm.reset({
-      membresiaId: '',
-      medioPagoId: this.mediosPago()[0]?.id || '',
-      monto: 0,
-      fechaPago: new Date().toISOString().split('T')[0]
-    });
-    this.showModal.set(true);
+  // ------------------------------------------------------------
+  // Registro / detalle
+  // ------------------------------------------------------------
+  openRegistro() {
+    this.registroSocio.set(null);
+    this.showRegistro.set(true);
   }
 
-  openEditPagoModal(pago: PagoResponseDto) {
-    this.modalMode.set('create');
-    this.editingPago.set(pago);
-    this.pagoForm.patchValue({
-      membresiaId: String(pago.membresiaId),
-      medioPagoId: String(pago.medioPagoId),
-      monto: pago.monto,
-      fechaPago: pago.fechaPago?.split('T')[0] || new Date().toISOString().split('T')[0]
-    });
-    this.showModal.set(true);
+  onPagoSaved() {
+    this.loadPagos();
   }
 
-  closeModal() {
-    this.showModal.set(false);
-    this.editingPago.set(null);
-    this.selectedSocio.set(null);
-    this.pagoForm.reset();
-  }
+  openDetail(pago: PagoResponseDto) {
+    this.showDetail.set(true);
+    this.detailLoading.set(true);
+    this.detailError.set(null);
+    this.detailPago.set(pago);
 
-  searchSocio() {
-    const term = this.socioSearchTerm().trim();
-    if (!term) return;
-    
-    this.searchingSocio.set(true);
-    this.sociosService.sociosControllerFindAll(term, term, term, undefined, 10, 0).subscribe({
-      next: (response) => {
-        const socios = response.content || response;
-        if (socios.length > 0) {
-          this.selectedSocio.set(socios[0]);
-          this.loadMembresiasForSocio(socios[0].id);
-        } else {
-          this.selectedSocio.set(null);
-        }
-        this.searchingSocio.set(false);
+    this.pagosService.pagosControllerFindOne(pago.id).subscribe({
+      next: (detalle) => {
+        this.detailPago.set(detalle);
+        this.detailLoading.set(false);
       },
-      error: () => {
-        this.searchingSocio.set(false);
-        console.error('Error searching socio');
+      error: (err) => {
+        this.detailError.set('No se pudo cargar el detalle del pago');
+        this.detailLoading.set(false);
+        console.error('Error loading pago detail:', err);
       }
     });
   }
 
-  loadMembresiasForSocio(socioId: string) {
-    this.membresiasService.membresiasControllerFindAll(socioId, undefined, 50, 0).subscribe({
-      next: (response) => {
-        const data = response.content || response;
-        const activeMembresias = data.filter((mem: any) => mem.estado === 'activa' || mem.estado === 'ACTIVA');
-        this.membresias.set(activeMembresias);
-        if (activeMembresias.length > 0 && !this.pagoForm.get('membresiaId')?.value) {
-          this.pagoForm.patchValue({ membresiaId: String(activeMembresias[0].id) });
-        }
-      },
-      error: () => console.error('Error loading membresias for socio')
-    });
+  closeDetail() {
+    this.showDetail.set(false);
+    this.detailPago.set(null);
   }
 
-  onSubmitPago() {
-    if (this.pagoForm.invalid) {
-      this.pagoForm.markAllAsTouched();
+  // ------------------------------------------------------------
+  // Export CSV
+  // ------------------------------------------------------------
+  exportCSV() {
+    const rows = this.filteredPagos();
+    if (rows.length === 0) {
+      this.toast.warning('No hay pagos que coincidan con los filtros', { title: 'Exportar' });
       return;
     }
 
-    this.saving.set(true);
-    const formData = this.pagoForm.getRawValue();
-    const pagoData: CreatePagoDto = {
-      membresiaId: String(formData.membresiaId),
-      medioPagoId: String(formData.medioPagoId),
-      monto: formData.monto,
-      fechaPago: formData.fechaPago
-    };
+    const header = ['Fecha', 'Socio', 'DNI', 'Plan', 'Medio de pago', 'Monto'];
+    const lines = rows.map((p) =>
+      [this.formatDate(p.fechaPago), p.socioNombre, p.socioDni, p.planNombre, p.medioPagoNombre, p.monto.toFixed(2)]
+        .map((f) => `"${String(f).replace(/"/g, '""')}"`)
+        .join(',')
+    );
 
-    this.pagosService.pagosControllerCreate(pagoData).subscribe({
-      next: (created) => {
-        this.loadPagos();
-        this.closeModal();
-        this.saving.set(false);
-      },
-      error: (err) => {
-        this.error.set('Error al registrar el pago');
-        this.saving.set(false);
-        console.error('Error creating pago:', err);
-      }
-    });
+    const csv = '\uFEFF' + [header.join(','), ...lines].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pagos_${this.today()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    this.toast.success(`${rows.length} pagos exportados`, { title: 'Exportado' });
   }
 
-  onDeletePago(pago: PagoResponseDto) {
-    if (confirm(`¿Eliminar el pago de $${pago.monto} a ${pago.socioNombre}?`)) {
-      console.log('Delete pago:', pago.id);
-    }
-  }
-
-  viewPagoDetail(pago: PagoResponseDto) {
-    console.log('View pago detail:', pago.id);
+  // ------------------------------------------------------------
+  // Helpers visuales
+  // ------------------------------------------------------------
+  getMedioPagoIcon(nombre: string): any {
+    const lower = nombre?.toLowerCase() || '';
+    if (lower.includes('efectivo')) return this.DollarSign;
+    if (lower.includes('tarjeta')) return this.CreditCard;
+    if (lower.includes('transfer')) return this.Landmark;
+    if (lower.includes('mercado')) return this.Wallet;
+    return this.Receipt;
   }
 
   formatPrice(price: number): string {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(price);
+  }
+
+  formatMoney(monto: number | undefined): string {
+    if (monto == null) return '';
+    return '$ ' + monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   formatDate(date: string | Date | undefined): string {
@@ -278,12 +396,8 @@ export class PagosComponent implements OnInit {
     return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  getMedioPagoIcon(nombre: string): any {
-    const lower = nombre?.toLowerCase() || '';
-    if (lower.includes('efectivo')) return this.DollarSign;
-    if (lower.includes('tarjeta')) return this.CreditCard;
-    if (lower.includes('transfer')) return this.ArrowLeft;
-    return this.DollarSign;
+  today(): string {
+    return new Date().toISOString().split('T')[0];
   }
 
   protected readonly Math = Math;

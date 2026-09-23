@@ -23,6 +23,8 @@ import { MembresiaResponseDto } from '../model/membresiaResponseDto';
 // @ts-ignore
 import { MembresiasControllerCancelarRequest } from '../model/membresiasControllerCancelarRequest';
 // @ts-ignore
+import { MembresiasControllerRenovarRequest } from '../model/membresiasControllerRenovarRequest';
+// @ts-ignore
 import { UpdateMembresiaDto } from '../model/updateMembresiaDto';
 
 // @ts-ignore
@@ -340,17 +342,18 @@ export class MembresiasService extends BaseService {
     }
 
     /**
-     * Renovar membresía: cierra la actual como vencida y crea nueva activa con mismo plan
+     * Renovar membresía: vence la actual y crea una nueva con el plan indicado
      * @endpoint post /membresias/{id}/renovar
      * @param id 
+     * @param membresiasControllerRenovarRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public membresiasControllerRenovar(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MembresiaResponseDto>;
-    public membresiasControllerRenovar(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MembresiaResponseDto>>;
-    public membresiasControllerRenovar(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MembresiaResponseDto>>;
-    public membresiasControllerRenovar(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MembresiaResponseDto>;
+    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MembresiaResponseDto>>;
+    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MembresiaResponseDto>>;
+    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling membresiasControllerRenovar.');
         }
@@ -372,6 +375,15 @@ export class MembresiasService extends BaseService {
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -388,6 +400,7 @@ export class MembresiasService extends BaseService {
         return this.httpClient.request<MembresiaResponseDto>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                body: membresiasControllerRenovarRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { routeFade } from '@shared/utils/animations';
 
 interface UserData {
   email?: string;
@@ -11,7 +12,9 @@ interface UserData {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, SidebarComponent, NavbarComponent],
+  animations: [routeFade],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.css'
 })
@@ -20,6 +23,10 @@ export class MainLayoutComponent {
 
   sidebarCollapsed = signal(false);
   pageTitle = signal('Métricas Generales');
+
+  routeState(outlet: RouterOutlet): string {
+    return outlet?.activatedRouteData?.['module'] ?? '';
+  }
 
   private userData: UserData | null = (() => {
     try {

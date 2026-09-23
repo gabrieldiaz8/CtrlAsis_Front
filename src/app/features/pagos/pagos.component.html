@@ -1,265 +1,390 @@
-<div class="flex flex-col h-full">
+<div class="flex flex-col gap-6">
   <!-- Page Header -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
       <h1 class="text-headline-lg font-bold text-on-background">Pagos</h1>
-      <p class="text-body-sm text-on-surface-variant mt-1">Historial de cobros y registro de nuevos pagos.</p>
+      <p class="text-body-sm text-on-surface-variant mt-1">Historial de cobros, filtros y registro de nuevos pagos.</p>
     </div>
-    <button (click)="openNewPagoModal()" class="bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
-      <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
-      <span class="text-label-md font-medium">Registrar Pago</span>
-    </button>
+    <div class="flex items-center gap-3">
+      <button (click)="exportCSV()" [disabled]="filteredPagos().length === 0"
+              class="micro-btn flex items-center gap-2 px-4 py-2 border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg text-label-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <lucide-icon [img]="Download" class="w-4 h-4"></lucide-icon>
+        Exportar CSV
+      </button>
+      <button (click)="openRegistro()"
+              class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-5 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
+        <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+        <span class="text-label-md font-medium">Registrar Pago</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Table View -->
-  <div *ngIf="modalMode() === 'list'" class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] overflow-hidden flex-1">
-    <!-- Search and Filter Bar -->
-    <div class="p-4 border-b border-outline-variant bg-surface-container-low flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-      <div class="relative w-full sm:w-64">
+  <!-- Totalizador -->
+  <div class="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-[0px_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6">
+      <div>
+        <p class="text-label-md font-medium text-on-surface-variant uppercase tracking-wide flex items-center gap-1.5">
+          <lucide-icon [img]="DollarSign" class="w-4 h-4 text-primary"></lucide-icon>
+          Total filtrado
+        </p>
+        <p class="mt-2 text-headline-lg sm:text-headline-xl font-display font-bold text-primary">
+          {{ formatMoney(totalFiltrado()) }}
+        </p>
+      </div>
+      <div class="flex items-center gap-8">
+        <div class="text-center sm:text-right">
+          <p class="text-headline-md font-display font-bold text-on-surface">{{ filteredPagos().length }}</p>
+          <p class="text-label-sm text-on-surface-variant">pagos en esta vista</p>
+        </div>
+        <div class="text-center sm:text-right">
+          <p class="text-headline-md font-display font-bold text-on-surface">{{ totalItems() }}</p>
+          <p class="text-label-sm text-on-surface-variant">coincidencias totales</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros avanzados -->
+  <div class="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-[0px_1px_3px_rgba(0,0,0,0.08)] p-4 space-y-4">
+    <div class="flex flex-col xl:flex-row gap-3">
+      <!-- Búsqueda -->
+      <div class="relative flex-1">
         <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
         <input
           type="text"
           (input)="onSearchChange($event)"
           placeholder="Buscar pagos..."
+          aria-label="Buscar pagos"
           class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
         />
       </div>
-      <div class="flex items-center gap-2">
-        <lucide-icon [img]="Filter" class="text-on-surface-variant w-5 h-5"></lucide-icon>
-        <select class="bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none">
-          <option value="">Todos los medios</option>
-          <option value="Efectivo">Efectivo</option>
-          <option value="Tarjeta">Tarjeta</option>
-          <option value="Transferencia">Transferencia</option>
-        </select>
-      </div>
-    </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto flex-1">
-      <table class="w-full text-left border-collapse" *ngIf="!loading(); else loadingTemplate">
-        <thead>
-          <tr class="bg-surface-container-low border-b border-outline-variant">
-            <th class="p-3 text-label-md font-medium text-on-surface-variant">Fecha</th>
-            <th class="p-3 text-label-md font-medium text-on-surface-variant">Socio</th>
-            <th class="p-3 text-label-md font-medium text-on-surface-variant">Plan</th>
-            <th class="p-3 text-label-md font-medium text-on-surface-variant">Medio de Pago</th>
-            <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Monto</th>
-            <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="text-body-sm">
-          <tr *ngFor="let pago of filteredPagos(); let i = index" 
-              class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group"
-              [class.bg-background]="i % 2 === 1">
-            <td class="p-3 text-on-surface-variant whitespace-nowrap">{{ formatDate(pago.fechaPago) }}</td>
-            <td class="p-3">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium">
-                  {{ pago.socioNombre.charAt(0) || '?' }}
-                </div>
-                <div>
-                  <p class="font-medium text-on-surface">{{ pago.socioNombre }}</p>
-                  <p class="text-label-sm text-on-surface-variant">{{ pago.socioDni }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="p-3 text-on-surface-variant">{{ pago.planNombre }}</td>
-            <td class="p-3">
-              <div class="flex items-center gap-2">
-                <lucide-icon [img]="getMedioPagoIcon(pago.medioPagoNombre)" class="w-4 h-4 text-on-surface-variant"></lucide-icon>
-                <span>{{ pago.medioPagoNombre }}</span>
-              </div>
-            </td>
-            <td class="p-3 font-semibold text-on-surface text-right">{{ formatPrice(pago.monto) }}</td>
-            <td class="p-3 text-right">
-              <div class="flex items-center justify-end gap-1">
-                <button (click)="viewPagoDetail(pago)" 
-                        class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
-                        title="Ver detalle">
-                  <lucide-icon [img]="Eye" class="w-4 h-4"></lucide-icon>
-                </button>
-                <button (click)="openEditPagoModal(pago)" 
-                        class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
-                        title="Editar">
-                  <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
-                </button>
-                <button (click)="onDeletePago(pago)" 
-                        class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
-                        title="Eliminar">
-                  <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="filteredPagos().length === 0 && !loading()">
-            <td colspan="6" class="p-8 text-center text-on-surface-variant">
-              <lucide-icon [img]="CreditCard" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
-              <p class="text-body-md">No se encontraron pagos</p>
-              <p class="text-body-sm mt-1">Intenta ajustar tu búsqueda o registra un nuevo pago</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <ng-template #loadingTemplate>
-        <div class="p-8 text-center">
-          <lucide-icon [img]="Loader2" class="w-8 h-8 mx-auto text-secondary animate-spin"></lucide-icon>
-          <p class="text-body-md text-on-surface-variant mt-2">Cargando pagos...</p>
-        </div>
-      </ng-template>
-    </div>
-
-    <!-- Pagination -->
-    <div class="p-4 border-t border-outline-variant bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-4" *ngIf="!loading() && totalPages() > 1">
-      <div class="text-body-sm text-on-surface-variant">
-        Mostrando {{ (currentPage() - 1) * pageSize + 1 }} a {{ Math.min(currentPage() * pageSize, totalItems()) }} de {{ totalItems() }} pagos
-      </div>
-      <div class="flex items-center gap-1">
-        <button (click)="onPageChange(currentPage() - 1)" 
-                [disabled]="currentPage() === 1"
-                class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          <lucide-icon [img]="ChevronLeft" class="w-5 h-5"></lucide-icon>
+      <!-- Socio autocomplete -->
+      <div class="relative xl:w-72">
+        <lucide-icon [img]="User" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+        <input
+          type="text"
+          (input)="onSocioFiltroInput($event)"
+          [value]="socioQuery()"
+          placeholder="Filtrar por socio..."
+          aria-label="Filtrar pagos por socio"
+          class="w-full pl-10 pr-10 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+        />
+        <button *ngIf="filtroSocio()" type="button" (click)="clearSocioFiltro()"
+                class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-on-surface-variant hover:text-error transition-colors">
+          <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
         </button>
-        <ng-container *ngFor="let page of getPageNumbers()">
-          <button *ngIf="page > 0; else ellipsis" 
-                  (click)="onPageChange(page)" 
-                  [class]="page === currentPage() ? 'bg-secondary text-on-secondary' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high'"
-                  class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
-            {{ page }}
+        <lucide-icon [img]="Loader2" class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary w-4 h-4 animate-spin" *ngIf="socioSearching() && !filtroSocio()"></lucide-icon>
+
+        <div *ngIf="socioResults().length > 0 && !filtroSocio()"
+             class="absolute z-20 mt-2 w-full bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg overflow-hidden">
+          <button type="button" *ngFor="let socio of socioResults()" (click)="selectSocioFiltro(socio)"
+                  class="w-full px-4 py-2.5 flex items-center gap-3 text-left hover:bg-surface-container-low transition-colors border-b border-outline-variant last:border-b-0">
+            <div class="w-7 h-7 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium shrink-0">
+              {{ socio.nombre.charAt(0) }}{{ socio.apellido.charAt(0) }}
+            </div>
+            <span class="text-body-sm font-medium text-on-surface">{{ socio.nombre }} {{ socio.apellido }}</span>
+            <span class="text-label-sm text-on-surface-variant ml-auto">{{ socio.dni }}</span>
           </button>
-          <ng-template #ellipsis>
-            <span class="px-2 text-on-surface-variant/50">...</span>
-          </ng-template>
-        </ng-container>
-        <button (click)="onPageChange(currentPage() + 1)" 
-                [disabled]="currentPage() === totalPages()"
-                class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          <lucide-icon [img]="ChevronRight" class="w-5 h-5"></lucide-icon>
+        </div>
+      </div>
+
+      <!-- Rango de fechas -->
+      <div class="relative">
+        <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5 pointer-events-none"></lucide-icon>
+        <input type="date" [value]="filtroFechaDesde()" (change)="onFechaDesdeChange($event)"
+               title="Desde"
+               class="w-full xl:w-44 pl-10 pr-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+      </div>
+      <div class="relative">
+        <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5 pointer-events-none"></lucide-icon>
+        <input type="date" [value]="filtroFechaHasta()" (change)="onFechaHastaChange($event)"
+               title="Hasta"
+               class="w-full xl:w-44 pl-10 pr-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+      </div>
+
+      <button type="button" (click)="clearFilters()" [disabled]="!hasActiveFilters()"
+              class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-label-md font-medium border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
+        Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Medio de pago multi-select -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+      <span class="text-label-md font-medium text-on-surface-variant shrink-0 mr-1 flex items-center gap-1.5">
+        <lucide-icon [img]="Filter" class="w-4 h-4"></lucide-icon>
+        Medio:
+      </span>
+      <div class="flex flex-wrap gap-1.5">
+        <button *ngFor="let medio of mediosPago()" type="button" (click)="toggleMedio(medio.id)"
+                [class]="isMedioSelected(medio.id)
+                  ? 'bg-secondary text-on-secondary border-secondary'
+                  : 'bg-surface text-on-surface-variant border-outline-variant hover:border-secondary/60 hover:text-on-surface'"
+                class="px-3 py-1.5 rounded-full border text-label-sm font-medium transition-all flex items-center gap-1.5">
+          <lucide-icon [img]="getMedioPagoIcon(medio.nombre)" class="w-3.5 h-3.5"></lucide-icon>
+          {{ medio.nombre }}
+          <lucide-icon [img]="X" class="w-3 h-3" *ngIf="isMedioSelected(medio.id)"></lucide-icon>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal for Create/Edit Pago -->
-  <div *ngIf="showModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
-        <h2 class="text-headline-md font-bold text-on-surface">
-          {{ editingPago() ? 'Editar Pago' : 'Registrar Nuevo Pago' }}
-        </h2>
-        <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+  <!-- Resultados -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+    <ng-container *ngIf="!loading(); else loadingTemplate">
+      <ng-container *ngIf="filteredPagos().length > 0 && !error(); else emptyState">
+        <!-- Desktop -->
+        <div class="hidden lg:block overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container-low border-b border-outline-variant">
+                <th (click)="onSort('fecha')" class="p-3 text-label-md font-medium text-on-surface-variant text-left cursor-pointer select-none hover:text-on-surface transition-colors whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1">Fecha
+                    <lucide-icon *ngIf="sortColumn()==='fecha'" [img]="sortDir()==='asc' ? ChevronUp : ChevronDown" class="w-3.5 h-3.5"></lucide-icon>
+                  </span>
+                </th>
+                <th (click)="onSort('socio')" class="p-3 text-label-md font-medium text-on-surface-variant text-left cursor-pointer select-none hover:text-on-surface transition-colors whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1">Socio
+                    <lucide-icon *ngIf="sortColumn()==='socio'" [img]="sortDir()==='asc' ? ChevronUp : ChevronDown" class="w-3.5 h-3.5"></lucide-icon>
+                  </span>
+                </th>
+                <th (click)="onSort('plan')" class="p-3 text-label-md font-medium text-on-surface-variant text-left cursor-pointer select-none hover:text-on-surface transition-colors whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1">Plan
+                    <lucide-icon *ngIf="sortColumn()==='plan'" [img]="sortDir()==='asc' ? ChevronUp : ChevronDown" class="w-3.5 h-3.5"></lucide-icon>
+                  </span>
+                </th>
+                <th (click)="onSort('medio')" class="p-3 text-label-md font-medium text-on-surface-variant text-left cursor-pointer select-none hover:text-on-surface transition-colors whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1">Medio
+                    <lucide-icon *ngIf="sortColumn()==='medio'" [img]="sortDir()==='asc' ? ChevronUp : ChevronDown" class="w-3.5 h-3.5"></lucide-icon>
+                  </span>
+                </th>
+                <th (click)="onSort('monto')" class="p-3 text-label-md font-medium text-on-surface-variant text-right cursor-pointer select-none hover:text-on-surface transition-colors whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1 justify-end">Monto
+                    <lucide-icon *ngIf="sortColumn()==='monto'" [img]="sortDir()==='asc' ? ChevronUp : ChevronDown" class="w-3.5 h-3.5"></lucide-icon>
+                  </span>
+                </th>
+                <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="text-body-sm" [@staggerGrid]="filteredPagos()">
+              <tr *ngFor="let pago of filteredPagos(); let i = index"
+                  class="border-b border-outline-variant hover:bg-surface-container-low transition-colors"
+                  [class.bg-background]="i % 2 === 1">
+                <td class="p-3 text-on-surface-variant whitespace-nowrap">{{ formatDate(pago.fechaPago) }}</td>
+                <td class="p-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium shrink-0">
+                      {{ pago.socioNombre.charAt(0) || '?' }}
+                    </div>
+                    <div>
+                      <p class="font-medium text-on-surface">{{ pago.socioNombre }}</p>
+                      <p class="text-label-sm text-on-surface-variant">{{ pago.socioDni }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-3 text-on-surface-variant">{{ pago.planNombre }}</td>
+                <td class="p-3">
+                  <div class="flex items-center gap-2">
+                    <lucide-icon [img]="getMedioPagoIcon(pago.medioPagoNombre)" class="w-4 h-4 text-on-surface-variant"></lucide-icon>
+                    <span>{{ pago.medioPagoNombre }}</span>
+                  </div>
+                </td>
+                <td class="p-3 font-display font-bold text-primary text-right whitespace-nowrap">{{ formatMoney(pago.monto) }}</td>
+                <td class="p-3 text-right">
+                  <button (click)="openDetail(pago)"
+                          class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                          title="Ver detalle" aria-label="Ver detalle de pago">
+                    <lucide-icon [img]="Eye" class="w-4 h-4"></lucide-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Móvil -->
+        <div class="lg:hidden divide-y divide-outline-variant">
+          <div *ngFor="let pago of filteredPagos()" class="p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium shrink-0">
+                  {{ pago.socioNombre.charAt(0) || '?' }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-body-md font-medium text-on-surface truncate">{{ pago.socioNombre }}</p>
+                  <p class="text-label-sm text-on-surface-variant">{{ pago.socioDni }} · {{ formatDate(pago.fechaPago) }}</p>
+                </div>
+              </div>
+              <span class="font-display font-bold text-primary whitespace-nowrap">{{ formatMoney(pago.monto) }}</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between text-body-sm text-on-surface-variant">
+              <span class="flex items-center gap-2">
+                <lucide-icon [img]="getMedioPagoIcon(pago.medioPagoNombre)" class="w-4 h-4"></lucide-icon>
+                {{ pago.medioPagoNombre }}
+              </span>
+              <span>{{ pago.planNombre }}</span>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button (click)="openDetail(pago)"
+                      class="micro-btn text-label-md font-medium text-on-surface-variant hover:text-primary px-3 py-1.5 rounded-lg hover:bg-surface-container-low transition-colors flex items-center gap-1.5">
+                <lucide-icon [img]="Eye" class="w-4 h-4"></lucide-icon>
+                Detalle
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <div class="p-12 text-center">
+          <lucide-icon [img]="CreditCard" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+          <p *ngIf="error()" class="text-body-md text-on-surface">Error al cargar los pagos</p>
+          <p *ngIf="!error()" class="text-body-md text-on-surface">No se encontraron pagos</p>
+          <p *ngIf="!error()" class="text-body-sm mt-1 text-on-surface-variant">Ajusta los filtros o registrá un nuevo pago</p>
+          <button *ngIf="error()" (click)="loadPagos()"
+                  class="micro-btn mt-4 inline-flex items-center gap-2 px-4 py-2 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
+            Reintentar
+          </button>
+        </div>
+      </ng-template>
+
+      <!-- Pagination -->
+      <div class="p-4 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-4" *ngIf="totalPages() > 1">
+        <div class="text-body-sm text-on-surface-variant">
+          Mostrando {{ (currentPage() - 1) * pageSize + 1 }} a {{ Math.min(currentPage() * pageSize, totalItems()) }} de {{ totalItems() }} pagos
+        </div>
+        <div class="flex items-center gap-1">
+          <button (click)="onPageChange(currentPage() - 1)"
+                  [disabled]="currentPage() === 1"
+                  class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon [img]="ChevronLeft" class="w-5 h-5"></lucide-icon>
+          </button>
+          <ng-container *ngFor="let page of getPageNumbers()">
+            <button *ngIf="page > 0; else ellipsis"
+                    (click)="onPageChange(page)"
+                    [class]="page === currentPage() ? 'bg-secondary text-on-secondary' : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-high'"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+              {{ page }}
+            </button>
+            <ng-template #ellipsis>
+              <span class="px-2 text-on-surface-variant/50">...</span>
+            </ng-template>
+          </ng-container>
+          <button (click)="onPageChange(currentPage() + 1)"
+                  [disabled]="currentPage() === totalPages()"
+                  class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon [img]="ChevronRight" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #loadingTemplate>
+      <div class="p-6">
+        <div class="space-y-3">
+          @for (row of [1, 2, 3, 4]; track row) {
+            <div class="flex items-center gap-4">
+              <div class="skeleton h-4 w-20"></div>
+              <div class="flex items-center gap-3 flex-1">
+                <div class="skeleton h-8 w-8 rounded-full"></div>
+                <div class="flex-1"><div class="skeleton h-4 w-40 mb-2"></div><div class="skeleton h-3 w-24"></div></div>
+              </div>
+              <div class="skeleton h-4 w-28"></div>
+              <div class="skeleton h-4 w-32"></div>
+              <div class="skeleton h-5 w-20 ml-auto"></div>
+            </div>
+          }
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- ====================== MODAL DETALLE PAGO ====================== -->
+  <div *ngIf="showDetail() && (detailPago() || detailLoading())" @modalOverlay
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="closeDetail()">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Detalle de pago" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col"
+         (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant shrink-0">
+        <div>
+          <h2 class="text-headline-md font-bold text-on-surface">Detalle de Pago</h2>
+          <p class="text-label-sm text-on-surface-variant mt-0.5">Información del cobro</p>
+        </div>
+        <button (click)="closeDetail()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
           <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
         </button>
       </div>
 
-      <!-- Modal Form -->
-      <form [formGroup]="pagoForm" (ngSubmit)="onSubmitPago()" class="p-6 space-y-6">
-        <!-- Socio Search -->
-        <div>
-          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Buscar Socio</label>
-          <div class="relative">
-            <lucide-icon [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
-            <input
-              type="text"
-              [(ngModel)]="socioSearchTerm"
-              [ngModelOptions]="{standalone: true}"
-              (keydown.enter)="searchSocio(); $event.preventDefault()"
-              placeholder="Nombre, DNI o número de socio..."
-              class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
-            />
-            <button 
-              type="button"
-              (click)="searchSocio()"
-              [disabled]="searchingSocio() || !socioSearchTerm().trim()"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:bg-surface-container-low p-1 rounded-full transition-colors disabled:opacity-50">
-              <lucide-icon [img]="CheckCircle" class="w-5 h-5" *ngIf="!searchingSocio()"></lucide-icon>
-              <lucide-icon [img]="Loader2" class="w-5 h-5 animate-spin" *ngIf="searchingSocio()"></lucide-icon>
-            </button>
+      <div class="flex-1 overflow-y-auto p-6">
+        <ng-container *ngIf="detailLoading()">
+          <div class="space-y-4">
+            <div class="skeleton h-12 w-40"></div>
+            <div class="skeleton h-4 w-full"></div>
+            <div class="skeleton h-4 w-3/4"></div>
+            <div class="skeleton h-4 w-2/3"></div>
           </div>
-        </div>
+        </ng-container>
+        <ng-container *ngIf="!detailLoading()">
+          <div *ngIf="detailError()" class="text-body-sm text-on-surface-variant">
+            {{ detailError() }}
+          </div>
+          <div *ngIf="!detailError() && detailPago()" class="space-y-6">
+            <!-- Monto -->
+            <div class="bg-primary-fixed-dim/30 border border-primary/30 rounded-xl p-5 text-center">
+              <p class="text-label-sm font-medium text-on-surface-variant">Monto cobrado</p>
+              <p class="mt-1 text-headline-lg font-display font-bold text-primary">{{ formatMoney(detailPago()!.monto) }}</p>
+              <p class="mt-1 text-label-sm text-on-surface-variant">{{ formatDate(detailPago()!.fechaPago) }}</p>
+            </div>
 
-        <!-- Selected Socio Preview -->
-        <div *ngIf="selectedSocio()" class="p-4 bg-surface-container-low border border-outline-variant rounded-lg flex items-start gap-4">
-          <div class="w-12 h-12 rounded bg-surface border border-outline-variant flex items-center justify-center text-label-md font-medium text-on-surface">
-            {{ selectedSocio()!.nombre.charAt(0) || '' }}{{ selectedSocio()!.apellido.charAt(0) || '' }}
-          </div>
-          <div class="flex-1">
-            <h3 class="text-body-md font-medium text-on-surface">{{ selectedSocio()!.nombre }} {{ selectedSocio()!.apellido }}</h3>
-            <p class="text-label-sm text-on-surface-variant">Socio #{{ selectedSocio()!.id }} • DNI: {{ selectedSocio()!.dni }}</p>
-            <div class="mt-2 inline-flex items-center gap-1 text-label-sm" [ngClass]="selectedSocio()!.activo ? 'text-success' : 'text-error'">
-              <lucide-icon [img]="CheckCircle" class="w-3 h-3" *ngIf="selectedSocio()!.activo"></lucide-icon>
-              <lucide-icon [img]="X" class="w-3 h-3" *ngIf="!selectedSocio()!.activo"></lucide-icon>
-              {{ selectedSocio()!.activo ? 'Activo' : 'Inactivo' }}
+            <!-- Socio -->
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary-fixed-dim text-on-primary-fixed-variant flex items-center justify-center text-label-sm font-medium shrink-0">
+                {{ detailPago()!.socioNombre.charAt(0) || '?' }}
+              </div>
+              <div>
+                <p class="text-label-sm text-on-surface-variant">Socio</p>
+                <p class="text-body-md font-semibold text-on-surface">{{ detailPago()!.socioNombre }}</p>
+                <p class="text-label-sm text-on-surface-variant">DNI: {{ detailPago()!.socioDni }}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p class="text-label-sm font-medium text-on-surface-variant mb-1">Membresía</p>
+                <p class="text-body-md text-on-surface">{{ detailPago()!.planNombre }}</p>
+              </div>
+              <div>
+                <p class="text-label-sm font-medium text-on-surface-variant mb-1">Medio de pago</p>
+                <p class="flex items-center gap-2 text-body-md text-on-surface">
+                  <lucide-icon [img]="getMedioPagoIcon(detailPago()!.medioPagoNombre)" class="w-4 h-4 text-on-surface-variant"></lucide-icon>
+                  {{ detailPago()!.medioPagoNombre }}
+                </p>
+              </div>
+              <div>
+                <p class="text-label-sm font-medium text-on-surface-variant mb-1">ID Membresía</p>
+                <p class="text-body-md text-on-surface">#{{ detailPago()!.membresiaId }}</p>
+              </div>
+              <div>
+                <p class="text-label-sm font-medium text-on-surface-variant mb-1">Registrado</p>
+                <p class="text-body-md text-on-surface">{{ formatDate(detailPago()!.fechaCreacion) }}</p>
+              </div>
             </div>
           </div>
-          <button type="button" (click)="selectedSocio.set(null); loadMembresiasForSocio('')" class="text-on-surface-variant hover:text-error p-1">
-            <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
-          </button>
-        </div>
+        </ng-container>
+      </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Membresía -->
-          <div>
-            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Membresía a Pagar</label>
-            <select formControlName="membresiaId" [disabled]="loadingCatalogs()"
-                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-50">
-              <option value="">Seleccionar membresía...</option>
-              <option *ngFor="let m of membresias()" [value]="m.id">{{ m.socioNombre }} - {{ m.planNombre }} ({{ m.estado }})</option>
-            </select>
-            <p *ngIf="pagoForm.get('membresiaId')?.invalid && pagoForm.get('membresiaId')?.touched" 
-               class="text-label-sm text-error mt-1">Seleccione una membresía</p>
-          </div>
-
-          <!-- Medio de Pago -->
-          <div>
-            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Medio de Pago</label>
-            <select formControlName="medioPagoId" [disabled]="loadingCatalogs()"
-                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-50">
-              <option value="">Seleccionar medio...</option>
-              <option *ngFor="let medio of mediosPago()" [value]="medio.id">{{ medio.nombre }}</option>
-            </select>
-            <p *ngIf="pagoForm.get('medioPagoId')?.invalid && pagoForm.get('medioPagoId')?.touched" 
-               class="text-label-sm text-error mt-1">Seleccione un medio de pago</p>
-          </div>
-
-          <!-- Fecha de Pago -->
-          <div>
-            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Fecha de Pago</label>
-            <div class="relative">
-              <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
-              <input type="date" formControlName="fechaPago"
-                     class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
-            </div>
-          </div>
-
-          <!-- Monto -->
-          <div>
-            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Monto (ARS)</label>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-body-md text-on-surface-variant">$</span>
-              <input type="number" formControlName="monto" step="100" min="1"
-                     class="w-full pl-8 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
-            </div>
-            <p *ngIf="pagoForm.get('monto')?.invalid && pagoForm.get('monto')?.touched" 
-               class="text-label-sm text-error mt-1">El monto es requerido y debe ser mayor a 0</p>
-          </div>
-        </div>
-
-        <!-- Modal Actions -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
-          <button type="button" (click)="closeModal()" 
-                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
-            Cancelar
-          </button>
-          <button type="submit" [disabled]="pagoForm.invalid || saving()"
-                  class="px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
-            {{ editingPago() ? 'Actualizar' : 'Registrar Cobro' }}
-          </button>
-        </div>
-      </form>
+      <div class="flex justify-end gap-3 p-6 pt-4 border-t border-outline-variant shrink-0">
+        <button (click)="closeDetail()"
+                class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+          Cerrar
+        </button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Modal registro (compartido) -->
+<app-pago-form-modal [open]="showRegistro()" [socio]="registroSocio()"
+                     (saved)="onPagoSaved()" (dismissed)="showRegistro.set(false)">
+</app-pago-form-modal>

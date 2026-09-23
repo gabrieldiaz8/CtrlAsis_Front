@@ -3,102 +3,630 @@
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
     <div>
       <h1 class="text-headline-lg font-bold text-on-background">Configuración</h1>
-      <p class="text-body-sm text-on-surface-variant mt-1">Gestiona los datos de tu negocio.</p>
+      <p class="text-body-sm text-on-surface-variant mt-1">Gestiona tu negocio, catálogos y usuarios del staff.</p>
     </div>
   </div>
 
   <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] overflow-hidden flex-1" *ngIf="!loading(); else loadingTemplate">
-    <div class="p-6 md:p-8">
-      <!-- Alert Messages -->
-      <div *ngIf="error()" class="mb-6 p-4 bg-error-container text-on-error-container rounded-lg flex items-center gap-3" role="alert">
-        <lucide-icon [img]="AlertCircle" class="w-5 h-5 flex-shrink-0"></lucide-icon>
-        <span class="text-body-sm">{{ error() }}</span>
-      </div>
+    <!-- Load Error (retry) -->
+    <div *ngIf="error()" class="m-4 p-4 bg-error-container border border-outline-variant rounded-lg flex items-center gap-3">
+      <lucide-icon [img]="AlertCircle" class="w-5 h-5 text-error flex-shrink-0"></lucide-icon>
+      <span class="text-body-sm text-on-surface flex-1">{{ error() }}</span>
+      <button (click)="loadAll()" class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:bg-secondary-container transition-colors whitespace-nowrap flex items-center gap-2">
+        <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
+        Reintentar
+      </button>
+    </div>
 
-      <div *ngIf="success()" class="mb-6 p-4 bg-success-container text-on-success-container rounded-lg flex items-center gap-3" role="status">
-        <lucide-icon [img]="CheckCircle" class="w-5 h-5 flex-shrink-0"></lucide-icon>
-        <span class="text-body-sm">{{ success() }}</span>
-      </div>
+    <div class="grid lg:grid-cols-[250px_1fr]">
+      <!-- MOBILE: horizontal tab bar -->
+      <nav class="lg:hidden flex items-center gap-1 overflow-x-auto px-4 pt-3 border-b border-outline-variant" aria-label="Secciones de configuración">
+        @for (tab of tabs; track tab.id) {
+          <button (click)="onTabChange(tab.id)"
+                  [class]="activeTab() === tab.id ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-high'"
+                  class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-label-md font-medium transition-colors whitespace-nowrap">
+            <lucide-icon [img]="tab.icon" class="w-5 h-5"></lucide-icon>
+            <span>{{ tab.label }}</span>
+          </button>
+        }
+      </nav>
 
-      <!-- Business Info Card -->
-      <div class="mb-8">
-        <h2 class="text-headline-sm font-bold text-on-surface mb-6 flex items-center gap-2">
-          <lucide-icon [img]="Building" class="w-5 h-5 text-secondary"></lucide-icon>
-          Datos del Negocio
-        </h2>
+      <!-- DESKTOP: vertical sidebar (sticky) -->
+      <aside class="hidden lg:flex lg:flex-col gap-1 p-4 border-r border-outline-variant bg-surface-container-low/60 lg:self-start lg:sticky lg:top-6 max-h-[calc(100vh-6rem)] overflow-y-auto" aria-label="Secciones de configuración">
+        @for (tab of tabs; track tab.id) {
+          <button (click)="onTabChange(tab.id)"
+                  [class]="activeTab() === tab.id ? 'bg-secondary text-on-secondary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high'"
+                  class="flex flex-col items-start gap-1 px-4 py-3 rounded-lg text-left transition-colors w-full">
+            <span class="flex items-center gap-3 text-label-md font-medium">
+              <lucide-icon [img]="tab.icon" class="w-5 h-5"></lucide-icon>
+              {{ tab.label }}
+            </span>
+            <span class="text-body-sm pl-8" [class.text-on-secondary/70]="activeTab() === tab.id" [class.text-on-surface-variant/80]="activeTab() !== tab.id">
+              {{ tab.description }}
+            </span>
+          </button>
+        }
+      </aside>
 
-        <form [formGroup]="negocioForm" (ngSubmit)="onSubmit()" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Nombre -->
-            <div class="md:col-span-2">
-              <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="nombre">Nombre del Negocio</label>
-              <div class="relative">
-                <lucide-icon [img]="Building" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
-                <input type="text" id="nombre" formControlName="nombre"
-                       class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
-                       placeholder="Ej: FitFlow Gym" />
+      <!-- Tab Content -->
+      <div class="min-w-0" [@crossfade]="activeTab()">
+        @switch (activeTab()) {
+
+          <!-- ============ TAB 1: DATOS DEL NEGOCIO ============ -->
+          @case ('negocio') {
+            <div class="p-6 lg:p-8" *ngIf="!tabsLoading().negocio; else negocioSkeleton">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                  <lucide-icon [img]="Building" class="w-5 h-5"></lucide-icon>
+                </div>
+                <div>
+                  <h2 class="text-headline-sm font-bold text-on-surface">Datos del negocio</h2>
+                  <p class="text-body-sm text-on-surface-variant">Información general y contacto</p>
+                </div>
               </div>
-              <p *ngIf="negocioForm.get('nombre')?.invalid && negocioForm.get('nombre')?.touched" 
-                 class="text-label-sm text-error mt-1">El nombre es requerido (mín. 2 caracteres)</p>
+
+              <form [formGroup]="negocioForm" (ngSubmit)="onSaveNegocio()" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Nombre -->
+                  <div class="md:col-span-2">
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="negNombre">Nombre del negocio</label>
+                    <div class="relative">
+                      <lucide-icon [img]="Building" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+                      <input type="text" id="negNombre" formControlName="nombre"
+                             class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+                             placeholder="Ej: FitFlow Gym" />
+                    </div>
+                    @if (negocioForm.get('nombre')?.invalid && (negocioForm.get('nombre')?.touched || negocioForm.get('nombre')?.dirty)) {
+                      <p class="text-label-sm text-error mt-1">El nombre es requerido (mín. 2 caracteres)</p>
+                    }
+                  </div>
+
+                  <!-- Rubro -->
+                  <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="negRubro">Rubro</label>
+                    <div class="relative">
+                      <lucide-icon [img]="Tag" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5 pointer-events-none"></lucide-icon>
+                      <select id="negRubro" formControlName="rubroId"
+                              class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
+                        <option value="">Seleccionar rubro...</option>
+                        @for (rubro of rubros(); track rubro.id) {
+                          <option [value]="rubro.id">{{ rubro.nombre }}</option>
+                        }
+                      </select>
+                    </div>
+                    @if (negocioForm.get('rubroId')?.invalid && (negocioForm.get('rubroId')?.touched || negocioForm.get('rubroId')?.dirty)) {
+                      <p class="text-label-sm text-error mt-1">Selecciona un rubro</p>
+                    }
+                  </div>
+
+                  <!-- Horarios -->
+                  <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="negHorarios">Horarios</label>
+                    <div class="relative">
+                      <lucide-icon [img]="Clock" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+                      <input type="text" id="negHorarios" formControlName="horarios"
+                             class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+                             placeholder="Ej: Lun a Vie 08:00 - 20:00" />
+                    </div>
+                  </div>
+
+                  <!-- Dirección -->
+                  <div class="md:col-span-2">
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="negDireccion">Dirección</label>
+                    <div class="relative">
+                      <lucide-icon [img]="MapPin" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+                      <input type="text" id="negDireccion" formControlName="direccion"
+                             class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+                             placeholder="Ej: Av. Siempre Viva 123" />
+                    </div>
+                  </div>
+
+                  <!-- Teléfono -->
+                  <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="negTelefono">Teléfono</label>
+                    <div class="relative">
+                      <lucide-icon [img]="Phone" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+                      <input type="tel" id="negTelefono" formControlName="telefono"
+                             class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+                             placeholder="Ej: 11 5555 1234" />
+                    </div>
+                  </div>
+
+                  <!-- Email -->
+                  <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="negEmail">Email</label>
+                    <div class="relative">
+                      <lucide-icon [img]="Mail" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
+                      <input type="email" id="negEmail" formControlName="email"
+                             class="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+                             placeholder="contacto@fitflow.com" />
+                    </div>
+                    @if (negocioForm.get('email')?.invalid && (negocioForm.get('email')?.touched || negocioForm.get('email')?.dirty)) {
+                      <p class="text-label-sm text-error mt-1">Ingresa un email válido</p>
+                    }
+                  </div>
+
+                  <!-- Logo (opcional) -->
+                  <div class="md:col-span-2">
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5">Logo del negocio <span class="text-on-surface-variant/60">(opcional)</span></label>
+                    <div class="flex items-center gap-4 flex-wrap">
+                      <div class="w-16 h-16 rounded-xl overflow-hidden border border-outline-variant bg-surface flex items-center justify-center flex-shrink-0">
+                        @if (logoPreview()) {
+                          <img [src]="logoPreview()" alt="Logo" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+                        } @else {
+                          <lucide-icon [img]="ImageIcon" class="w-6 h-6 text-on-surface-variant/60"></lucide-icon>
+                        }
+                      </div>
+                      <div class="flex items-center gap-3 flex-wrap">
+                        <label class="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-high hover:bg-surface-container text-on-surface rounded-lg text-label-md font-medium cursor-pointer transition-colors">
+                          <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                          <span>{{ logoPreview() ? 'Cambiar logo' : 'Subir logo' }}</span>
+                          <input type="file" accept="image/*" (change)="onLogoSelected($event)" class="hidden" />
+                        </label>
+                        @if (logoPreview()) {
+                          <button type="button" (click)="removeLogo()"
+                                  class="inline-flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-error hover:bg-error-container/50 rounded-lg text-label-md font-medium transition-colors">
+                            <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
+                            Quitar
+                          </button>
+                        }
+                        <span class="text-body-sm text-on-surface-variant">PNG/JPG hasta 1 MB</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end pt-6 border-t border-outline-variant">
+                  <button type="submit" [disabled]="savingNegocio() || negocioForm.invalid"
+                          class="micro-btn px-8 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="savingNegocio()"></lucide-icon>
+                    <lucide-icon [img]="Save" class="w-4 h-4" *ngIf="!savingNegocio()"></lucide-icon>
+                    {{ savingNegocio() ? 'Guardando...' : 'Guardar cambios' }}
+                  </button>
+                </div>
+              </form>
             </div>
 
-            <!-- Rubro -->
-            <div>
-              <label class="block text-label-sm font-medium text-on-surface-variant mb-1.5" for="rubroId">Rubro</label>
-              <select id="rubroId" formControlName="rubroId"
-                      class="w-full p-2.5 pl-10 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
-                <option value="">Seleccionar rubro...</option>
-                <option *ngFor="let rubro of rubros()" [value]="rubro.id">{{ rubro.nombre }}</option>
-              </select>
-              <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <lucide-icon [img]="Tag" class="w-5 h-5 text-on-surface-variant"></lucide-icon>
+            <ng-template #negocioSkeleton>
+              <div class="p-6 lg:p-8 space-y-6">
+                <div class="flex items-center gap-4">
+                  <div class="skeleton h-10 w-10 rounded-xl"></div>
+                  <div class="space-y-2">
+                    <div class="skeleton h-5 w-48"></div>
+                    <div class="skeleton h-3 w-64"></div>
+                  </div>
+                </div>
+                @for (row of [1, 2, 3, 4]; track row) {
+                  <div class="flex flex-col gap-2">
+                    <div class="skeleton h-3 w-32"></div>
+                    <div class="skeleton h-11 w-full rounded-lg"></div>
+                  </div>
+                }
+                <div class="flex justify-end pt-4 border-t border-outline-variant">
+                  <div class="skeleton h-10 w-40 rounded-lg"></div>
+                </div>
               </div>
-              <p *ngIf="negocioForm.get('rubroId')?.invalid && negocioForm.get('rubroId')?.touched" 
-                 class="text-label-sm text-error mt-1">Selecciona un rubro</p>
+            </ng-template>
+          }
+
+          <!-- ============ TAB 2: TIPOS DE MEMBRESÍA ============ -->
+          @case ('tipos') {
+            <div class="p-6 lg:p-8">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                    <lucide-icon [img]="BadgeCheck" class="w-5 h-5"></lucide-icon>
+                  </div>
+                  <div>
+                    <h2 class="text-headline-sm font-bold text-on-surface">Tipos de membresía</h2>
+                    <p class="text-body-sm text-on-surface-variant">Catálogo de membresías disponibles</p>
+                  </div>
+                </div>
+                <button (click)="openNewCatalogo()" class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+                  <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+                  <span class="text-label-md font-medium">Nuevo tipo</span>
+                </button>
+              </div>
+
+              <div class="overflow-x-auto" *ngIf="!tabsLoading().tipos; else catalogoSkeleton">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-surface-container-low border-b border-outline-variant">
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant">Nombre</th>
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant">Descripción</th>
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant">Planes asociados</th>
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant">Estado</th>
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-body-sm" [@staggerGrid]="tiposMembresia()">
+                    @for (tipo of tiposMembresia(); track tipo.id) {
+                      <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+                        <td class="p-3 font-medium text-on-surface">{{ tipo.nombre }}</td>
+                        <td class="p-3 text-on-surface-variant max-w-xs truncate">
+                          {{ tipo.descripcion || '-' }}
+                        </td>
+                        <td class="p-3">
+                          <span class="inline-flex items-center gap-1.5 text-on-surface-variant">
+                            <lucide-icon [img]="Boxes" class="w-4 h-4"></lucide-icon>
+                            {{ cantidadPlanes(tipo.id) }}
+                          </span>
+                        </td>
+                        <td class="p-3">
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
+                                [ngClass]="tipo.activo ? 'bg-success-container text-on-success-container' : 'bg-surface-variant text-on-surface-variant'">
+                            {{ tipo.activo ? 'Activo' : 'Inactivo' }}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          <div class="flex items-center justify-end gap-1">
+                            <button (click)="openEditCatalogo(tipo)"
+                                    class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                                    title="Editar" aria-label="Editar tipo de membresía">
+                              <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                            </button>
+                            <button (click)="onDeleteCatalogo(tipo)"
+                                    class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                                    [title]="cantidadPlanes(tipo.id) > 0 ? 'No se puede eliminar: tiene planes asociados' : 'Desactivar'"
+                                    aria-label="Desactivar tipo de membresía">
+                              <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5" class="p-10 text-center text-on-surface-variant">
+                          <lucide-icon [img]="BadgeCheck" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+                          <p class="text-body-md font-medium text-on-surface">No hay tipos de membresía</p>
+                          <p class="text-body-sm mt-1">Crea el primer tipo para comenzar a armar planes.</p>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          }
 
-          <!-- Form Actions -->
-          <div class="flex justify-end pt-6 border-t border-outline-variant">
-            <button type="submit" [disabled]="saving() || negocioForm.invalid"
-                    class="px-8 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-              <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
-              <lucide-icon [img]="Save" class="w-4 h-4" *ngIf="!saving()"></lucide-icon>
-              {{ saving() ? 'Guardando...' : 'Guardar Cambios' }}
-            </button>
-          </div>
-        </form>
-      </div>
+          <!-- ============ TAB 3: MEDIOS DE PAGO ============ -->
+          @case ('medios') {
+            <div class="p-6 lg:p-8">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                    <lucide-icon [img]="CreditCard" class="w-5 h-5"></lucide-icon>
+                  </div>
+                  <div>
+                    <h2 class="text-headline-sm font-bold text-on-surface">Medios de pago</h2>
+                    <p class="text-body-sm text-on-surface-variant">Formas de cobro disponibles al registrar pagos</p>
+                  </div>
+                </div>
+                <button (click)="openNewCatalogo()" class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+                  <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+                  <span class="text-label-md font-medium">Nuevo medio</span>
+                </button>
+              </div>
 
-      <!-- Current Business Info (Read-only display) -->
-      <div *ngIf="negocio()" class="bg-surface-container-low border border-outline-variant rounded-lg p-6">
-        <h3 class="text-label-md font-medium text-on-surface mb-4 flex items-center gap-2">
-          <lucide-icon [img]="Building" class="w-4 h-4 text-secondary"></lucide-icon>
-          Información Actual
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-body-sm">
-          <div>
-            <p class="text-on-surface-variant">ID del Negocio</p>
-            <p class="font-medium text-on-surface">{{ negocio()!.id }}</p>
-          </div>
-          <div>
-            <p class="text-on-surface-variant">Rubro</p>
-            <p class="font-medium text-on-surface">{{ negocio()!.rubroNombre }}</p>
-          </div>
-          <div>
-            <p class="text-on-surface-variant">Rubro ID</p>
-            <p class="font-medium text-on-surface">{{ negocio()!.rubroId }}</p>
-          </div>
-        </div>
+              <div class="overflow-x-auto" *ngIf="!tabsLoading().medios; else catalogoSkeleton">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-surface-container-low border-b border-outline-variant">
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant">Nombre</th>
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant">Estado</th>
+                      <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-body-sm" [@staggerGrid]="mediosPago()">
+                    @for (medio of mediosPago(); track medio.id) {
+                      <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+                        <td class="p-3 font-medium text-on-surface">{{ medio.nombre }}</td>
+                        <td class="p-3">
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
+                                [ngClass]="medio.activo ? 'bg-success-container text-on-success-container' : 'bg-surface-variant text-on-surface-variant'">
+                            {{ medio.activo ? 'Activo' : 'Inactivo' }}
+                          </span>
+                        </td>
+                        <td class="p-3 text-right">
+                          <div class="flex items-center justify-end gap-1">
+                            <button (click)="openEditCatalogo(medio)"
+                                    class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                                    title="Editar" aria-label="Editar medio de pago">
+                              <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                            </button>
+                            <button (click)="onDeleteCatalogo(medio)"
+                                    class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                                    title="Desactivar" aria-label="Desactivar medio de pago">
+                              <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="3" class="p-10 text-center text-on-surface-variant">
+                          <lucide-icon [img]="CreditCard" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+                          <p class="text-body-md font-medium text-on-surface">No hay medios de pago</p>
+                          <p class="text-body-sm mt-1">Agrega efectivo, tarjeta, transferencia y más.</p>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          <!-- ============ TAB 4: USUARIOS DEL STAFF ============ -->
+          @case ('usuarios') {
+            <div class="p-6 lg:p-8">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                    <lucide-icon [img]="Users" class="w-5 h-5"></lucide-icon>
+                  </div>
+                  <div>
+                    <h2 class="text-headline-sm font-bold text-on-surface">Usuarios del staff</h2>
+                    <p class="text-body-sm text-on-surface-variant">Accesos, roles y estado de tu equipo</p>
+                  </div>
+                </div>
+                <button (click)="openNewUsuario()" class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+                  <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+                  <span class="text-label-md font-medium">Nuevo usuario</span>
+                </button>
+              </div>
+
+              <div class="space-y-3" *ngIf="!tabsLoading().usuarios; else usuariosSkeleton" [@staggerGrid]="usuarios()">
+                @for (user of usuarios(); track user.id) {
+                  <div class="flex items-center gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl hover:bg-surface-container transition-colors">
+                    <div class="w-11 h-11 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-medium text-label-md flex-shrink-0">
+                      {{ getUsuarioInitials(user) }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <p class="font-medium text-on-surface text-body-md truncate">{{ getUsuarioFullName(user) }}</p>
+                        @if (isCurrentUser(user)) {
+                          <span class="px-2 py-0.5 rounded-full text-label-sm font-medium bg-primary-container text-on-primary-container">Tú</span>
+                        }
+                        @if (!user.activo) {
+                          <span class="px-2 py-0.5 rounded-full text-label-sm font-medium bg-surface-variant text-on-surface-variant">Inactivo</span>
+                        }
+                      </div>
+                      <p class="text-body-sm text-on-surface-variant truncate">{{ user.email }}</p>
+                    </div>
+                    <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-medium {{ getRolBadgeClasses(user.rol) }}">
+                      <lucide-icon [img]="user.rol === 'super_admin' ? ShieldCheck : user.rol === 'dueno' ? BadgeCheck : user.rol === 'administrador' ? Users : UserIcon" class="w-3.5 h-3.5 mr-1"></lucide-icon>
+                      {{ getRolLabel(user.rol) }}
+                    </span>
+                    <div class="flex items-center gap-1">
+                      <label class="relative inline-flex items-center cursor-pointer"
+                             [class.cursor-not-allowed]="!user.activo || !canDeactivateUsuario(user)"
+                             [title]="user.id === roleService.currentUserId() ? 'No podés desactivar tu propia cuenta' : (user.rol === 'super_admin' ? 'Cuenta Super Admin' : (user.activo ? 'Desactivar usuario' : 'Reactivación no disponible'))">
+                        <input type="checkbox" [checked]="user.activo" (change)="onToggleUsuarioActivo(user)"
+                               [disabled]="!user.activo || !canDeactivateUsuario(user)"
+                               class="sr-only peer" />
+                        <div class="w-10 h-6 rounded-full peer bg-surface-container-highest peer-checked:bg-success transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4 peer-disabled:opacity-50"></div>
+                      </label>
+                      <button (click)="canEditUsuario(user) ? openEditUsuario(user) : null"
+                              [disabled]="!canEditUsuario(user)"
+                              class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed"
+                              [title]="canEditUsuario(user) ? 'Editar usuario' : 'Cuenta Super Admin'">
+                        <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                      </button>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="p-10 text-center text-on-surface-variant">
+                    <lucide-icon [img]="Users" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+                    <p class="text-body-md font-medium text-on-surface">No hay usuarios del staff</p>
+                    <p class="text-body-sm mt-1">Invita a tu equipo para comenzar.</p>
+                  </div>
+                }
+              </div>
+
+              <p class="text-body-sm text-on-surface-variant/70 mt-6 flex items-center gap-1.5">
+                <lucide-icon [img]="ShieldCheck" class="w-4 h-4"></lucide-icon>
+                Solo un dueño puede crear otros dueños y las cuentas Super Admin no pueden modificarse.
+              </p>
+            </div>
+          }
+        }
       </div>
     </div>
   </div>
 
+  <!-- ============ CATÁLOGO MODAL (tipos / medios) ============ -->
+  <div *ngIf="showCatalogoModal()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="closeCatalogoModal()">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Formulario de catálogo" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h3 class="text-headline-md font-bold text-on-surface">{{ getCatalogoTitle() }}</h3>
+        <button (click)="closeCatalogoModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="catalogoForm" (ngSubmit)="onSaveCatalogo()" class="p-6 space-y-6">
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Nombre</label>
+          <input type="text" formControlName="nombre"
+                 [placeholder]="activeTab() === 'tipos' ? 'Ej: Clásica' : 'Ej: Efectivo'"
+                 class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+          @if (catalogoForm.get('nombre')?.invalid && (catalogoForm.get('nombre')?.touched || catalogoForm.get('nombre')?.dirty)) {
+            <p class="text-label-sm text-error mt-1">El nombre es requerido (mín. 2 caracteres)</p>
+          }
+        </div>
+
+        @if (activeTab() === 'tipos') {
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Descripción</label>
+            <textarea formControlName="descripcion" rows="3"
+                      class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all resize-none"
+                      placeholder="Descripción opcional..."></textarea>
+          </div>
+        }
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeCatalogoModal()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="catalogoForm.invalid || savingCatalogo()"
+                  class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="savingCatalogo()"></lucide-icon>
+            {{ editingCatalogo() ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ USUARIO MODAL ============ -->
+  <div *ngIf="showUsuarioModal()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="closeUsuarioModal()">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Formulario de usuario" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h3 class="text-headline-md font-bold text-on-surface">{{ getUsuarioModalTitle() }}</h3>
+        <button (click)="closeUsuarioModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="usuarioForm" (ngSubmit)="onSaveUsuario()" class="p-6 space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Nombre</label>
+            <input type="text" formControlName="nombre" placeholder="Ej: María"
+                   class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            @if (usuarioForm.get('nombre')?.invalid && (usuarioForm.get('nombre')?.touched || usuarioForm.get('nombre')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Ingresa el nombre</p>
+            }
+          </div>
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Apellido</label>
+            <input type="text" formControlName="apellido" placeholder="Ej: González"
+                   class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            @if (usuarioForm.get('apellido')?.invalid && (usuarioForm.get('apellido')?.touched || usuarioForm.get('apellido')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Ingresa el apellido</p>
+            }
+          </div>
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Email</label>
+            <div class="relative">
+              <lucide-icon [img]="Mail" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4"></lucide-icon>
+              <input type="email" formControlName="email" placeholder="maria@fitflow.com"
+                     class="w-full pl-9 pr-3 p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            </div>
+            @if (usuarioForm.get('email')?.invalid && (usuarioForm.get('email')?.touched || usuarioForm.get('email')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Ingresa un email válido</p>
+            }
+          </div>
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Rol</label>
+            <div class="relative">
+              <lucide-icon [img]="ShieldCheck" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4 pointer-events-none"></lucide-icon>
+              <select formControlName="rol"
+                      class="w-full pl-9 pr-3 p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
+                @for (opt of rolOptionsAvailable(); track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+            @if (usuarioForm.get('rol')?.invalid && (usuarioForm.get('rol')?.touched || usuarioForm.get('rol')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Selecciona un rol</p>
+            }
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">
+              Contraseña
+              @if (editingUsuario()) {
+                <span class="text-on-surface-variant/60">(dejar vacío para no cambiar)</span>
+              }
+            </label>
+            <div class="relative">
+              <lucide-icon [img]="KeyRound" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4"></lucide-icon>
+              <input [type]="passwordVisible() ? 'text' : 'password'" formControlName="password"
+                     placeholder="Mínimo 6 caracteres"
+                     class="w-full pl-9 pr-11 p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+              <button type="button" (click)="togglePassword()"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-on-surface-variant hover:text-primary rounded-lg transition-colors"
+                      [title]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <lucide-icon [img]="passwordVisible() ? EyeOff : Eye" class="w-4 h-4"></lucide-icon>
+              </button>
+            </div>
+            @if (usuarioForm.get('password')?.invalid && (usuarioForm.get('password')?.touched || usuarioForm.get('password')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">
+                {{ editingUsuario() ? 'La contraseña debe tener al menos 6 caracteres' : 'La contraseña es requerida (mín. 6 caracteres)' }}
+              </p>
+            }
+            @if (!editingUsuario() && !usuarioForm.get('password')?.touched && !usuarioForm.get('password')?.value) {
+              <p class="text-label-sm text-on-surface-variant/70 mt-1">Se usará para el primer inicio de sesión.</p>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeUsuarioModal()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="usuarioForm.invalid || savingUsuario()"
+                  class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="savingUsuario()"></lucide-icon>
+            {{ editingUsuario() ? 'Actualizar usuario' : 'Crear usuario' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shared skeletons -->
+  <ng-template #catalogoSkeleton>
+    <div class="space-y-2 p-2">
+      @for (row of [1, 2, 3]; track row) {
+        <div class="flex items-center gap-4 py-3">
+          <div class="skeleton h-4 w-40"></div>
+          <div class="skeleton h-4 w-32"></div>
+          <div class="skeleton h-6 w-16 rounded-full"></div>
+          <div class="skeleton h-5 w-16 ml-auto"></div>
+        </div>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template #usuariosSkeleton>
+    <div class="space-y-3">
+      @for (row of [1, 2, 3, 4]; track row) {
+        <div class="flex items-center gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl">
+          <div class="skeleton h-11 w-11 rounded-full"></div>
+          <div class="flex-1 space-y-2">
+            <div class="skeleton h-4 w-48"></div>
+            <div class="skeleton h-3 w-64"></div>
+          </div>
+          <div class="skeleton h-6 w-24 rounded-full"></div>
+          <div class="skeleton h-6 w-10 rounded-full"></div>
+        </div>
+      }
+    </div>
+  </ng-template>
+
   <ng-template #loadingTemplate>
-    <div class="flex-1 flex items-center justify-center">
-      <div class="text-center">
-        <lucide-icon [img]="Loader2" class="w-10 h-10 mx-auto text-secondary animate-spin"></lucide-icon>
-        <p class="text-body-md text-on-surface-variant mt-3">Cargando configuración...</p>
+    <div class="p-6 flex flex-col gap-6 max-w-3xl mx-auto w-full">
+      <div class="flex items-center gap-4">
+        <div class="skeleton h-12 w-12 rounded-xl"></div>
+        <div class="flex-1">
+          <div class="skeleton h-5 w-44 mb-2"></div>
+          <div class="skeleton h-3 w-64"></div>
+        </div>
+      </div>
+      @for (row of [1, 2, 3, 4, 5]; track row) {
+        <div class="flex flex-col gap-2">
+          <div class="skeleton h-3 w-32"></div>
+          <div class="skeleton h-11 w-full rounded-lg"></div>
+        </div>
+      }
+      <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+        <div class="skeleton h-10 w-28 rounded-lg"></div>
+        <div class="skeleton h-10 w-36 rounded-lg"></div>
       </div>
     </div>
   </ng-template>

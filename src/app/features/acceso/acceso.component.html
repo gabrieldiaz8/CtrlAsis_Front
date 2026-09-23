@@ -9,9 +9,11 @@
         <input
           formControlName="dni"
           autofocus
+          aria-label="DNI del socio"
           class="w-full pl-14 pr-6 py-5 text-display-lg font-display-lg text-on-surface bg-surface border-2 border-outline-variant rounded-xl focus:border-secondary focus:ring-4 focus:ring-primary outline-none transition-all text-center tracking-widest placeholder:text-on-surface-variant/50"
           placeholder="Escanea o ingresa DNI"
           type="text"
+          [attr.aria-invalid]="checkinForm.get('dni')?.invalid && checkinForm.get('dni')?.touched ? true : null"
         />
       </div>
       <button
@@ -28,19 +30,11 @@
     <p class="text-body-md font-body-md text-on-surface-variant mt-4">El cursor debe estar en el campo de texto para usar el lector de código de barras.</p>
   </div>
 
-  <!-- Error Alert -->
-  @if (error()) {
-    <div class="w-full max-w-2xl mb-8 p-4 bg-error-container text-error rounded-lg border border-error flex items-center gap-3" role="alert">
-      <lucide-icon [img]="AlertTriangle" class="w-5 h-5 flex-shrink-0" size="20"></lucide-icon>
-      <span class="text-body-md font-body-md">{{ error() }}</span>
-    </div>
-  }
-
   <!-- Result Areas -->
-  <div class="w-full" id="status-container">
+  <div class="w-full" id="status-container" role="status" aria-live="polite">
     <!-- PERMITIDO STATE -->
     @if (resultState() === 'permitido' && socio()) {
-      <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-success overflow-hidden animate-in fade-in zoom-in-95">
+      <div @fadeZoom class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-success overflow-hidden">
         <div class="bg-success text-on-success py-6 px-8 flex items-center justify-center gap-4">
           <lucide-icon [img]="CheckCircle" class="w-12 h-12" size="40" style="font-variation-settings: 'FILL' 1;"></lucide-icon>
           <h2 class="text-display-lg font-display tracking-tight">ACCESO PERMITIDO</h2>
@@ -59,7 +53,7 @@
 
     <!-- RECHAZADO STATE -->
     @if (resultState() === 'rechazado' && socio()) {
-      <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-error overflow-hidden animate-in fade-in zoom-in-95">
+      <div @fadeZoom class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-error overflow-hidden">
         <div class="bg-error text-on-error py-6 px-8 flex items-center justify-center gap-4">
           <lucide-icon [img]="XCircle" class="w-12 h-12" size="40" style="font-variation-settings: 'FILL' 1;"></lucide-icon>
           <h2 class="text-display-lg font-display tracking-tight">ACCESO DENEGADO</h2>
@@ -85,7 +79,7 @@
 
     <!-- EXCEPCIÓN STATE -->
     @if (resultState() === 'excepcion' && socio()) {
-      <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-warning overflow-hidden animate-in fade-in zoom-in-95">
+      <div @fadeZoom class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-warning overflow-hidden">
         <div class="bg-warning text-on-warning py-6 px-8 flex items-center justify-center gap-4">
           <lucide-icon [img]="Info" class="w-12 h-12" size="40" style="font-variation-settings: 'FILL' 1;"></lucide-icon>
           <h2 class="text-display-lg font-display tracking-tight">REVISIÓN REQUERIDA</h2>
@@ -102,12 +96,14 @@
               <div class="text-body-md font-body-md text-on-warning-container capitalize">{{ socio()?.observacion || 'Revisión requerida' }}</div>
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-label-md font-label-md text-on-warning-container">Observación / Autorización (Opcional)</label>
+              <label for="obs-autorizacion" class="text-label-md font-label-md text-on-warning-container">Observación / Autorización (Opcional)</label>
               <div class="flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
+                  id="obs-autorizacion"
                   [formControl]="observacionControl"
                   placeholder="Ej: Firmó documento físico hoy..."
+                  aria-label="Observación o autorización"
                   class="flex-1 bg-surface border border-outline-variant rounded-lg px-4 py-2 text-body-md font-body-md focus:border-secondary outline-none transition-colors"
                 />
                 <button
@@ -128,7 +124,7 @@
 
     <!-- EXCEPCIÓN CONFIRMADA STATE -->
     @if (resultState() === 'excepcion_confirmada' && socio()) {
-      <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-success overflow-hidden animate-in fade-in zoom-in-95">
+      <div @fadeZoom class="w-full bg-surface-container-lowest rounded-xl shadow-lg border border-success overflow-hidden">
         <div class="bg-success text-on-success py-6 px-8 flex items-center justify-center gap-4">
           <lucide-icon [img]="CheckCircle" class="w-12 h-12" size="40" style="font-variation-settings: 'FILL' 1;"></lucide-icon>
           <h2 class="text-display-lg font-display tracking-tight">EXCEPCIÓN CONFIRMADA</h2>
@@ -158,6 +154,66 @@
         <lucide-icon [img]="BadgeCheck" class="w-16 h-16 text-on-surface-variant/50 mx-auto mb-4" size="64"></lucide-icon>
         <h3 class="text-headline-md font-headline-md text-on-surface-variant mb-2">Esperando validación</h3>
         <p class="text-body-md font-body-md text-on-surface-variant">Ingrese o escanee el DNI del socio para verificar su acceso</p>
+      </div>
+    }
+  </div>
+
+  <!-- Accesos de hoy -->
+  <div class="w-full mt-8 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+      <h3 class="text-headline-md font-semibold text-on-surface flex items-center gap-2">
+        <lucide-icon [img]="Clock" class="w-5 h-5 text-secondary"></lucide-icon>
+        Accesos de hoy
+      </h3>
+      <button (click)="loadAccesosHoy()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors" title="Refrescar" aria-label="Recargar accesos de hoy">
+        <lucide-icon [img]="RefreshCw" class="w-5 h-5"></lucide-icon>
+      </button>
+    </div>
+
+    @if (accesosLoading()) {
+      <div class="flex justify-center items-center py-8">
+        <lucide-icon [img]="Loader2" class="w-6 h-6 animate-spin text-secondary"></lucide-icon>
+      </div>
+    } @else if (accesosError()) {
+      <div class="px-6 py-4 flex items-center gap-2 text-body-sm text-error" role="alert">
+        <lucide-icon [img]="AlertTriangle" class="w-4 h-4 flex-shrink-0"></lucide-icon>
+        <span class="flex-1">{{ accesosError() }}</span>
+      </div>
+    } @else if (accesosHoy().length === 0) {
+      <div class="px-6 py-8 text-center text-body-md text-on-surface-variant">
+        <lucide-icon [img]="BadgeCheck" class="w-10 h-10 mx-auto mb-2 text-on-surface-variant/50"></lucide-icon>
+        Aún no hay accesos registrados hoy
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead>
+            <tr class="bg-surface-container-low border-b border-outline-variant">
+              <th class="px-6 py-3 text-label-md font-medium text-on-surface-variant">Hora</th>
+              <th class="px-6 py-3 text-label-md font-medium text-on-surface-variant">Socio</th>
+              <th class="px-6 py-3 text-label-md font-medium text-on-surface-variant">Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (acceso of accesosHoy(); track acceso.id) {
+              <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+                <td class="px-6 py-3 text-body-sm font-medium text-on-surface">{{ formatHora(acceso.fechaHora) }}</td>
+                <td class="px-6 py-3">
+                  <div>
+                    <p class="text-body-sm font-medium text-on-surface">{{ acceso.socioNombre }}</p>
+                    <p class="text-label-sm text-on-surface-variant">DNI: {{ acceso.socioDni }}</p>
+                  </div>
+                </td>
+                <td class="px-6 py-3">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm border" [ngClass]="getResultadoBadge(acceso.resultado).class">
+                    <lucide-icon [img]="getResultadoBadge(acceso.resultado).icon" class="w-3.5 h-3.5"></lucide-icon>
+                    {{ getResultadoBadge(acceso.resultado).label }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     }
   </div>

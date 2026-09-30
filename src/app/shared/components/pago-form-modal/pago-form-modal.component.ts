@@ -130,7 +130,7 @@ export class PagoFormModalComponent implements OnChanges {
   searchSocios(term: string) {
     this.socioSearching.set(true);
     const searchParam = term ? term : undefined;
-    this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, searchParam, undefined, 6, 0).subscribe({
+    this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, searchParam, undefined, undefined, 6, 1).subscribe({
       next: (response) => {
         this.socioResults.set((response.data || []) as SocioResponseDto[]);
         this.socioSearching.set(false);

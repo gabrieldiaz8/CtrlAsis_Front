@@ -177,16 +177,17 @@ export class SociosService extends BaseService {
      * @param apellido Filtrar por apellido (coincidencia parcial)
      * @param search Búsqueda global por DNI, nombre o apellido
      * @param activo Filtrar por estado activo (true/false)
+     * @param estadoMembresia Filtrar por el estado de la membresía MÁS RECIENTE del socio. \&#39;activa\&#39; &#x3D; estado activa con fecha_fin &gt;&#x3D; hoy. \&#39;vencida\&#39; &#x3D; estado vencida, o activa con fecha_fin ya pasada. \&#39;sin_membresia\&#39; &#x3D; el socio nunca tuvo membresía. Se combina con search y activo.
      * @param limit 
      * @param page 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PaginatedSociosResponseDto>;
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PaginatedSociosResponseDto>>;
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PaginatedSociosResponseDto>>;
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, estadoMembresia?: 'activa' | 'vencida' | 'suspendida' | 'cancelada' | 'sin_membresia', limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PaginatedSociosResponseDto>;
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, estadoMembresia?: 'activa' | 'vencida' | 'suspendida' | 'cancelada' | 'sin_membresia', limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PaginatedSociosResponseDto>>;
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, estadoMembresia?: 'activa' | 'vencida' | 'suspendida' | 'cancelada' | 'sin_membresia', limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PaginatedSociosResponseDto>>;
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, estadoMembresia?: 'activa' | 'vencida' | 'suspendida' | 'cancelada' | 'sin_membresia', limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -230,6 +231,15 @@ export class SociosService extends BaseService {
             localVarQueryParameters,
             'activo',
             <any>activo,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'estadoMembresia',
+            <any>estadoMembresia,
             QueryParamStyle.Form,
             true,
         );

@@ -163,7 +163,7 @@ export class PagosComponent implements OnInit {
   searchSociosFiltro(term: string) {
     this.socioSearching.set(true);
     this.socioFiltroRequest?.unsubscribe();
-    this.socioFiltroRequest = this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, term, undefined, 6, 0).subscribe({
+    this.socioFiltroRequest = this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, term, undefined, undefined, 6, 1).subscribe({
       next: (response) => {
         this.socioResults.set((response.data || []) as SocioResponseDto[]);
         this.socioSearching.set(false);

@@ -1,4 +1,5 @@
 .gitignore
+.openapi-generator-ignore
 README.md
 api.base.service.ts
 api.module.ts
@@ -21,6 +22,7 @@ git_push.sh
 index.ts
 model/accesoResponseDto.ts
 model/asistenciaSemanalDto.ts
+model/conteosEstadoMembresiaDto.ts
 model/createMedioPagoDto.ts
 model/createMembresiaDto.ts
 model/createNegocioDto.ts
@@ -47,6 +49,7 @@ model/paginatedPagosResponseDto.ts
 model/paginatedSociosResponseDto.ts
 model/pagoResponseDto.ts
 model/planMembresiaResponseDto.ts
+model/resumenMembresiaDto.ts
 model/rubroResponseDto.ts
 model/socioResponseDto.ts
 model/tipoMembresiaResponseDto.ts

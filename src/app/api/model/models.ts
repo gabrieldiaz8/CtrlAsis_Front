@@ -1,5 +1,6 @@
 export * from './accesoResponseDto';
 export * from './asistenciaSemanalDto';
+export * from './conteosEstadoMembresiaDto';
 export * from './createMedioPagoDto';
 export * from './createMembresiaDto';
 export * from './createNegocioDto';
@@ -25,6 +26,7 @@ export * from './paginatedPagosResponseDto';
 export * from './paginatedSociosResponseDto';
 export * from './pagoResponseDto';
 export * from './planMembresiaResponseDto';
+export * from './resumenMembresiaDto';
 export * from './rubroResponseDto';
 export * from './socioResponseDto';
 export * from './tipoMembresiaResponseDto';

@@ -8,6 +8,7 @@
  * Do not edit the class manually.
  */
 import { SocioResponseDto } from './socioResponseDto';
+import { ConteosEstadoMembresiaDto } from './conteosEstadoMembresiaDto';
 
 
 export interface PaginatedSociosResponseDto { 
@@ -19,5 +20,9 @@ export interface PaginatedSociosResponseDto {
      * Socios de la página actual
      */
     data: Array<SocioResponseDto>;
+    /**
+     * Conteo de socios por estado de membresía, según la búsqueda actual
+     */
+    conteosMembresia: ConteosEstadoMembresiaDto;
 }
 

@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ResumenMembresiaDto } from './resumenMembresiaDto';
 import { MembresiaActivaInfoDto } from './membresiaActivaInfoDto';
 
 
@@ -40,5 +41,9 @@ export interface SocioResponseDto {
      * Membresía activa del socio (si tiene)
      */
     membresiaActiva?: MembresiaActivaInfoDto;
+    /**
+     * Resumen de la membresía más reciente del socio, o null si nunca tuvo una
+     */
+    membresiaResumen?: ResumenMembresiaDto | null;
 }
 

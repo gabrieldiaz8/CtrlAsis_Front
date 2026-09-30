@@ -268,7 +268,7 @@ export class MembresiasComponent implements OnInit {
     if (!term) return;
 
     this.searchingSocio.set(true);
-    this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, term, undefined, 10, 0).subscribe({
+    this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, term, undefined, undefined, 10, 1).subscribe({
       next: (response) => {
         const socios = response.data || [];
         if (socios.length > 0) {

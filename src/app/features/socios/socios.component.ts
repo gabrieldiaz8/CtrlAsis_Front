@@ -2,9 +2,15 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, H
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap } from 'rxjs';
-import { LucideAngularModule, Users, Search, Filter, Plus, MoreVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt } from 'lucide-angular';
+import { LucideAngularModule, Users, Search, Filter, Plus, MoreVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt, CalendarClock, CircleSlash, Ban, PauseCircle, LucideIconData } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
-import { SociosService, SocioResponseDto, CreateSocioDto, UpdateSocioDto } from '@api';
+import {
+  SociosService,
+  SocioResponseDto,
+  CreateSocioDto,
+  UpdateSocioDto,
+  ConteosEstadoMembresiaDto,
+} from '@api';
 import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto } from '@api';
 import { PlanesMembresiaService, PlanMembresiaResponseDto } from '@api';
 import { PagosService, PagoResponseDto, CreatePagoDto } from '@api';
@@ -18,6 +24,24 @@ import { modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations'
 
 /** Paso del alta de socio con membresía que se está ejecutando o que falló. */
 type AltaPaso = 'socio' | 'membresia' | 'pago';
+
+/**
+ * Los mismos valores que acepta el query param `estadoMembresia` del backend, que
+ * a su vez son las claves de `ConteosEstadoMembresiaDto`. Un solo vocabulario para
+ * chip, conteo y request: si hay que mapear entre listas, en algún momento se
+ * desincroniza.
+ */
+type EstadoMembresiaFiltro =
+  | 'activa'
+  | 'vencida'
+  | 'suspendida'
+  | 'cancelada'
+  | 'sin_membresia';
+
+interface ChipMembresia {
+  label: string;
+  value: EstadoMembresiaFiltro | undefined;
+}
 
 @Component({
   selector: 'app-socios',
@@ -68,6 +92,10 @@ export class SociosComponent implements OnInit {
   readonly DollarSign = DollarSign;
   readonly Landmark = Landmark;
   readonly Receipt = Receipt;
+  readonly CalendarClock = CalendarClock;
+  readonly CircleSlash = CircleSlash;
+  readonly Ban = Ban;
+  readonly PauseCircle = PauseCircle;
 
   socios = signal<SocioResponseDto[]>([]);
   loading = signal(true);
@@ -76,6 +104,20 @@ export class SociosComponent implements OnInit {
   currentPage = signal(1);
   pageSize = 10;
   totalItems = signal(0);
+
+  /** Filtro por estado de la membresía más reciente. `undefined` = Todos. */
+  estadoMembresia = signal<EstadoMembresiaFiltro | undefined>(undefined);
+  /** Conteos que devuelve el backend según la búsqueda actual. */
+  conteosMembresia = signal<ConteosEstadoMembresiaDto | null>(null);
+
+  readonly chipsMembresia: ChipMembresia[] = [
+    { label: 'Todos', value: undefined },
+    { label: 'Activas', value: 'activa' },
+    { label: 'Vencidas', value: 'vencida' },
+    { label: 'Suspendidas', value: 'suspendida' },
+    { label: 'Canceladas', value: 'cancelada' },
+    { label: 'Sin membresía', value: 'sin_membresia' },
+  ];
 
   showModal = signal(false);
   editingSocio = signal<SocioResponseDto | null>(null);
@@ -215,16 +257,25 @@ export class SociosComponent implements OnInit {
 
   loadSocios() {
     const term = this.searchTerm().trim();
-    const page = this.currentPage() - 1;
+    // `page` es 1-based (lo que documenta el backend y el default del Swagger).
+    // Mandarlo 0-based hacía que la página 2 del listado repitiera la 1.
+    const page = this.currentPage();
 
     this.loading.set(true);
     this.error.set(null);
 
     const searchParam = term ? term : undefined;
-    
-    // dni, nombre, apellido, search, activo, limit, page
+
+    // dni, nombre, apellido, search, activo, estadoMembresia, limit, page
     const request = this.sociosService.sociosControllerFindAll(
-      undefined, undefined, undefined, searchParam, undefined, this.pageSize, page
+      undefined,
+      undefined,
+      undefined,
+      searchParam,
+      undefined,
+      this.estadoMembresia(),
+      this.pageSize,
+      page,
     );
 
     this.sociosRequest?.unsubscribe();
@@ -232,6 +283,7 @@ export class SociosComponent implements OnInit {
       next: (response) => {
         this.socios.set(response.data || response);
         this.totalItems.set(response.total ?? 0);
+        this.conteosMembresia.set(response.conteosMembresia ?? null);
         this.loading.set(false);
       },
       error: (err) => {
@@ -241,6 +293,87 @@ export class SociosComponent implements OnInit {
         console.error('Error loading socios:', err);
       }
     });
+  }
+
+  /** Cambia el chip de estado. Vuelve a la primera página porque el total cambia. */
+  onEstadoMembresiaChange(estado: EstadoMembresiaFiltro | undefined) {
+    if (this.estadoMembresia() === estado) return;
+    this.estadoMembresia.set(estado);
+    this.currentPage.set(1);
+    this.loadSocios();
+  }
+
+  /** Conteo de un chip. 'Todos' usa el total del criterio de búsqueda. */
+  conteoChip(estado: EstadoMembresiaFiltro | undefined): number {
+    const conteos = this.conteosMembresia();
+    if (!conteos) return 0;
+    return estado ? (conteos[estado] ?? 0) : (conteos.total ?? 0);
+  }
+
+  /**
+   * Estado visual del badge de una fila. Devuelve la etiqueta y las clases ya
+   * resueltas, para no repetir el ternario de colores en el template.
+   *
+   * El DTO trae el estado persistido: una membresía puede seguir en 'activa'
+   * con la fecha ya pasada, y en la lista figura como vencida. Se recalcula acá
+   * con la misma regla que usa el filtro del backend (fecha_fin >= CURRENT_DATE
+   * sigue vigente) para que el badge no contradiga al chip que la trajo.
+   */
+  badgeMembresia(resumen: SocioResponseDto['membresiaResumen']): {
+    etiqueta: string;
+    clases: string;
+    icono: LucideIconData;
+  } {
+    if (!resumen) {
+      return {
+        etiqueta: 'Sin membresía',
+        clases: 'bg-surface-container-highest text-on-surface-variant border-outline-variant',
+        icono: CircleSlash,
+      };
+    }
+
+    switch (this.estadoEfectivoMembresia(resumen)) {
+      case 'activa':
+        return {
+          etiqueta: 'Activa',
+          clases: 'bg-success-container text-on-success-container border-success',
+          icono: CheckCircle,
+        };
+      case 'vencida':
+        return {
+          etiqueta: 'Vencida',
+          clases: 'bg-warning-container text-on-warning-container border-warning',
+          icono: CalendarClock,
+        };
+      case 'suspendida':
+        return {
+          etiqueta: 'Suspendida',
+          clases: 'bg-primary-container text-on-primary-container border-primary',
+          icono: PauseCircle,
+        };
+      default:
+        return {
+          etiqueta: 'Cancelada',
+          clases: 'bg-error-container text-on-error-container border-error',
+          icono: Ban,
+        };
+    }
+  }
+
+  /**
+   * Estado efectivo de una membresía: el persistido, salvo que siga 'activa'
+   * con `fechaFin` ya vencida, en cuyo caso es 'vencida'.
+   *
+   * `fechaFin` llega como date-only en UTC medianoche; se compara contra el
+   * día local para no marcar como vencida una membresía que vence hoy.
+   */
+  private estadoEfectivoMembresia(
+    resumen: NonNullable<SocioResponseDto['membresiaResumen']>,
+  ): 'activa' | 'vencida' | 'suspendida' | 'cancelada' {
+    if (resumen.estado !== 'activa' || !resumen.fechaFin) return resumen.estado;
+    const hoy = new Date();
+    const hoyLocal = Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    return new Date(resumen.fechaFin).getTime() < hoyLocal ? 'vencida' : 'activa';
   }
 
   totalPages = computed(() => Math.ceil(this.totalItems() / this.pageSize));

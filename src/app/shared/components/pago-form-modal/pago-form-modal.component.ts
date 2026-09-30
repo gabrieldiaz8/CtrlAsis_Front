@@ -107,7 +107,7 @@ export class PagoFormModalComponent implements OnChanges {
   loadMembresiasForSocio(socioId: string) {
     this.membresiasService.membresiasControllerFindAll(socioId, undefined, 50, 0).subscribe({
       next: (response) => {
-        const data = response.content || response;
+        const data = response.data || [];
         const activas = data.filter((mem: any) => mem.estado === 'activa' || mem.estado === 'ACTIVA');
         this.membresias.set(activas);
         if (activas.length > 0 && !this.pagoForm.get('membresiaId')?.value) {
@@ -129,9 +129,10 @@ export class PagoFormModalComponent implements OnChanges {
 
   searchSocios(term: string) {
     this.socioSearching.set(true);
-    this.sociosService.sociosControllerFindAll(term, term, term, undefined, 6, 0).subscribe({
+    const searchParam = term ? term : undefined;
+    this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, searchParam, undefined, 6, 0).subscribe({
       next: (response) => {
-        this.socioResults.set((response.content || response) as SocioResponseDto[]);
+        this.socioResults.set((response.data || []) as SocioResponseDto[]);
         this.socioSearching.set(false);
       },
       error: () => this.socioSearching.set(false)

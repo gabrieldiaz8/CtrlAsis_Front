@@ -261,7 +261,7 @@ export class CatalogosService extends BaseService {
     /**
      * Desactivar medio de pago (soft delete)
      * @endpoint patch /catalogos/medios-pago/{id}/desactivar
-     * @param id 
+     * @param id ID (uuid) del medio de pago
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -320,7 +320,7 @@ export class CatalogosService extends BaseService {
     /**
      * Desactivar rubro (soft delete)
      * @endpoint patch /catalogos/rubros/{id}/desactivar
-     * @param id 
+     * @param id ID (uuid) del rubro
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -379,7 +379,7 @@ export class CatalogosService extends BaseService {
     /**
      * Desactivar tipo de membresía (soft delete)
      * @endpoint patch /catalogos/tipos-membresia/{id}/desactivar
-     * @param id 
+     * @param id ID (uuid) del tipo de membresía
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -768,7 +768,7 @@ export class CatalogosService extends BaseService {
     /**
      * Actualizar medio de pago
      * @endpoint patch /catalogos/medios-pago/{id}
-     * @param id 
+     * @param id ID (uuid) del medio de pago
      * @param updateMedioPagoDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -841,7 +841,7 @@ export class CatalogosService extends BaseService {
     /**
      * Actualizar rubro
      * @endpoint patch /catalogos/rubros/{id}
-     * @param id 
+     * @param id ID (uuid) del rubro
      * @param updateRubroDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -914,7 +914,7 @@ export class CatalogosService extends BaseService {
     /**
      * Actualizar tipo de membresía
      * @endpoint patch /catalogos/tipos-membresia/{id}
-     * @param id 
+     * @param id ID (uuid) del tipo de membresía
      * @param updateTipoMembresiaDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

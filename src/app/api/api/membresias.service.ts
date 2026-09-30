@@ -23,7 +23,7 @@ import { MembresiaResponseDto } from '../model/membresiaResponseDto';
 // @ts-ignore
 import { MembresiasControllerCancelarRequest } from '../model/membresiasControllerCancelarRequest';
 // @ts-ignore
-import { MembresiasControllerRenovarRequest } from '../model/membresiasControllerRenovarRequest';
+import { PaginatedMembresiasResponseDto } from '../model/paginatedMembresiasResponseDto';
 // @ts-ignore
 import { UpdateMembresiaDto } from '../model/updateMembresiaDto';
 
@@ -46,7 +46,7 @@ export class MembresiasService extends BaseService {
     /**
      * Cancelar membresía: pasa el estado a cancelada (única forma junto a /renovar de cambiar estado)
      * @endpoint post /membresias/{id}/cancelar
-     * @param id 
+     * @param id ID (uuid) de la membresía a cancelar
      * @param membresiasControllerCancelarRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -196,10 +196,10 @@ export class MembresiasService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PaginatedMembresiasResponseDto>;
+    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PaginatedMembresiasResponseDto>>;
+    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PaginatedMembresiasResponseDto>>;
+    public membresiasControllerFindAll(socioId?: string, estado?: 'activa' | 'vencida' | 'suspendida' | 'cancelada', limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -245,6 +245,7 @@ export class MembresiasService extends BaseService {
         localVarHeaders = this.configuration.addCredentialToHeaders('bearer', 'Authorization', localVarHeaders, 'Bearer ');
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -268,7 +269,7 @@ export class MembresiasService extends BaseService {
 
         let localVarPath = `/membresias`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<PaginatedMembresiasResponseDto>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),
@@ -285,7 +286,7 @@ export class MembresiasService extends BaseService {
     /**
      * Obtener detalle de una membresía
      * @endpoint get /membresias/{id}
-     * @param id 
+     * @param id ID (uuid) de la membresía
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -342,18 +343,17 @@ export class MembresiasService extends BaseService {
     }
 
     /**
-     * Renovar membresía: vence la actual y crea una nueva con el plan indicado
+     * Renovar membresía: cierra la actual como vencida y crea nueva activa con mismo plan
      * @endpoint post /membresias/{id}/renovar
-     * @param id 
-     * @param membresiasControllerRenovarRequest 
+     * @param id ID (uuid) de la membresía a renovar
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MembresiaResponseDto>;
-    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MembresiaResponseDto>>;
-    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MembresiaResponseDto>>;
-    public membresiasControllerRenovar(id: string, membresiasControllerRenovarRequest?: MembresiasControllerRenovarRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public membresiasControllerRenovar(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MembresiaResponseDto>;
+    public membresiasControllerRenovar(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MembresiaResponseDto>>;
+    public membresiasControllerRenovar(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MembresiaResponseDto>>;
+    public membresiasControllerRenovar(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling membresiasControllerRenovar.');
         }
@@ -375,15 +375,6 @@ export class MembresiasService extends BaseService {
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
-        // to determine the Content-Type header
-        const consumes: string[] = [
-            'application/json'
-        ];
-        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-        if (httpContentTypeSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
-        }
-
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -400,7 +391,6 @@ export class MembresiasService extends BaseService {
         return this.httpClient.request<MembresiaResponseDto>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: membresiasControllerRenovarRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -412,9 +402,9 @@ export class MembresiasService extends BaseService {
     }
 
     /**
-     * Actualizar membresía (no permite cambiar plan ni socio ni estado)
+     * Actualizar fechas de una membresía (no permite cambiar plan, socio ni estado)
      * @endpoint patch /membresias/{id}
-     * @param id 
+     * @param id ID (uuid) de la membresía
      * @param updateMembresiaDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

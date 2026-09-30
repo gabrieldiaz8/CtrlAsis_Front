@@ -7,10 +7,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { UsuarioLoginDto } from './usuarioLoginDto';
 
 
 export interface LoginResponseDto { 
+    /**
+     * Token JWT. Debe enviarse en el header Authorization: Bearer <token>
+     */
     accessToken: string;
-    user: object;
+    user: UsuarioLoginDto;
 }
 

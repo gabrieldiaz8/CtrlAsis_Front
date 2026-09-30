@@ -19,6 +19,8 @@ import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 // @ts-ignore
 import { CreateSocioDto } from '../model/createSocioDto';
 // @ts-ignore
+import { PaginatedSociosResponseDto } from '../model/paginatedSociosResponseDto';
+// @ts-ignore
 import { SocioResponseDto } from '../model/socioResponseDto';
 // @ts-ignore
 import { UpdateSocioDto } from '../model/updateSocioDto';
@@ -111,7 +113,7 @@ export class SociosService extends BaseService {
     /**
      * Desactivar socio (soft delete)
      * @endpoint patch /socios/{id}/desactivar
-     * @param id 
+     * @param id ID (uuid) del socio
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -170,20 +172,21 @@ export class SociosService extends BaseService {
     /**
      * Listar socios con filtros y paginación
      * @endpoint get /socios
-     * @param dni Filtrar por DNI (parcial)
-     * @param nombre Filtrar por nombre (parcial)
-     * @param apellido Filtrar por apellido (parcial)
-     * @param activo Filtrar por estado activo
+     * @param dni Filtrar por DNI (coincidencia parcial)
+     * @param nombre Filtrar por nombre (coincidencia parcial)
+     * @param apellido Filtrar por apellido (coincidencia parcial)
+     * @param search Búsqueda global por DNI, nombre o apellido
+     * @param activo Filtrar por estado activo (true/false)
      * @param limit 
      * @param page 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, activo?: boolean, limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, activo?: boolean, limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, activo?: boolean, limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, activo?: boolean, limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PaginatedSociosResponseDto>;
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PaginatedSociosResponseDto>>;
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PaginatedSociosResponseDto>>;
+    public sociosControllerFindAll(dni?: string, nombre?: string, apellido?: string, search?: string, activo?: boolean, limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -209,6 +212,15 @@ export class SociosService extends BaseService {
             localVarQueryParameters,
             'apellido',
             <any>apellido,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'search',
+            <any>search,
             QueryParamStyle.Form,
             true,
         );
@@ -247,6 +259,7 @@ export class SociosService extends BaseService {
         localVarHeaders = this.configuration.addCredentialToHeaders('bearer', 'Authorization', localVarHeaders, 'Bearer ');
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -270,7 +283,7 @@ export class SociosService extends BaseService {
 
         let localVarPath = `/socios`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<PaginatedSociosResponseDto>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),
@@ -287,7 +300,7 @@ export class SociosService extends BaseService {
     /**
      * Buscar socio por DNI exacto
      * @endpoint get /socios/buscar/dni/{dni}
-     * @param dni 
+     * @param dni DNI exacto del socio
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -346,7 +359,7 @@ export class SociosService extends BaseService {
     /**
      * Obtener detalle de un socio
      * @endpoint get /socios/{id}
-     * @param id 
+     * @param id ID (uuid) del socio
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -405,7 +418,7 @@ export class SociosService extends BaseService {
     /**
      * Actualizar socio
      * @endpoint patch /socios/{id}
-     * @param id 
+     * @param id ID (uuid) del socio
      * @param updateSocioDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

@@ -111,7 +111,7 @@ export class UsuariosService extends BaseService {
     /**
      * Desactivar usuario (soft delete)
      * @endpoint patch /usuarios/{id}/desactivar
-     * @param id 
+     * @param id ID (uuid) del usuario
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -225,7 +225,7 @@ export class UsuariosService extends BaseService {
     /**
      * Obtener detalle de un usuario
      * @endpoint get /usuarios/{id}
-     * @param id 
+     * @param id ID (uuid) del usuario
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -284,7 +284,7 @@ export class UsuariosService extends BaseService {
     /**
      * Actualizar usuario
      * @endpoint patch /usuarios/{id}
-     * @param id 
+     * @param id ID (uuid) del usuario
      * @param updateUsuarioDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

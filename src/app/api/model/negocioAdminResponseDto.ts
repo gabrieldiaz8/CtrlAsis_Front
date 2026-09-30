@@ -9,10 +9,14 @@
  */
 
 
-export interface NegocioResponseDto { 
+export interface NegocioAdminResponseDto { 
     id: string;
     nombre: string;
+    slug: string;
+    activo: boolean;
     rubroId: string;
     rubroNombre: string;
+    duenoId: string;
+    duenoEmail: string;
 }
 

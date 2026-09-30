@@ -9,10 +9,13 @@
  */
 
 
-export interface NegocioResponseDto { 
-    id: string;
+export interface CreateNegocioDto { 
     nombre: string;
     rubroId: string;
-    rubroNombre: string;
+    /**
+     * Email del primer dueño. Es único GLOBAL en la plataforma: identifica al usuario en el login, que no recibe negocioId.
+     */
+    duenoEmail: string;
+    duenoPassword: string;
 }
 

@@ -12,10 +12,5 @@
 export interface UpdateNegocioDto { 
     nombre?: string;
     rubroId?: string;
-    direccion?: string;
-    telefono?: string;
-    email?: string;
-    horarios?: string;
-    logo?: string;
 }
 

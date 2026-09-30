@@ -7,19 +7,38 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { MembresiaActivaInfoDto } from './membresiaActivaInfoDto';
 
 
 export interface SocioResponseDto { 
+    /**
+     * ID del socio
+     */
     id: string;
+    /**
+     * DNI del socio
+     */
     dni: string;
     nombre: string;
     apellido: string;
-    telefono: string;
+    telefono: string | null;
+    /**
+     * Fecha de alta
+     */
     fechaAlta: string;
+    /**
+     * Indica si la ficha está habilitada
+     */
     activo: boolean;
+    /**
+     * ID del negocio al que pertenece
+     */
     negocioId: string;
     fechaCreacion: string;
     fechaActualizacion: string;
-    membresiaActiva?: object;
+    /**
+     * Membresía activa del socio (si tiene)
+     */
+    membresiaActiva?: MembresiaActivaInfoDto;
 }
 

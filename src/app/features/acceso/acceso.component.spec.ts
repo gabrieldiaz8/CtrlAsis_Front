@@ -68,7 +68,7 @@ describe('AccesoComponent', () => {
     expect(accesosServiceMock.accesosControllerValidar).toHaveBeenCalledWith({ dni: '12345678' });
     expect(component.loading()).toBe(false);
     expect(component.resultState()).toBe('permitido');
-    expect(component.socio()).toEqual({ nombre: 'Juan', apellido: 'Pérez', dni: '12345678', observacion: '' });
+    expect(component.socio()).toEqual({ nombre: 'Juan Pérez', dni: '12345678', observacion: '' });
     expect(component.ultimoAccesoId()).toBe('10');
     expect(toastMock.success).toHaveBeenCalledWith('Acceso permitido para Juan Pérez', { title: 'Validación OK' });
     expect(accesosServiceMock.accesosControllerFindHoy).toHaveBeenCalledTimes(2);

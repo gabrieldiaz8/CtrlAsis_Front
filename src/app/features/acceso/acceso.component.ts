@@ -9,7 +9,6 @@ import { fadeZoom } from '@shared/utils/animations';
 
 interface SocioAcceso {
   nombre: string;
-  apellido: string;
   dni: string;
   observacion: string;
 }
@@ -161,19 +160,18 @@ export class AccesoComponent implements OnInit {
 
   private applyResponse(response: AccesoResponseDto) {
     this.ultimoAccesoId.set(response.id);
-    const parts = (response.socioNombre || ' ').trim().split(' ');
-    const nombre = parts[0] || '';
-    const apellido = parts.slice(1).join(' ');
     this.socio.set({
-      nombre,
-      apellido,
+      nombre: response.socioNombre || '',
       dni: response.socioDni || '',
       observacion: response.observacion || ''
     });
   }
 
-  getInitials(nombre: string, apellido: string): string {
-    return `${nombre?.charAt(0) || ''}${apellido?.charAt(0) || ''}`.toUpperCase();
+  getInitials(nombreCompleto: string): string {
+    const partes = nombreCompleto?.trim().split(/\s+/);
+    const primera = partes?.[0] || '';
+    const ultima = partes?.[partes.length - 1] || '';
+    return primera.charAt(0) + ultima.charAt(0);
   }
 
   getAvatarColor(id: string): string {

@@ -109,11 +109,7 @@ export class ConfiguracionComponent implements OnInit {
 
   negocioForm = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.minLength(2)]],
-    rubroId: ['', [Validators.required]],
-    direccion: [''],
-    telefono: [''],
-    email: ['', [Validators.email]],
-    horarios: ['']
+    rubroId: ['', [Validators.required]]
   });
 
   catalogoForm = this.fb.nonNullable.group({
@@ -124,9 +120,7 @@ export class ConfiguracionComponent implements OnInit {
   usuarioForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.minLength(6)]],
-    rol: ['', [Validators.required]],
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    apellido: ['', [Validators.required, Validators.minLength(2)]]
+    rol: ['', [Validators.required]]
   });
 
   private pendingLoads = 0;
@@ -164,13 +158,8 @@ export class ConfiguracionComponent implements OnInit {
         this.negocio.set(data);
         this.negocioForm.patchValue({
           nombre: data.nombre,
-          rubroId: String(data.rubroId),
-          direccion: data.direccion || '',
-          telefono: data.telefono || '',
-          email: data.email || '',
-          horarios: data.horarios || ''
+          rubroId: String(data.rubroId)
         });
-        if (data.logo) this.logoPreview.set(data.logo);
         this.finishLoad('negocio', true);
       },
       error: (err) => {
@@ -307,12 +296,7 @@ export class ConfiguracionComponent implements OnInit {
 
     const updateData: UpdateNegocioDto = {
       nombre: formData.nombre,
-      rubroId: String(formData.rubroId),
-      direccion: formData.direccion || undefined,
-      telefono: formData.telefono || undefined,
-      email: formData.email || undefined,
-      horarios: formData.horarios || undefined,
-      logo: this.logoDataUrl() ?? undefined
+      rubroId: String(formData.rubroId)
     };
 
     this.negocioService.negociosControllerUpdate(updateData).subscribe({
@@ -495,15 +479,10 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   getUsuarioFullName(u: UsuarioResponseDto): string {
-    if (u.nombre) return `${u.nombre}${u.apellido ? ' ' + u.apellido : ''}`.trim();
     return u.email;
   }
 
   getUsuarioInitials(u: UsuarioResponseDto): string {
-    if (u.nombre) {
-      const parts = [u.nombre, u.apellido].filter(v => !!v);
-      return parts.map(p => p!.charAt(0).toUpperCase()).slice(0, 2).join('') || 'U';
-    }
     return u.email.charAt(0).toUpperCase();
   }
 
@@ -525,9 +504,7 @@ export class ConfiguracionComponent implements OnInit {
     this.usuarioForm.reset({
       email: '',
       password: '',
-      rol: 'recepcionista',
-      nombre: '',
-      apellido: ''
+      rol: 'recepcionista'
     });
     this.usuarioForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.usuarioForm.get('password')?.updateValueAndValidity();
@@ -546,9 +523,7 @@ export class ConfiguracionComponent implements OnInit {
     this.usuarioForm.patchValue({
       email: u.email,
       password: '',
-      rol: u.rol,
-      nombre: u.nombre || '',
-      apellido: u.apellido || ''
+      rol: u.rol
     });
     this.usuarioForm.get('password')?.clearValidators();
     this.usuarioForm.get('password')?.setValidators([Validators.minLength(6)]);
@@ -595,9 +570,7 @@ export class ConfiguracionComponent implements OnInit {
     if (editing) {
       const updateData: UpdateUsuarioDto = {
         email: formData.email,
-        rol: formData.rol as RolUsuario,
-        nombre: formData.nombre,
-        apellido: formData.apellido
+        rol: formData.rol as RolUsuario
       };
       if (formData.password) updateData.password = formData.password;
 
@@ -609,9 +582,7 @@ export class ConfiguracionComponent implements OnInit {
       const createData: CreateUsuarioDto = {
         email: formData.email,
         password: formData.password,
-        rol: formData.rol as RolUsuario,
-        nombre: formData.nombre,
-        apellido: formData.apellido
+        rol: formData.rol as RolUsuario
       };
 
       this.usuariosService.usuariosControllerCreate(createData).subscribe({

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
-import { NavbarComponent } from '../navbar/navbar.component';
+
 import { routeFade } from '@shared/utils/animations';
 
 interface UserData {
@@ -13,7 +13,7 @@ interface UserData {
   selector: 'app-main-layout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, NavbarComponent],
+  imports: [RouterOutlet, SidebarComponent],
   animations: [routeFade],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.css'

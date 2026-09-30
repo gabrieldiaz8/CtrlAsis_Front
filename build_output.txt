@@ -1,0 +1,289 @@
+﻿node.exe : [1m[33mThe "prerender" option is not considered when "outputMode" is specified.[39m[22m
+En línea: 1 Carácter: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1m[33mThe "p...fied.[39m[22m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Application bundle generation failed. [5.500 seconds] - 2026-09-30T02:04:01.876Z
+
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'direccion' does not exist on type 
+'NegocioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:168:26:
+[37m      168 Ôöé           direccion: data.[32mdireccion[37m || '',
+          ÔòÁ                           [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'telefono' does not exist on type 
+'NegocioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:169:25:
+[37m      169 Ôöé           telefono: data.[32mtelefono[37m || '',
+          ÔòÁ                          [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'email' does not exist on type 
+'NegocioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:170:22:
+[37m      170 Ôöé           email: data.[32memail[37m || '',
+          ÔòÁ                       [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'horarios' does not exist on type 
+'NegocioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:171:25:
+[37m      171 Ôöé           horarios: data.[32mhorarios[37m || ''
+          ÔòÁ                          [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'logo' does not exist on type 
+'NegocioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:173:17:
+[37m      173 Ôöé         if (data.[32mlogo[37m) this.logoPreview.set(data.logo);
+          ÔòÁ                  [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'logo' does not exist on type 
+'NegocioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:173:49:
+[37m      173 Ôöé         if (data.logo) this.logoPreview.set(data.[32mlogo[37m);
+          ÔòÁ                                                  [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2353: Object literal may only specify known properties, and 
+'direccion' does not exist in type 'UpdateNegocioDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:311:6:
+[37m      311 Ôöé       [32mdireccion[37m: formData.direccion || undefined,
+          ÔòÁ       [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'nombre' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:498:10:
+[37m      498 Ôöé     if (u.[32mnombre[37m) return `${u.nombre}${u.apellido ? ' ' + u.apell...
+          ÔòÁ           [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'nombre' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:498:30:
+[37m      498 Ôöé     if (u.nombre) return `${u.[32mnombre[37m}${u.apellido ? ' ' + u.apell...
+          ÔòÁ                               [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'apellido' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:498:41:
+[37m      498 Ôöé ...re) return `${u.nombre}${u.[32mapellido[37m ? ' ' + u.apellido : ''}`....
+          ÔòÁ                               [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'apellido' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:498:60:
+[37m      498 Ôöé ...return `${u.nombre}${u.apellido ? ' ' + u.[32mapellido[37m : ''}`.trim();
+          ÔòÁ                                              [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'nombre' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:503:10:
+[37m      503 Ôöé     if (u.[32mnombre[37m) {
+          ÔòÁ           [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'nombre' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:504:23:
+[37m      504 Ôöé       const parts = [u.[32mnombre[37m, u.apellido].filter(v => !!v);
+          ÔòÁ                        [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'apellido' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:504:33:
+[37m      504 Ôöé       const parts = [u.nombre, u.[32mapellido[37m].filter(v => !!v);
+          ÔòÁ                                  [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'nombre' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:550:16:
+[37m      550 Ôöé       nombre: u.[32mnombre[37m || '',
+          ÔòÁ                 [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'apellido' does not exist on type 
+'UsuarioResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:551:18:
+[37m      551 Ôöé       apellido: u.[32mapellido[37m || ''
+          ÔòÁ                   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2353: Object literal may only specify known properties, and 'nombre' 
+does not exist in type 'UpdateUsuarioDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:599:8:
+[37m      599 Ôöé         [32mnombre[37m: formData.nombre,
+          ÔòÁ         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2353: Object literal may only specify known properties, and 'nombre' 
+does not exist in type 'CreateUsuarioDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/configuracion/configuracion.component.ts:613:8:
+[37m      613 Ôöé         [32mnombre[37m: formData.nombre,
+          ÔòÁ         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2769: No overload matches this call.
+  Overload 1 of 3, '(observe?: "body" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"body" | undefined'.
+      Type 'string' is not assignable to type '"body"'.
+  Overload 2 of 3, '(observe?: "response" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"response" | undefined'.
+      Type 'string' is not assignable to type '"response"'.
+  Overload 3 of 3, '(observe?: "events" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"events" | undefined'.
+      Type 'string' is not assignable to type '"events"'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/dashboard/dashboard.component.ts:306:54:
+[37m      306 Ôöé ...casService.metricasControllerGetResumen([32mdesde[37m, hasta).subscribe({
+          ÔòÁ                                            [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2769: No overload matches this call.
+  Overload 1 of 3, '(observe?: "body" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"body" | undefined'.
+      Type 'string' is not assignable to type '"body"'.
+  Overload 2 of 3, '(observe?: "response" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"response" | undefined'.
+      Type 'string' is not assignable to type '"response"'.
+  Overload 3 of 3, '(observe?: "events" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"events" | undefined'.
+      Type 'string' is not assignable to type '"events"'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/dashboard/dashboard.component.ts:324:64:
+[37m      324 Ôöé ....metricasControllerGetAsistenciaSemanal([32mdesde[37m, hasta).subscribe({
+          ÔòÁ                                            [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2769: No overload matches this call.
+  Overload 1 of 3, '(observe?: "body" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"body" | undefined'.
+      Type 'string' is not assignable to type '"body"'.
+  Overload 2 of 3, '(observe?: "response" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"response" | undefined'.
+      Type 'string' is not assignable to type '"response"'.
+  Overload 3 of 3, '(observe?: "events" | undefined, reportProgress?: boolean | undefined, options?: { 
+httpHeaderAccept?: "application/json" | undefined; context?: HttpContext | undefined; transferCache?: boolean | 
+undefined; } | undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"events" | undefined'.
+      Type 'string' is not assignable to type '"events"'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/dashboard/dashboard.component.ts:338:64:
+[37m      338 Ôöé ....metricasControllerGetIngresosMensuales([32mdesde[37m, hasta).subscribe({
+          ÔòÁ                                            [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2769: No overload matches this call.
+  Overload 1 of 3, '(membresiaId?: string | undefined, socioId?: string | undefined, limit?: number | undefined, 
+page?: number | undefined, observe?: "body" | undefined, reportProgress?: boolean | undefined, options?: { ...; } | 
+undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"body" | undefined'.
+      Type 'string' is not assignable to type '"body"'.
+  Overload 2 of 3, '(membresiaId?: string | undefined, socioId?: string | undefined, limit?: number | undefined, 
+page?: number | undefined, observe?: "response" | undefined, reportProgress?: boolean | undefined, options?: { ...; } 
+| undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"response" | undefined'.
+      Type 'string' is not assignable to type '"response"'.
+  Overload 3 of 3, '(membresiaId?: string | undefined, socioId?: string | undefined, limit?: number | undefined, 
+page?: number | undefined, observe?: "events" | undefined, reportProgress?: boolean | undefined, options?: { ...; } | 
+undefined): Observable<...>', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type '"events" | undefined'.
+      Type 'string' is not assignable to type '"events"'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pagos/pagos.component.ts:119:6:
+[37m      119 Ôöé       [32mthis.filtroFechaDesde() || undefined[37m,
+          ÔòÁ       [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'content' does not exist on type 
+'PaginatedPagosResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pagos/pagos.component.ts:123:32:
+[37m      123 Ôöé         this.pagos.set(response.[32mcontent[37m || response);
+          ÔòÁ                                 [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'totalElements' does not exist on type 
+'PaginatedPagosResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pagos/pagos.component.ts:124:37:
+[37m      124 Ôöé ....totalItems.set(response.[32mtotalElements[37m ?? response.total ?? re...
+          ÔòÁ                             [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'length' does not exist on type 
+'PaginatedPagosResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pagos/pagos.component.ts:124:81:
+[37m      124 Ôöé ...set(response.totalElements ?? response.total ?? response.[32mlength[37m);
+          ÔòÁ                                                             [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'content' does not exist on type 
+'PaginatedSociosResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/pagos/pagos.component.ts:184:40:
+[37m      184 Ôöé ....socioResults.set((response.[32mcontent[37m || response) as SocioRespo...
+          ÔòÁ                                [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'content' does not exist on type 
+'PaginatedMembresiasResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/components/pago-form-modal/pago-form-modal.component.ts:110:30:
+[37m      110 Ôöé         const data = response.[32mcontent[37m || response;
+          ÔòÁ                               [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'content' does not exist on type 
+'PaginatedSociosResponseDto'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/components/pago-form-modal/pago-form-modal.component.ts:134:40:
+[37m      134 Ôöé ....socioResults.set((response.[32mcontent[37m || response) as SocioRespo...
+          ÔòÁ                                [32m~~~~~~~[0m
+
+[39m[22m

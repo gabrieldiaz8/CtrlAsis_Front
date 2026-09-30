@@ -13,8 +13,6 @@ export interface UpdateUsuarioDto {
     email?: string;
     password?: string;
     rol?: UpdateUsuarioDto.RolEnum;
-    nombre?: string;
-    apellido?: string;
 }
 export namespace UpdateUsuarioDto {
     export const RolEnum = {

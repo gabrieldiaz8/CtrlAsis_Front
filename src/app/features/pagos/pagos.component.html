@@ -89,19 +89,7 @@
         </div>
       </div>
 
-      <!-- Rango de fechas -->
-      <div class="relative">
-        <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5 pointer-events-none"></lucide-icon>
-        <input type="date" [value]="filtroFechaDesde()" (change)="onFechaDesdeChange($event)"
-               title="Desde"
-               class="w-full xl:w-44 pl-10 pr-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
-      </div>
-      <div class="relative">
-        <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5 pointer-events-none"></lucide-icon>
-        <input type="date" [value]="filtroFechaHasta()" (change)="onFechaHastaChange($event)"
-               title="Hasta"
-               class="w-full xl:w-44 pl-10 pr-3 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
-      </div>
+
 
       <button type="button" (click)="clearFilters()" [disabled]="!hasActiveFilters()"
               class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-label-md font-medium border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed">

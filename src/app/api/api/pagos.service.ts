@@ -19,6 +19,8 @@ import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 // @ts-ignore
 import { CreatePagoDto } from '../model/createPagoDto';
 // @ts-ignore
+import { PaginatedPagosResponseDto } from '../model/paginatedPagosResponseDto';
+// @ts-ignore
 import { PagoResponseDto } from '../model/pagoResponseDto';
 // @ts-ignore
 import { UpdatePagoDto } from '../model/updatePagoDto';
@@ -115,16 +117,14 @@ export class PagosService extends BaseService {
      * @param socioId Filtrar por socio
      * @param limit 
      * @param page 
-     * @param fechaDesde Filtrar pagos desde esta fecha (yyyy-MM-dd)
-     * @param fechaHasta Filtrar pagos hasta esta fecha (yyyy-MM-dd)
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, fechaDesde?: string, fechaHasta?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PaginatedPagosResponseDto>;
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PaginatedPagosResponseDto>>;
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PaginatedPagosResponseDto>>;
+    public pagosControllerFindAll(membresiaId?: string, socioId?: string, limit?: number, page?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -164,30 +164,13 @@ export class PagosService extends BaseService {
         );
 
 
-        localVarQueryParameters = this.addToHttpParams(
-            localVarQueryParameters,
-            'fechaDesde',
-            <any>fechaDesde,
-            QueryParamStyle.Form,
-            true,
-        );
-
-
-        localVarQueryParameters = this.addToHttpParams(
-            localVarQueryParameters,
-            'fechaHasta',
-            <any>fechaHasta,
-            QueryParamStyle.Form,
-            true,
-        );
-
-
         let localVarHeaders = this.defaultHeaders;
 
         // authentication (bearer) required
         localVarHeaders = this.configuration.addCredentialToHeaders('bearer', 'Authorization', localVarHeaders, 'Bearer ');
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -211,7 +194,7 @@ export class PagosService extends BaseService {
 
         let localVarPath = `/pagos`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<PaginatedPagosResponseDto>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters.toHttpParams(),
@@ -228,7 +211,7 @@ export class PagosService extends BaseService {
     /**
      * Listar historial de pagos de una membresía
      * @endpoint get /pagos/membresia/{membresiaId}
-     * @param membresiaId 
+     * @param membresiaId ID (uuid) de la membresía
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -287,7 +270,7 @@ export class PagosService extends BaseService {
     /**
      * Listar historial de pagos de un socio
      * @endpoint get /pagos/socio/{socioId}
-     * @param socioId 
+     * @param socioId ID (uuid) del socio
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -346,7 +329,7 @@ export class PagosService extends BaseService {
     /**
      * Obtener detalle de un pago
      * @endpoint get /pagos/{id}
-     * @param id 
+     * @param id ID (uuid) del pago
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -405,7 +388,7 @@ export class PagosService extends BaseService {
     /**
      * Actualizar pago
      * @endpoint patch /pagos/{id}
-     * @param id 
+     * @param id ID (uuid) del pago
      * @param updatePagoDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

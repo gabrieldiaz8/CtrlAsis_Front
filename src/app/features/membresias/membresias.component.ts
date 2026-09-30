@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, HostListener } from '@angular/core';
 import { LucideAngularModule, Plus, Search, Filter, ChevronLeft, ChevronRight, Loader2, Calendar, User, MoreVertical, Edit, Trash2, Eye, RotateCcw, X, CheckCircle, AlertCircle, Clock, Shield, CircleDollarSign, AlertTriangle, Ban, History, CalendarClock } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
-import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto, UpdateMembresiaDto, MembresiasControllerCancelarRequest, MembresiasControllerRenovarRequest } from '@api';
+import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto, UpdateMembresiaDto, MembresiasControllerCancelarRequest } from '@api';
 import { SociosService, SocioResponseDto } from '@api';
 import { PlanesMembresiaService, PlanMembresiaResponseDto } from '@api';
 import { PagosService, PagoResponseDto } from '@api';
@@ -96,7 +96,6 @@ export class MembresiasComponent implements OnInit {
   // Renovar modal
   showRenovarModal = signal(false);
   renovarMembresia = signal<MembresiaResponseDto | null>(null);
-  renovarPlanId = signal<string>('');
   renovarSaving = signal(false);
 
   // Cancelar modal
@@ -151,8 +150,8 @@ export class MembresiasComponent implements OnInit {
     const estado = this.estadoFilter() || undefined;
     this.membresiasService.membresiasControllerFindAll(undefined, estado as any, this.pageSize, this.currentPage() - 1).subscribe({
       next: (response) => {
-        this.membresias.set(response.content || response.data || response);
-        this.totalItems.set(response.totalElements ?? response.total ?? response.length);
+        this.membresias.set(response.data || []);
+        this.totalItems.set(response.total);
         this.loading.set(false);
       },
       error: (err) => {
@@ -269,9 +268,9 @@ export class MembresiasComponent implements OnInit {
     if (!term) return;
 
     this.searchingSocio.set(true);
-    this.sociosService.sociosControllerFindAll(term, term, term, undefined, 10, 0).subscribe({
+    this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, term, undefined, 10, 0).subscribe({
       next: (response) => {
-        const socios = response.content || response.data || response;
+        const socios = response.data || [];
         if (socios.length > 0) {
           this.selectedSocio.set(socios[0]);
           this.membresiaForm.patchValue({ socioId: String(socios[0].id) });
@@ -347,7 +346,6 @@ export class MembresiasComponent implements OnInit {
   // ------------------------------------------------------------
   openRenovarModal(membresia: MembresiaResponseDto) {
     this.renovarMembresia.set(membresia);
-    this.renovarPlanId.set(membresia.planId);
     this.renovarSaving.set(false);
     this.showRenovarModal.set(true);
   }
@@ -357,58 +355,18 @@ export class MembresiasComponent implements OnInit {
     this.renovarMembresia.set(null);
   }
 
-  selectRenovarPlan(planId: string) {
-    this.renovarPlanId.set(planId);
-  }
-
-  getRenovarPlan = computed(() => this.getPlan(this.renovarPlanId()));
-
-  calcularFechasRenovacion(plan: PlanMembresiaResponseDto | undefined): { inicio: string; fin: string } {
-    const actual = this.renovarMembresia();
-    let base: Date;
-
-    if (actual?.fechaFin) {
-      base = new Date(actual.fechaFin);
-      base.setHours(12, 0, 0, 0);
-      base.setDate(base.getDate() + 1);
-    } else {
-      base = new Date();
-      base.setHours(12, 0, 0, 0);
-    }
-
-    const hoy = new Date();
-    hoy.setHours(12, 0, 0, 0);
-    if (base.getTime() < hoy.getTime()) base = hoy;
-
-    const fin = new Date(base);
-    fin.setDate(fin.getDate() + (plan?.duracionDias ?? 30));
-
-    return {
-      inicio: base.toISOString().split('T')[0],
-      fin: fin.toISOString().split('T')[0]
-    };
-  }
-
   confirmRenovar() {
     const actual = this.renovarMembresia();
     if (!actual) return;
 
-    const planId = this.renovarPlanId();
-    if (!planId) {
-      this.toast.warning('Seleccione un plan para renovar', { title: 'Plan requerido' });
-      return;
-    }
-
     this.renovarSaving.set(true);
-    const request: MembresiasControllerRenovarRequest = { planId };
-    const planNombre = this.getPlan(planId)?.tipoMembresiaNombre || actual.planNombre;
 
-    this.membresiasService.membresiasControllerRenovar(String(actual.id), request).subscribe({
+    this.membresiasService.membresiasControllerRenovar(String(actual.id)).subscribe({
       next: () => {
         this.renovarSaving.set(false);
         this.closeRenovarModal();
         this.loadMembresias();
-        this.toast.success(`Membresía renovada con plan de ${planNombre}`, { title: 'Renovada' });
+        this.toast.success(`Membresía renovada con el plan actual`, { title: 'Renovada' });
       },
       error: (err) => {
         this.renovarSaving.set(false);

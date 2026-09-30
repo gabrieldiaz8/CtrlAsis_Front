@@ -42,16 +42,14 @@ export class MetricasService extends BaseService {
     /**
      * Asistencia de los últimos 7 días (accesos permitidos por día)
      * @endpoint get /metricas/asistencia-semanal
-     * @param fechaDesde fecha desde (YYYY-MM-DD) para filtrar los accesos
-     * @param fechaHasta fecha hasta (YYYY-MM-DD) para filtrar los accesos
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public metricasControllerGetAsistenciaSemanal(fechaDesde?: string, fechaHasta?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<AsistenciaSemanalDto>>;
-    public metricasControllerGetAsistenciaSemanal(fechaDesde?: string, fechaHasta?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<AsistenciaSemanalDto>>>;
-    public metricasControllerGetAsistenciaSemanal(fechaDesde?: string, fechaHasta?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<AsistenciaSemanalDto>>>;
-    public metricasControllerGetAsistenciaSemanal(fechaDesde?: string, fechaHasta?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public metricasControllerGetAsistenciaSemanal(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<AsistenciaSemanalDto>>;
+    public metricasControllerGetAsistenciaSemanal(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<AsistenciaSemanalDto>>>;
+    public metricasControllerGetAsistenciaSemanal(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<AsistenciaSemanalDto>>>;
+    public metricasControllerGetAsistenciaSemanal(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -82,13 +80,6 @@ export class MetricasService extends BaseService {
         }
 
         let localVarPath = `/metricas/asistencia-semanal`;
-        const localVarQueryParameters = new OpenApiHttpParams();
-        if (fechaDesde !== undefined && fechaDesde !== null) {
-            localVarQueryParameters.append('fechaDesde', <any>fechaDesde);
-        }
-        if (fechaHasta !== undefined && fechaHasta !== null) {
-            localVarQueryParameters.append('fechaHasta', <any>fechaHasta);
-        }
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<Array<AsistenciaSemanalDto>>('get', `${basePath}${localVarPath}`,
             {
@@ -97,7 +88,6 @@ export class MetricasService extends BaseService {
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                params: localVarQueryParameters.toHttpParams(),
                 ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
@@ -107,16 +97,14 @@ export class MetricasService extends BaseService {
     /**
      * Ingresos de los últimos 6 meses
      * @endpoint get /metricas/ingresos-mensuales
-     * @param fechaDesde fecha desde (YYYY-MM-DD) para filtrar los ingresos
-     * @param fechaHasta fecha hasta (YYYY-MM-DD) para filtrar los ingresos
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public metricasControllerGetIngresosMensuales(fechaDesde?: string, fechaHasta?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<IngresosMensualesDto>>;
-    public metricasControllerGetIngresosMensuales(fechaDesde?: string, fechaHasta?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<IngresosMensualesDto>>>;
-    public metricasControllerGetIngresosMensuales(fechaDesde?: string, fechaHasta?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<IngresosMensualesDto>>>;
-    public metricasControllerGetIngresosMensuales(fechaDesde?: string, fechaHasta?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public metricasControllerGetIngresosMensuales(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<IngresosMensualesDto>>;
+    public metricasControllerGetIngresosMensuales(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<IngresosMensualesDto>>>;
+    public metricasControllerGetIngresosMensuales(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<IngresosMensualesDto>>>;
+    public metricasControllerGetIngresosMensuales(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -147,13 +135,6 @@ export class MetricasService extends BaseService {
         }
 
         let localVarPath = `/metricas/ingresos-mensuales`;
-        const localVarQueryParameters = new OpenApiHttpParams();
-        if (fechaDesde !== undefined && fechaDesde !== null) {
-            localVarQueryParameters.append('fechaDesde', <any>fechaDesde);
-        }
-        if (fechaHasta !== undefined && fechaHasta !== null) {
-            localVarQueryParameters.append('fechaHasta', <any>fechaHasta);
-        }
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<Array<IngresosMensualesDto>>('get', `${basePath}${localVarPath}`,
             {
@@ -162,7 +143,6 @@ export class MetricasService extends BaseService {
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                params: localVarQueryParameters.toHttpParams(),
                 ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
@@ -172,16 +152,14 @@ export class MetricasService extends BaseService {
     /**
      * Resumen general: socios activos, ingresos mes, asistencia semana, membresías por vencer
      * @endpoint get /metricas/resumen
-     * @param fechaDesde fecha desde (YYYY-MM-DD) para filtrar el resumen
-     * @param fechaHasta fecha hasta (YYYY-MM-DD) para filtrar el resumen
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public metricasControllerGetResumen(fechaDesde?: string, fechaHasta?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MetricasResumenDto>;
-    public metricasControllerGetResumen(fechaDesde?: string, fechaHasta?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MetricasResumenDto>>;
-    public metricasControllerGetResumen(fechaDesde?: string, fechaHasta?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MetricasResumenDto>>;
-    public metricasControllerGetResumen(fechaDesde?: string, fechaHasta?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public metricasControllerGetResumen(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MetricasResumenDto>;
+    public metricasControllerGetResumen(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MetricasResumenDto>>;
+    public metricasControllerGetResumen(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MetricasResumenDto>>;
+    public metricasControllerGetResumen(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -212,13 +190,6 @@ export class MetricasService extends BaseService {
         }
 
         let localVarPath = `/metricas/resumen`;
-        const localVarQueryParameters = new OpenApiHttpParams();
-        if (fechaDesde !== undefined && fechaDesde !== null) {
-            localVarQueryParameters.append('fechaDesde', <any>fechaDesde);
-        }
-        if (fechaHasta !== undefined && fechaHasta !== null) {
-            localVarQueryParameters.append('fechaHasta', <any>fechaHasta);
-        }
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<MetricasResumenDto>('get', `${basePath}${localVarPath}`,
             {
@@ -227,7 +198,6 @@ export class MetricasService extends BaseService {
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                params: localVarQueryParameters.toHttpParams(),
                 ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }

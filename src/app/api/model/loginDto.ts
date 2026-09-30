@@ -9,10 +9,14 @@
  */
 
 
-export interface NegocioResponseDto { 
-    id: string;
-    nombre: string;
-    rubroId: string;
-    rubroNombre: string;
+export interface LoginDto { 
+    /**
+     * Email del usuario
+     */
+    email: string;
+    /**
+     * Contraseña del usuario
+     */
+    password: string;
 }
 

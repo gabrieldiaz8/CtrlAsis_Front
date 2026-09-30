@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule, LayoutDashboard, DoorOpen, Users, Calendar, CreditCard, Settings, Plus, LogOut, User, BadgeCheck, Tags } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, DoorOpen, Users, Calendar, CreditCard, Settings, Plus, LogOut, User, BadgeCheck, Tags, Sun, Moon } from 'lucide-angular';
 import { RoleService } from '@core/services/role.service';
+import { ThemeService } from '@core/services/theme.service';
 import { HasRoleDirective } from '@core/directives/has-role.directive';
 
 interface NavItem {
@@ -22,6 +23,7 @@ interface NavItem {
 export class SidebarComponent {
   private router = inject(Router);
   private roleService = inject(RoleService);
+  readonly themeService = inject(ThemeService);
 
   collapsed = input(false);
   userName = input('Usuario');
@@ -38,6 +40,8 @@ export class SidebarComponent {
   readonly User = User;
   readonly BadgeCheck = BadgeCheck;
   readonly Tags = Tags;
+  readonly Sun = Sun;
+  readonly Moon = Moon;
 
   private readonly baseNav: NavItem[] = [
     { label: 'Control de Acceso', icon: DoorOpen, route: '/acceso', module: 'acceso' },

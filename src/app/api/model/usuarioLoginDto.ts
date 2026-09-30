@@ -9,16 +9,22 @@
  */
 
 
-export interface UsuarioResponseDto { 
+export interface UsuarioLoginDto { 
+    /**
+     * ID del usuario
+     */
     id: string;
     email: string;
-    rol: UsuarioResponseDto.RolEnum;
+    /**
+     * Rol del usuario
+     */
+    rol: UsuarioLoginDto.RolEnum;
+    /**
+     * ID del negocio al que pertenece
+     */
     negocioId: string;
-    activo: boolean;
-    fechaCreacion: string;
-    fechaActualizacion: string;
 }
-export namespace UsuarioResponseDto {
+export namespace UsuarioLoginDto {
     export const RolEnum = {
         SuperAdmin: 'super_admin',
         Dueno: 'dueno',

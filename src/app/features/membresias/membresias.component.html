@@ -435,50 +435,14 @@
           </div>
         </div>
 
-        <!-- Selector de nuevo plan -->
-        <div>
-          <p class="text-label-md font-medium text-on-surface mb-3">Seleccioná el nuevo plan</p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button *ngFor="let plan of planesActivos()"
-                    type="button"
-                    (click)="selectRenovarPlan(plan.id)"
-                    [class]="renovarPlanId() === plan.id
-                      ? 'border-secondary bg-secondary-container text-on-secondary-container'
-                      : 'border-outline-variant bg-surface hover:border-secondary/50'"
-                    class="micro-btn text-left p-4 rounded-xl border-2 transition-colors flex flex-col gap-2">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-body-md font-semibold">{{ plan.tipoMembresiaNombre }}</span>
-                <lucide-icon [img]="CheckCircle" class="w-5 h-5 shrink-0"
-                             [class.text-primary]="renovarPlanId() === plan.id"
-                             [class.text-on-surface-variant/30]="renovarPlanId() !== plan.id"></lucide-icon>
-              </div>
-              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-label-sm text-on-surface-variant">
-                <span class="inline-flex items-center gap-1"><lucide-icon [img]="Calendar" class="w-3.5 h-3.5"></lucide-icon>{{ plan.duracionDias }} días</span>
-                <span class="inline-flex items-center gap-1"><lucide-icon [img]="Clock" class="w-3.5 h-3.5"></lucide-icon>{{ plan.diasPorSemana }} días/semana</span>
-              </div>
-              <span class="text-body-lg font-display font-bold">{{ formatMoney(plan.precio) }}</span>
-            </button>
-          </div>
-          <p *ngIf="planesActivos().length === 0" class="text-body-sm text-on-surface-variant mt-2">
-            No hay planes activos disponibles. Creá un plan desde la sección Planes.
-          </p>
-        </div>
 
-        <!-- Preview de nueva vigencia -->
-        @let renovarPlan = getRenovarPlan();
-        @let fechas = calcularFechasRenovacion(renovarPlan);
-        <div class="p-4 bg-surface-container-low border border-outline-variant rounded-lg flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-warning-container text-on-warning-container flex items-center justify-center shrink-0">
-            <lucide-icon [img]="CalendarClock" class="w-5 h-5"></lucide-icon>
-          </div>
-          <div>
-            <p class="text-body-sm font-medium text-on-surface">Nueva membresía ({{ renovarPlan ? renovarPlan.tipoMembresiaNombre : '—' }})</p>
-            <p class="text-label-sm text-on-surface-variant mt-0.5">
-              Desde <span class="font-semibold text-on-surface">{{ formatDate(fechas.inicio) }}</span>
-              hasta <span class="font-semibold text-primary">{{ formatDate(fechas.fin) }}</span>
-              <span *ngIf="renovarPlan" class="text-on-surface-variant"> · vence en {{ renovarPlan.duracionDias }} días</span>
-            </p>
-          </div>
+        <!-- Info: renueva con el plan actual -->
+        <div class="p-4 bg-surface-container-low border border-outline-variant rounded-lg flex items-start gap-3">
+          <lucide-icon [img]="CalendarClock" class="w-5 h-5 text-on-surface-variant mt-0.5 shrink-0"></lucide-icon>
+          <p class="text-body-sm text-on-surface-variant">
+            Se renovará la membresía con el <strong class="text-on-surface">mismo plan</strong>.
+            La nueva vigencia comenzará a partir de hoy o del día siguiente al vencimiento.
+          </p>
         </div>
 
         <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
@@ -487,7 +451,7 @@
             Cancelar
           </button>
           <button type="button" (click)="confirmRenovar()"
-                  [disabled]="!renovarPlanId() || renovarSaving()"
+                  [disabled]="renovarSaving()"
                   class="micro-btn px-6 py-2.5 text-label-md font-semibold text-on-warning bg-warning hover:bg-warning-dim rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm">
             <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="renovarSaving()"></lucide-icon>
             <lucide-icon [img]="RotateCcw" class="w-4 h-4" *ngIf="!renovarSaving()"></lucide-icon>

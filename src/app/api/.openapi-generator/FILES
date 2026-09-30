@@ -1,5 +1,4 @@
 .gitignore
-.openapi-generator-ignore
 README.md
 api.base.service.ts
 api.module.ts
@@ -11,6 +10,7 @@ api/catalogos.service.ts
 api/membresias.service.ts
 api/metricas.service.ts
 api/negocio.service.ts
+api/negocios.service.ts
 api/pagos.service.ts
 api/planesMembresia.service.ts
 api/socios.service.ts
@@ -23,6 +23,7 @@ model/accesoResponseDto.ts
 model/asistenciaSemanalDto.ts
 model/createMedioPagoDto.ts
 model/createMembresiaDto.ts
+model/createNegocioDto.ts
 model/createPagoDto.ts
 model/createPlanMembresiaDto.ts
 model/createRubroDto.ts
@@ -31,13 +32,19 @@ model/createTipoMembresiaDto.ts
 model/createUsuarioDto.ts
 model/excepcionAccesoDto.ts
 model/ingresosMensualesDto.ts
+model/loginDto.ts
 model/loginResponseDto.ts
 model/medioPagoResponseDto.ts
+model/membresiaActivaInfoDto.ts
 model/membresiaResponseDto.ts
 model/membresiasControllerCancelarRequest.ts
 model/metricasResumenDto.ts
 model/models.ts
+model/negocioAdminResponseDto.ts
 model/negocioResponseDto.ts
+model/paginatedMembresiasResponseDto.ts
+model/paginatedPagosResponseDto.ts
+model/paginatedSociosResponseDto.ts
 model/pagoResponseDto.ts
 model/planMembresiaResponseDto.ts
 model/rubroResponseDto.ts
@@ -52,6 +59,7 @@ model/updateRubroDto.ts
 model/updateSocioDto.ts
 model/updateTipoMembresiaDto.ts
 model/updateUsuarioDto.ts
+model/usuarioLoginDto.ts
 model/usuarioResponseDto.ts
 model/validarAccesoDto.ts
 param.ts

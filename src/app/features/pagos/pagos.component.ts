@@ -62,8 +62,6 @@ export class PagosComponent implements OnInit {
 
   // Filtros
   searchTerm = signal('');
-  filtroFechaDesde = signal('');
-  filtroFechaHasta = signal('');
   filtroMedios = signal<string[]>([]);
   filtroSocio = signal<SocioResponseDto | null>(null);
   socioQuery = signal('');
@@ -115,13 +113,11 @@ export class PagosComponent implements OnInit {
       undefined,
       this.filtroSocio()?.id || undefined,
       this.pageSize,
-      this.currentPage() - 1,
-      this.filtroFechaDesde() || undefined,
-      this.filtroFechaHasta() || undefined
+      this.currentPage() - 1
     ).subscribe({
       next: (response) => {
-        this.pagos.set(response.content || response);
-        this.totalItems.set(response.totalElements ?? response.total ?? response.length);
+        this.pagos.set(response.data || []);
+        this.totalItems.set(response.total);
         this.loading.set(false);
       },
       error: (err) => {
@@ -138,18 +134,6 @@ export class PagosComponent implements OnInit {
   // ------------------------------------------------------------
   onSearchChange(event: Event) {
     this.searchTerm.set((event.target as HTMLInputElement).value);
-  }
-
-  onFechaDesdeChange(event: Event) {
-    this.filtroFechaDesde.set((event.target as HTMLInputElement).value);
-    this.currentPage.set(1);
-    this.loadPagos();
-  }
-
-  onFechaHastaChange(event: Event) {
-    this.filtroFechaHasta.set((event.target as HTMLInputElement).value);
-    this.currentPage.set(1);
-    this.loadPagos();
   }
 
   isMedioSelected(id: string): boolean {
@@ -179,9 +163,9 @@ export class PagosComponent implements OnInit {
   searchSociosFiltro(term: string) {
     this.socioSearching.set(true);
     this.socioFiltroRequest?.unsubscribe();
-    this.socioFiltroRequest = this.sociosService.sociosControllerFindAll(term, term, term, undefined, 6, 0).subscribe({
+    this.socioFiltroRequest = this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, term, undefined, 6, 0).subscribe({
       next: (response) => {
-        this.socioResults.set((response.content || response) as SocioResponseDto[]);
+        this.socioResults.set((response.data || []) as SocioResponseDto[]);
         this.socioSearching.set(false);
       },
       error: () => this.socioSearching.set(false)
@@ -206,16 +190,12 @@ export class PagosComponent implements OnInit {
 
   hasActiveFilters = computed(() =>
     !!this.searchTerm() ||
-    !!this.filtroFechaDesde() ||
-    !!this.filtroFechaHasta() ||
     this.filtroMedios().length > 0 ||
     !!this.filtroSocio()
   );
 
   clearFilters() {
     this.searchTerm.set('');
-    this.filtroFechaDesde.set('');
-    this.filtroFechaHasta.set('');
     this.filtroMedios.set([]);
     this.filtroSocio.set(null);
     this.socioQuery.set('');

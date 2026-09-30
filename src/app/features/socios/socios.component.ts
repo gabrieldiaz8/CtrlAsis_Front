@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, HostListener, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map } from 'rxjs';
@@ -33,6 +33,7 @@ export class SociosComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
+  private destroyRef = inject(DestroyRef);
 
   private search$ = new Subject<string>();
   private sociosRequest: Subscription | null = null;
@@ -129,13 +130,13 @@ export class SociosComponent implements OnInit {
     });
 
     this.search$
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.currentPage.set(1);
         this.loadSocios();
       });
 
-    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(params => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const q = (params.get('q') ?? '').trim();
       this.searchTerm.set(q);
       this.search$.next(q);
@@ -144,41 +145,23 @@ export class SociosComponent implements OnInit {
 
   loadSocios() {
     const term = this.searchTerm().trim();
-    const isNumeric = /^\d+$/.test(term);
     const page = this.currentPage() - 1;
 
     this.loading.set(true);
     this.error.set(null);
 
-    let request: Observable<any>;
-
-    if (isNumeric) {
-      request = this.sociosService.sociosControllerFindAll(term, undefined, undefined, undefined, this.pageSize, page);
-    } else if (term) {
-      request = forkJoin({
-        nombres: this.sociosService.sociosControllerFindAll(undefined, term, undefined, undefined, this.pageSize, page),
-        apellidos: this.sociosService.sociosControllerFindAll(undefined, undefined, term, undefined, this.pageSize, page),
-      }).pipe(
-        map(({ nombres, apellidos }) => {
-          const byId = new Map<string, SocioResponseDto>();
-          for (const s of [...(nombres.data || []), ...(apellidos.data || [])]) {
-            byId.set(s.id, s);
-          }
-          const data = [...byId.values()].sort(
-            (a, b) => (a.apellido || '').localeCompare(b.apellido || '') || (a.nombre || '').localeCompare(b.nombre || '')
-          );
-          return { data, total: data.length };
-        })
-      );
-    } else {
-      request = this.sociosService.sociosControllerFindAll(undefined, undefined, undefined, undefined, this.pageSize, page);
-    }
+    const searchParam = term ? term : undefined;
+    
+    // dni, nombre, apellido, search, activo, limit, page
+    const request = this.sociosService.sociosControllerFindAll(
+      undefined, undefined, undefined, searchParam, undefined, this.pageSize, page
+    );
 
     this.sociosRequest?.unsubscribe();
     this.sociosRequest = request.subscribe({
       next: (response) => {
         this.socios.set(response.data || response);
-        this.totalItems.set(response.total ?? response.length);
+        this.totalItems.set(response.total ?? 0);
         this.loading.set(false);
       },
       error: (err) => {
@@ -397,7 +380,7 @@ export class SociosComponent implements OnInit {
 
     this.membresiasService.membresiasControllerFindAll(String(socio.id), undefined, 50, 0).subscribe({
       next: (response) => {
-        this.socioMembresias.set(response.content || response.data || response);
+        this.socioMembresias.set(response.data || []);
         this.socioMembresiasLoading.set(false);
         this.socioMembresiasLoaded.set(true);
       },

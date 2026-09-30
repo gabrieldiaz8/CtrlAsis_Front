@@ -42,7 +42,7 @@ export class AccesosService extends BaseService {
     /**
      * Registrar excepción para un acceso rechazado
      * @endpoint post /accesos/{id}/excepcion
-     * @param id 
+     * @param id ID (uuid) del acceso rechazado
      * @param excepcionAccesoDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -115,7 +115,7 @@ export class AccesosService extends BaseService {
     /**
      * Historial de accesos de un socio
      * @endpoint get /accesos/socio/{socioId}
-     * @param socioId 
+     * @param socioId ID (uuid) del socio
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -229,7 +229,7 @@ export class AccesosService extends BaseService {
     /**
      * Detalle de un acceso
      * @endpoint get /accesos/{id}
-     * @param id 
+     * @param id ID (uuid) del acceso
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -288,7 +288,7 @@ export class AccesosService extends BaseService {
     /**
      * Validar acceso de un socio por DNI (check-in principal)
      * @endpoint post /accesos/validar
-     * @param validarAccesoDto 
+     * @param validarAccesoDto DNI del socio que intenta ingresar
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options

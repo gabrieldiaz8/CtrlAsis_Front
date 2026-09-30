@@ -111,7 +111,7 @@ export class PlanesMembresiaService extends BaseService {
     /**
      * Desactivar plan de membresía (soft delete)
      * @endpoint patch /planes-membresia/{id}/desactivar
-     * @param id 
+     * @param id ID (uuid) del plan
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -280,7 +280,7 @@ export class PlanesMembresiaService extends BaseService {
     /**
      * Obtener detalle de un plan de membresía
      * @endpoint get /planes-membresia/{id}
-     * @param id 
+     * @param id ID (uuid) del plan
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
@@ -339,7 +339,7 @@ export class PlanesMembresiaService extends BaseService {
     /**
      * Actualizar plan de membresía
      * @endpoint patch /planes-membresia/{id}
-     * @param id 
+     * @param id ID (uuid) del plan
      * @param updatePlanMembresiaDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

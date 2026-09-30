@@ -221,17 +221,111 @@
             </div>
           </div>
 
+          <!-- ==================== MEMBRESÍA (solo en el alta) ==================== -->
+          <ng-container *ngIf="!editingSocio()">
+            <div class="p-4 bg-surface-container-low border border-outline-variant rounded-xl">
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+                    <lucide-icon [img]="CreditCard" class="w-5 h-5"></lucide-icon>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-body-md font-semibold text-on-surface">Membresía</p>
+                    <p class="text-label-sm text-on-surface-variant">Plan y cobro en el mismo paso</p>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0"
+                       [class.cursor-not-allowed]="saving() || altaBloqueada()">
+                  <input type="checkbox" class="sr-only peer"
+                         [checked]="asignarMembresia()"
+                         [disabled]="saving() || altaBloqueada()"
+                         (change)="onToggleAsignarMembresia($any($event.target).checked)"
+                         aria-label="Asignar membresía ahora" />
+                  <div class="w-10 h-6 rounded-full peer bg-surface-container-highest peer-checked:bg-success transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4 peer-disabled:opacity-50"></div>
+                </label>
+              </div>
+
+              <p *ngIf="!asignarMembresia()" class="text-label-sm text-on-surface-variant mt-3">
+                Se va a crear solo el socio, sin membresía ni cobro.
+              </p>
+            </div>
+
+            <ng-container *ngIf="asignarMembresia()">
+              <app-plan-membresia-fields [form]="membresiaForm" [planes]="planesActivos()" />
+
+              <!-- Registrar pago ahora -->
+              <div class="p-4 bg-surface border border-outline-variant rounded-xl space-y-4">
+                <div class="flex items-center justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="text-body-md font-semibold text-on-surface">Registrar pago ahora</p>
+                    <p class="text-label-sm text-on-surface-variant">Opcional, se cobra contra la membresía nueva</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0"
+                         [class.cursor-not-allowed]="saving() || altaBloqueada()">
+                    <input type="checkbox" class="sr-only peer"
+                           [checked]="registrarPago()"
+                           [disabled]="saving() || altaBloqueada()"
+                           (change)="onToggleRegistrarPago($any($event.target).checked)"
+                           aria-label="Registrar pago ahora" />
+                    <div class="w-10 h-6 rounded-full peer bg-surface-container-highest peer-checked:bg-success transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4 peer-disabled:opacity-50"></div>
+                  </label>
+                </div>
+
+                <div *ngIf="registrarPago()" [formGroup]="pagoForm" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Monto</label>
+                    <input type="number" formControlName="monto" (input)="onMontoPagoInput()"
+                           min="1" step="0.01" placeholder="0,00" aria-label="Monto del pago"
+                           class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all disabled:opacity-60" />
+                    <p *ngIf="pagoForm.get('monto')?.invalid && pagoForm.get('monto')?.touched"
+                       class="text-label-sm text-error mt-1">El monto es obligatorio y debe ser mayor a $0</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Medio de pago</label>
+                    <select formControlName="medioPagoId" aria-label="Medio de pago"
+                            class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-60">
+                      <option value="">Seleccionar medio...</option>
+                      <option *ngFor="let medio of mediosPago()" [value]="medio.id">{{ medio.nombre }}</option>
+                    </select>
+                    <p *ngIf="pagoForm.get('medioPagoId')?.invalid && pagoForm.get('medioPagoId')?.touched"
+                       class="text-label-sm text-error mt-1">Seleccioná un medio de pago</p>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Error de un paso intermedio: el socio ya quedó creado -->
+            <div *ngIf="altaError()"
+                 class="p-4 bg-error-container text-on-error-container border border-error rounded-xl flex items-start gap-3">
+              <lucide-icon [img]="AlertCircle" class="w-5 h-5 shrink-0 mt-0.5"></lucide-icon>
+              <div class="min-w-0 text-label-sm">
+                <p class="text-body-md font-semibold">Alta incompleta</p>
+                <p class="mt-0.5">{{ altaError() }}</p>
+                <p *ngIf="socioAltaCreado() as socio" class="mt-2">
+                  <span class="font-semibold">{{ socio.nombre }} {{ socio.apellido }}</span> ya quedó dado de alta.
+                  No se vuelve a crear: el botón reintenta solo {{ textoReintento() }}.
+                </p>
+              </div>
+            </div>
+          </ng-container>
+
           <!-- Modal Actions -->
           <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
             <button type="button" (click)="closeModal()"
                     class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
               Cancelar
             </button>
-            <button type="submit" [disabled]="socioForm.invalid || saving()"
-                    class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-              <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
-              {{ editingSocio() ? 'Actualizar' : 'Crear Socio' }}
-            </button>
+            <div class="flex flex-col items-end gap-1">
+              <button type="submit" [disabled]="socioForm.invalid || saving()"
+                      class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+                {{ textoBotonAlta() }}
+              </button>
+              <p *ngIf="saving() && textoPasoEnCurso()" class="text-label-sm text-on-surface-variant">
+                {{ textoPasoEnCurso() }}
+              </p>
+            </div>
           </div>
         </form>
       </div>
@@ -491,44 +585,7 @@
       </div>
 
       <div class="p-6 space-y-5">
-        <div>
-          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Plan de Membresía</label>
-          <div class="grid grid-cols-1 gap-2.5">
-            <button *ngFor="let plan of planesActivos()"
-                    type="button"
-                    (click)="socioPlanId.set(plan.id)"
-                    [class]="socioPlanId() === plan.id
-                      ? 'border-secondary bg-secondary-container text-on-secondary-container'
-                      : 'border-outline-variant bg-surface hover:border-secondary/50'"
-                    class="micro-btn text-left p-3.5 rounded-xl border-2 transition-colors flex items-center justify-between gap-3">
-              <div>
-                <p class="text-body-md font-semibold">{{ plan.tipoMembresiaNombre }}</p>
-                <p class="text-label-sm text-on-surface-variant">{{ plan.diasPorSemana }} días/semana · {{ plan.duracionDias }} días</p>
-              </div>
-              <span class="text-body-lg font-display font-bold whitespace-nowrap">{{ formatMoney(plan.precio) }}</span>
-            </button>
-          </div>
-          <p *ngIf="planesActivos().length === 0" class="text-body-sm text-on-surface-variant mt-2">
-            No hay planes activos disponibles. Creá un plan desde la sección Planes.
-          </p>
-        </div>
-
-        <div>
-          <label class="block text-label-sm font-medium text-on-surface-variant mb-2">Fecha de inicio</label>
-          <div class="relative">
-            <lucide-icon [img]="Calendar" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5"></lucide-icon>
-            <input type="date" [ngModel]="socioFechaInicio()" (ngModelChange)="socioFechaInicio.set($event)"
-                   class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
-          </div>
-        </div>
-
-        <div *ngIf="socioFechaFinPreview()" class="p-3.5 bg-surface-container-low border border-outline-variant rounded-lg flex items-center gap-3">
-          <lucide-icon [img]="Calendar" class="w-5 h-5 text-secondary shrink-0"></lucide-icon>
-          <p class="text-label-sm text-on-surface-variant">
-            La membresía vencerá el <span class="font-semibold text-on-surface">{{ formatFechaCompleta(socioFechaFinPreview()) }}</span>
-            ({{ getPlan(socioPlanId())?.duracionDias }} días)
-          </p>
-        </div>
+        <app-plan-membresia-fields [form]="membresiaRapidaForm" [planes]="planesActivos()" />
 
         <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
           <button type="button" (click)="closeSocioMembresiaModal()"
@@ -536,7 +593,7 @@
             Cancelar
           </button>
           <button type="button" (click)="crearMembresiaSocio()"
-                  [disabled]="!socioPlanId() || socialMembresiaSaving()"
+                  [disabled]="membresiaRapidaForm.invalid || socialMembresiaSaving()"
                   class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="socialMembresiaSaving()"></lucide-icon>
             Crear Membresía

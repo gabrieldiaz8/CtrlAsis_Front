@@ -1,25 +1,29 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, HostListener, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map } from 'rxjs';
+import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { LucideAngularModule, Users, Search, Filter, Plus, MoreVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
 import { SociosService, SocioResponseDto, CreateSocioDto, UpdateSocioDto } from '@api';
 import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto } from '@api';
 import { PlanesMembresiaService, PlanMembresiaResponseDto } from '@api';
-import { PagosService, PagoResponseDto } from '@api';
+import { PagosService, PagoResponseDto, CreatePagoDto } from '@api';
+import { CatalogosService, MedioPagoResponseDto } from '@api';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from '@core/services/toast.service';
 import { HasRoleDirective } from '@core/directives/has-role.directive';
-import { PagoFormModalComponent } from '@shared/components';
+import { PagoFormModalComponent, PlanMembresiaFieldsComponent } from '@shared/components';
 import { modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations';
+
+/** Paso del alta de socio con membresía que se está ejecutando o que falló. */
+type AltaPaso = 'socio' | 'membresia' | 'pago';
 
 @Component({
   selector: 'app-socios',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, CommonModule, ReactiveFormsModule, FormsModule, DatePipe, HasRoleDirective, PagoFormModalComponent],
+  imports: [LucideAngularModule, CommonModule, ReactiveFormsModule, FormsModule, DatePipe, HasRoleDirective, PagoFormModalComponent, PlanMembresiaFieldsComponent],
   animations: [staggerGrid, modalOverlay, modalPanel],
   templateUrl: './socios.component.html',
   styleUrl: './socios.component.css'
@@ -30,6 +34,7 @@ export class SociosComponent implements OnInit {
   private membresiasService = inject(MembresiasService);
   private planesService = inject(PlanesMembresiaService);
   private pagosService = inject(PagosService);
+  private catalogosService = inject(CatalogosService);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
@@ -102,24 +107,79 @@ export class SociosComponent implements OnInit {
     this.socioPagos().reduce((acc, p) => acc + (p.monto ?? 0), 0)
   );
 
-  // Crear membresía desde el socio
+  // Crear membresía desde la ficha de un socio ya existente
   showSocioMembresiaModal = signal(false);
-  socioPlanId = signal('');
-  socioFechaInicio = signal(this.getToday());
   socialMembresiaSaving = signal(false);
+  membresiaRapidaForm = this.fb.nonNullable.group({
+    planId: ['', [Validators.required]],
+    fechaInicio: [this.getToday(), [Validators.required]],
+    fechaFin: ['']
+  });
 
   planes = signal<PlanMembresiaResponseDto[]>([]);
   planesActivos = computed(() => this.planes().filter(p => p.activo));
 
-  socioFechaFinPreview = computed(() => {
-    const plan = this.getPlan(this.socioPlanId());
-    if (!plan) return null;
-    const inicio = new Date(this.socioFechaInicio());
-    inicio.setHours(12, 0, 0, 0);
-    const fin = new Date(inicio);
-    fin.setDate(fin.getDate() + plan.duracionDias);
-    return fin.toISOString().split('T')[0];
+  // ------------------------------------------------------------
+  // Alta de socio con membresía (y pago opcional) en el mismo flujo
+  // ------------------------------------------------------------
+  asignarMembresia = signal(true);
+  registrarPago = signal(true);
+  mediosPago = signal<MedioPagoResponseDto[]>([]);
+  montoPagoTocado = signal(false);
+
+  /** Socio ya creado: a partir de acá el alta NO se vuelve a ejecutar. */
+  socioAltaCreado = signal<SocioResponseDto | null>(null);
+  membresiaAltaCreada = signal<MembresiaResponseDto | null>(null);
+  pagoAltaCreado = signal<PagoResponseDto | null>(null);
+  pasoAlta = signal<AltaPaso | null>(null);
+  altaError = signal<string | null>(null);
+
+  readonly altaBloqueada = computed(() => this.socioAltaCreado() !== null);
+  readonly sinPlanesActivos = computed(() => this.planesActivos().length === 0);
+
+  membresiaForm = this.fb.nonNullable.group({
+    planId: ['', [Validators.required]],
+    fechaInicio: [this.getToday(), [Validators.required]],
+    fechaFin: ['']
   });
+
+  pagoForm = this.fb.nonNullable.group({
+    monto: [0, [Validators.required, Validators.min(1)]],
+    medioPagoId: ['', [Validators.required]]
+  });
+
+  readonly textoBotonAlta = computed(() => {
+    if (this.editingSocio()) return 'Actualizar';
+    if (this.altaBloqueada()) {
+      return this.membresiaAltaCreada() ? 'Reintentar Pago' : 'Reintentar Membresía';
+    }
+    if (!this.asignarMembresia()) return 'Crear Socio';
+    return this.registrarPago() ? 'Crear Socio, Membresía y Pago' : 'Crear Socio y Membresía';
+  });
+
+  readonly textoPasoEnCurso = computed(() => {
+    switch (this.pasoAlta()) {
+      case 'socio': return 'Creando socio...';
+      case 'membresia': return 'Creando membresía...';
+      case 'pago': return 'Registrando pago...';
+      default: return null;
+    }
+  });
+
+  readonly textoReintento = computed(() => {
+    if (!this.altaBloqueada()) return null;
+    return this.membresiaAltaCreada() ? 'el pago' : 'la membresía';
+  });
+
+  constructor() {
+    this.membresiaForm.get('fechaFin')!.disable({ emitEvent: false });
+
+    this.membresiaForm.get('planId')!
+      .valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.aplicarPrecioPlan());
+
+    this.membresiaRapidaForm.get('fechaFin')!.disable({ emitEvent: false });
+  }
 
   ngOnInit() {
     this.layout.setPageTitle('Socios');
@@ -127,6 +187,16 @@ export class SociosComponent implements OnInit {
     this.planesService.planesMembresiaControllerFindAll().subscribe({
       next: (data) => this.planes.set(data || []),
       error: () => console.error('Error loading planes')
+    });
+
+    this.catalogosService.catalogosControllerFindAllMediosPago().subscribe({
+      next: (data) => {
+        this.mediosPago.set(data || []);
+        if (!this.pagoForm.getRawValue().medioPagoId && data?.length) {
+          this.pagoForm.patchValue({ medioPagoId: data[0].id });
+        }
+      },
+      error: () => console.error('Error loading medios de pago')
     });
 
     this.search$
@@ -259,6 +329,7 @@ export class SociosComponent implements OnInit {
       telefono: '',
       fechaAlta: this.getToday()
     });
+    this.resetAlta();
     this.showModal.set(true);
   }
 
@@ -271,14 +342,54 @@ export class SociosComponent implements OnInit {
       telefono: socio.telefono || '',
       fechaAlta: socio.fechaAlta?.split('T')[0] || this.getToday()
     });
+    this.resetAlta();
     this.showModal.set(true);
   }
 
   closeModal() {
+    // Con el alta en curso no se cierra: si el socio ya quedó creado hay que
+    // llegar al final del flujo para no dejar el alta a medias.
+    if (this.saving()) return;
+
     this.showModal.set(false);
     this.editingSocio.set(null);
-    this.saving.set(false);
     this.socioForm.reset();
+    this.resetAlta();
+  }
+
+  /**
+   * Vuelve a foja cero la sección de membresía del alta. Se llama al abrir y al
+   * cerrar el modal, así nunca quedan datos de un alta anterior.
+   */
+  private resetAlta() {
+    this.asignarMembresia.set(true);
+    this.registrarPago.set(true);
+    this.montoPagoTocado.set(false);
+    this.socioAltaCreado.set(null);
+    this.membresiaAltaCreada.set(null);
+    this.pagoAltaCreado.set(null);
+    this.pasoAlta.set(null);
+    this.altaError.set(null);
+
+    this.setHabilitada(this.membresiaForm, true);
+    this.pagoForm.enable({ emitEvent: false });
+    this.membresiaForm.reset({ planId: '', fechaInicio: this.getToday(), fechaFin: '' });
+    this.pagoForm.reset({ monto: 0, medioPagoId: this.mediosPago()[0]?.id || '' });
+  }
+
+  /**
+   * Habilita o deshabilita los campos editables del bloque de membresía.
+   * `fechaFin` queda siempre deshabilitada: es el valor calculado por el
+   * subcomponente compartido y no se edita a mano.
+   */
+  private setHabilitada(form: FormGroup, habilitada: boolean) {
+    for (const nombre of ['planId', 'fechaInicio']) {
+      const control = form.get(nombre);
+      if (!control) continue;
+      habilitada
+        ? control.enable({ emitEvent: false })
+        : control.disable({ emitEvent: false });
+    }
   }
 
   onBackdropClick(event: MouseEvent) {
@@ -396,53 +507,47 @@ export class SociosComponent implements OnInit {
   // Crear membresía desde el socio
   // ------------------------------------------------------------
   openSocioMembresiaModal() {
-    this.socioPlanId.set('');
-    this.socioFechaInicio.set(this.getToday());
+    this.setHabilitada(this.membresiaRapidaForm, true);
+    this.membresiaRapidaForm.reset({ planId: '', fechaInicio: this.getToday(), fechaFin: '' });
     this.socialMembresiaSaving.set(false);
     this.showSocioMembresiaModal.set(true);
   }
 
   closeSocioMembresiaModal() {
+    if (this.socialMembresiaSaving()) return;
     this.showSocioMembresiaModal.set(false);
-    this.socioPlanId.set('');
+    this.membresiaRapidaForm.reset({ planId: '', fechaInicio: this.getToday(), fechaFin: '' });
   }
 
   crearMembresiaSocio() {
     const socio = this.detailSocio();
     if (!socio) return;
 
-    const planId = this.socioPlanId();
-    if (!planId) {
+    if (this.membresiaRapidaForm.invalid) {
+      this.membresiaRapidaForm.markAllAsTouched();
       this.toast.warning('Seleccioná un plan para la membresía', { title: 'Plan requerido' });
       return;
     }
 
-    const prevista = this.socioFechaFinPreview();
     this.socialMembresiaSaving.set(true);
 
-    const dto: CreateMembresiaDto = {
-      socioId: String(socio.id),
-      planId,
-      fechaInicio: this.socioFechaInicio(),
-      fechaFin: prevista || this.socioFechaInicio(),
-      estado: 'activa'
-    };
-
-    this.membresiasService.membresiasControllerCreate(dto).subscribe({
-      next: () => {
-        this.socialMembresiaSaving.set(false);
-        this.closeSocioMembresiaModal();
-        this.socioMembresiasLoaded.set(false);
-        this.socioMembresias.set([]);
-        this.loadSocioMembresias();
-        this.toast.success('Membresía creada correctamente', { title: 'Creada' });
-      },
-      error: (err) => {
-        this.socialMembresiaSaving.set(false);
-        this.toast.error(err.error?.message || 'Error al crear la membresía', { title: 'Error' });
-        console.error('Error creating membresia:', err);
-      }
-    });
+    this.membresiasService
+      .membresiasControllerCreate(this.buildMembresiaDto(socio.id, this.membresiaRapidaForm))
+      .subscribe({
+        next: () => {
+          this.socialMembresiaSaving.set(false);
+          this.closeSocioMembresiaModal();
+          this.socioMembresiasLoaded.set(false);
+          this.socioMembresias.set([]);
+          this.loadSocioMembresias();
+          this.toast.success('Membresía creada correctamente', { title: 'Creada' });
+        },
+        error: (err) => {
+          this.socialMembresiaSaving.set(false);
+          this.toast.error(err.error?.message || 'Error al crear la membresía', { title: 'Error' });
+          console.error('Error creating membresia:', err);
+        }
+      });
   }
 
   // ------------------------------------------------------------
@@ -492,41 +597,266 @@ export class SociosComponent implements OnInit {
       return;
     }
 
+    if (this.editingSocio()) {
+      this.actualizarSocio(this.editingSocio()!);
+      return;
+    }
+
+    const errorValidacion = this.validarPasosPendientes();
+    if (errorValidacion) {
+      this.toast.warning(errorValidacion, { title: 'Revisá los datos' });
+      return;
+    }
+
+    this.saving.set(true);
+    this.altaError.set(null);
+    this.bloquearSeccionMembresia(true);
+
+    if (!this.asignarMembresia() && !this.socioAltaCreado()) {
+      this.pasoAlta.set('socio');
+      this.sociosService.sociosControllerCreate(this.buildSocioDto()).subscribe({
+        next: (socio) => {
+          this.socioAltaCreado.set(socio);
+          this.finalizarAlta();
+        },
+        error: (err) => this.manejarErrorAlta(err)
+      });
+      return;
+    }
+
+    this.pasoAlta.set(this.pasoPendiente());
+
+    this.continuarAlta().subscribe({
+      next: () => this.finalizarAlta(),
+      error: (err) => this.manejarErrorAlta(err)
+    });
+  }
+
+  private actualizarSocio(socio: SocioResponseDto) {
     this.saving.set(true);
 
+    this.sociosService.sociosControllerUpdate(socio.id, this.buildSocioDto() as UpdateSocioDto).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.loadSocios();
+        this.closeModal();
+        this.toast.success('Socio actualizado correctamente', { title: 'Actualizado' });
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.toast.error(err.error?.message || 'Error al actualizar el socio', { title: 'Error' });
+        console.error('Error updating socio:', err);
+      }
+    });
+  }
+
+  // ------------------------------------------------------------
+  // Alta secuencial: socio -> membresía -> pago
+  //
+  // Cada paso deja rastro en un signal. Si uno falla, el alta NO se reintenta
+  // desde cero: el modal queda bloqueado con el socio ya creado y el botón
+  // reintenta únicamente el paso que falta, así no se duplica nada.
+  // ------------------------------------------------------------
+
+  /** Primer paso del flujo que todavía no se completó. */
+  private pasoPendiente(): AltaPaso {
+    if (!this.socioAltaCreado()) return 'socio';
+    if (!this.membresiaAltaCreada()) return 'membresia';
+    return 'pago';
+  }
+
+  /** Encadena solo los pasos pendientes, saltando los que ya quedaron hechos. */
+  private continuarAlta(): Observable<PagoResponseDto | null> {
+    if (this.socioAltaCreado()) {
+      return this.encadenarMembresiaYPago(this.fuenteMembresia());
+    }
+
+    return this.sociosService.sociosControllerCreate(this.buildSocioDto()).pipe(
+      tap(socio => this.socioAltaCreado.set(socio)),
+      switchMap(() => this.encadenarMembresiaYPago(this.fuenteMembresia()))
+    );
+  }
+
+  private fuenteMembresia(): Observable<MembresiaResponseDto> {
+    const yaCreada = this.membresiaAltaCreada();
+    if (yaCreada) return of(yaCreada);
+
+    this.pasoAlta.set('membresia');
+    return this.membresiasService.membresiasControllerCreate(
+      this.buildMembresiaDto(this.socioAltaCreado()!.id, this.membresiaForm)
+    );
+  }
+
+  private encadenarMembresiaYPago(
+    membresia$: Observable<MembresiaResponseDto>
+  ): Observable<PagoResponseDto | null> {
+    return membresia$.pipe(
+      tap(membresia => this.membresiaAltaCreada.set(membresia)),
+      switchMap(membresia => {
+        if (!this.registrarPago()) return of(null);
+
+        const yaCreado = this.pagoAltaCreado();
+        if (yaCreado) return of(yaCreado);
+
+        this.pasoAlta.set('pago');
+        return this.pagosService.pagosControllerCreate(this.buildPagoDto(membresia.id));
+      }),
+      tap(pago => { if (pago) this.pagoAltaCreado.set(pago); })
+    );
+  }
+
+  private finalizarAlta() {
+    // El mensaje se arma antes de cerrar el modal: al cerrarlo se resetea el estado del alta.
+    const socio = this.socioAltaCreado();
+    const conMembresia = this.asignarMembresia();
+    const conPago = this.registrarPago();
+    const nombre = socio ? `${socio.nombre} ${socio.apellido}` : 'el socio';
+
+    const mensaje = conMembresia
+      ? conPago
+        ? `Alta completa: ${nombre}, su membresía y su pago quedaron registrados`
+        : `Socio ${nombre} y su membresía quedaron registrados`
+      : `Socio ${nombre} creado correctamente`;
+
+    this.saving.set(false);
+    this.pasoAlta.set(null);
+    this.loadSocios();
+    this.closeModal();
+    this.toast.success(mensaje, { title: 'Alta completa', duration: 6000 });
+  }
+
+  private manejarErrorAlta(err: any) {
+    this.saving.set(false);
+    this.bloquearSeccionMembresia(false);
+
+    const paso = this.pasoAlta();
+    const detalle = err?.error?.message;
+    const descripcion = this.descripcionDePaso(paso);
+    const motivo = detalle || descripcion.fallo;
+
+    this.altaError.set(
+      this.socioAltaCreado() ? `${descripcion.participio}: ${motivo}` : motivo
+    );
+
+    if (!this.socioAltaCreado()) {
+      this.toast.error(motivo, { title: 'Error', duration: 6000 });
+      console.error('Error en el alta de socio:', err);
+      return;
+    }
+
+    const socio = this.socioAltaCreado()!;
+    this.toast.error(
+      `${socio.nombre} ${socio.apellido} ya quedó creado, pero falló ${descripcion.participio}: ${motivo}. ` +
+      `Podés reintentar solo ${descripcion.reintento} desde el mismo formulario.`,
+      { title: 'Alta incompleta', duration: 10000 }
+    );
+    console.error(`Error creando ${paso} en el alta de socio:`, err);
+  }
+
+  private descripcionDePaso(paso: AltaPaso | null): { fallo: string; participio: string; reintento: string } {
+    switch (paso) {
+      case 'membresia':
+        return { fallo: 'no se pudo crear la membresía', participio: 'la membresía', reintento: 'la membresía' };
+      case 'pago':
+        return { fallo: 'no se pudo registrar el pago', participio: 'el pago', reintento: 'el pago' };
+      default:
+        return { fallo: 'no se pudo crear el socio', participio: 'el alta del socio', reintento: 'todo el alta' };
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Estado y validación de la sección de membresía
+  // ------------------------------------------------------------
+
+  onToggleAsignarMembresia(checked: boolean) {
+    this.asignarMembresia.set(checked);
+    this.altaError.set(null);
+  }
+
+  onToggleRegistrarPago(checked: boolean) {
+    this.registrarPago.set(checked);
+    this.altaError.set(null);
+  }
+
+  onMontoPagoInput() {
+    this.montoPagoTocado.set(true);
+  }
+
+  /** Precarga el monto con el precio del plan, salvo que ya lo haya editado a mano. */
+  private aplicarPrecioPlan() {
+    if (this.montoPagoTocado()) return;
+    const precio = this.getPlan(this.membresiaForm.getRawValue().planId)?.precio;
+    if (precio != null) {
+      this.pagoForm.patchValue({ monto: Number(precio) });
+    }
+  }
+
+  private bloquearSeccionMembresia(bloquear: boolean) {
+    this.setHabilitada(this.membresiaForm, !bloquear);
+    if (bloquear) {
+      this.pagoForm.disable({ emitEvent: false });
+    } else {
+      this.pagoForm.enable({ emitEvent: false });
+    }
+  }
+
+  /** Valida solo los pasos que van a ejecutarse. Devuelve el mensaje o null. */
+  private validarPasosPendientes(): string | null {
+    if (!this.asignarMembresia() && !this.socioAltaCreado()) return null;
+
+    if (!this.membresiaAltaCreada()) {
+      if (this.sinPlanesActivos()) {
+        return 'No hay planes activos. Desactivá "Asignar membresía ahora" para dar de alta solo el socio.';
+      }
+      if (this.membresiaForm.invalid) {
+        this.membresiaForm.markAllAsTouched();
+        return 'Seleccioná un plan para la membresía';
+      }
+    }
+
+    if (this.registrarPago() && !this.pagoAltaCreado() && this.pagoForm.invalid) {
+      this.pagoForm.markAllAsTouched();
+      return this.pagoForm.get('medioPagoId')?.hasError('required')
+        ? 'Seleccioná un medio de pago'
+        : 'Ingresá el monto a cobrar, mayor a $0';
+    }
+
+    return null;
+  }
+
+  // ------------------------------------------------------------
+  // DTOs
+  // ------------------------------------------------------------
+  private buildSocioDto(): CreateSocioDto {
     const formData = this.socioForm.getRawValue();
-    const dto: CreateSocioDto = {
+    return {
       dni: formData.dni,
       nombre: formData.nombre,
       apellido: formData.apellido,
       telefono: formData.telefono,
       fechaAlta: formData.fechaAlta
     };
+  }
 
-    const editing = this.editingSocio();
-    const request = editing
-      ? this.sociosService.sociosControllerUpdate(editing.id, dto as UpdateSocioDto)
-      : this.sociosService.sociosControllerCreate(dto);
+  private buildMembresiaDto(socioId: string, form: FormGroup): CreateMembresiaDto {
+    const formData = form.getRawValue();
+    return {
+      socioId: String(socioId),
+      planId: String(formData.planId),
+      fechaInicio: formData.fechaInicio,
+      fechaFin: formData.fechaFin,
+      estado: 'activa'
+    };
+  }
 
-    request.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.loadSocios();
-        this.closeModal();
-        this.toast.success(
-          editing ? 'Socio actualizado correctamente' : 'Socio creado correctamente',
-          { title: editing ? 'Actualizado' : 'Creado' }
-        );
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.toast.error(
-          err.error?.message || (editing ? 'Error al actualizar el socio' : 'Error al crear el socio'),
-          { title: 'Error' }
-        );
-        console.error(editing ? 'Error updating socio:' : 'Error creating socio:', err);
-      }
-    });
+  private buildPagoDto(membresiaId: string): CreatePagoDto {
+    const formData = this.pagoForm.getRawValue();
+    return {
+      membresiaId: String(membresiaId),
+      medioPagoId: String(formData.medioPagoId),
+      monto: Number(formData.monto),
+      fechaPago: this.getToday()
+    };
   }
 
   onDeleteSocio(socio: SocioResponseDto) {

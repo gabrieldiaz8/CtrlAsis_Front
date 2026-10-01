@@ -60,17 +60,30 @@ describe('RoleService', () => {
     it('canAccessModule() gates sensitive modules by role', () => {
       localStorage.setItem('user_data', JSON.stringify({ id: '1', rol: 'dueno' }));
       service.refresh();
-      expect(service.canAccessModule('catalogos')).toBe(true);
-      expect(service.canAccessModule('configuracion')).toBe(true);
+      expect(service.canAccessModule('configuracion')).toBe(false);
       expect(service.canAccessModule('usuarios')).toBe(true);
-      expect(service.canAccessModule('membresias')).toBe(true);
 
       localStorage.setItem('user_data', JSON.stringify({ id: '2', rol: 'recepcionista' }));
       service.refresh();
       expect(service.canAccessModule('acceso')).toBe(true);
-      expect(service.canAccessModule('dashboard')).toBe(true);
-      expect(service.canAccessModule('membresias')).toBe(false);
-      expect(service.canAccessModule('catalogos')).toBe(false);
+      expect(service.canAccessModule('dashboard')).toBe(false);
+      expect(service.canAccessModule('configuracion')).toBe(false);
+
+      localStorage.setItem('user_data', JSON.stringify({ id: '3', rol: 'super_admin' }));
+      service.refresh();
+      expect(service.canAccessModule('configuracion')).toBe(true);
+    });
+
+    it('homeRoute() sends the super_admin to configuracion and the rest to acceso', () => {
+      localStorage.setItem('user_data', JSON.stringify({ id: '1', rol: 'super_admin' }));
+      service.refresh();
+      expect(service.homeRoute()).toBe('/configuracion');
+
+      for (const rol of ['dueno', 'administrador', 'recepcionista'] as const) {
+        localStorage.setItem('user_data', JSON.stringify({ id: '2', rol }));
+        service.refresh();
+        expect(service.homeRoute()).toBe('/acceso');
+      }
     });
 
     it('canAccessModule() returns false for unknown modules', () => {

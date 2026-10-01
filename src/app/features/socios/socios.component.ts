@@ -11,7 +11,7 @@ import {
   UpdateSocioDto,
   ConteosEstadoMembresiaDto,
 } from '@api';
-import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto } from '@api';
+import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto, RenovarMembresiaDto } from '@api';
 import { PlanesMembresiaService, PlanMembresiaResponseDto } from '@api';
 import { PagosService, PagoResponseDto, CreatePagoDto } from '@api';
 import { CatalogosService, MedioPagoResponseDto } from '@api';
@@ -20,6 +20,10 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { ToastService } from '@core/services/toast.service';
 import { HasRoleDirective } from '@core/directives/has-role.directive';
 import { PagoFormModalComponent, PlanMembresiaFieldsComponent } from '@shared/components';
+import { MembresiaActualComponent } from './membresia-actual/membresia-actual.component';
+import { HistorialMembresiasComponent } from './historial-membresias/historial-membresias.component';
+import { ModalRenovarComponent } from './modal-renovar/modal-renovar.component';
+import { ModalCancelarComponent } from './modal-cancelar/modal-cancelar.component';
 import { modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations';
 
 /** Paso del alta de socio con membresía que se está ejecutando o que falló. */
@@ -47,7 +51,7 @@ interface ChipMembresia {
   selector: 'app-socios',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, CommonModule, ReactiveFormsModule, FormsModule, DatePipe, HasRoleDirective, PagoFormModalComponent, PlanMembresiaFieldsComponent],
+  imports: [LucideAngularModule, CommonModule, ReactiveFormsModule, FormsModule, DatePipe, HasRoleDirective, PagoFormModalComponent, PlanMembresiaFieldsComponent, MembresiaActualComponent, HistorialMembresiasComponent, ModalRenovarComponent, ModalCancelarComponent],
   animations: [staggerGrid, modalOverlay, modalPanel],
   templateUrl: './socios.component.html',
   styleUrl: './socios.component.css'
@@ -144,6 +148,12 @@ export class SociosComponent implements OnInit {
   socioPagosError = signal<string | null>(null);
   socioPagosLoaded = signal(false);
   showSocioPagoForm = signal(false);
+
+  // Modales del bloque Membresía en la ficha
+  showRenovarModal = signal(false);
+  renovarMembresia = signal<MembresiaResponseDto | null>(null);
+  showCancelarModal = signal(false);
+  cancelarMembresia = signal<MembresiaResponseDto | null>(null);
 
   totalPagosSocio = computed(() =>
     this.socioPagos().reduce((acc, p) => acc + (p.monto ?? 0), 0)
@@ -681,6 +691,55 @@ export class SociosComponent implements OnInit {
           console.error('Error creating membresia:', err);
         }
       });
+  }
+
+  // ------------------------------------------------------------
+  // Bloque Membresía en la ficha: acciones desde subcomponentes
+  // ------------------------------------------------------------
+  onRenovarMembresia(m: MembresiaResponseDto) {
+    this.renovarMembresia.set(m);
+    this.showRenovarModal.set(true);
+  }
+
+  onRenovado() {
+    this.showRenovarModal.set(false);
+    this.renovarMembresia.set(null);
+    this.socioMembresiasLoaded.set(false);
+    this.socioMembresias.set([]);
+    this.loadSocioMembresias();
+  }
+
+  onCambiarPlanMembresia(m: MembresiaResponseDto) {
+    this.renovarMembresia.set(m);
+    this.showRenovarModal.set(true);
+  }
+
+  onCancelarMembresia(m: MembresiaResponseDto) {
+    this.cancelarMembresia.set(m);
+    this.showCancelarModal.set(true);
+  }
+
+  onCancelado() {
+    this.showCancelarModal.set(false);
+    this.cancelarMembresia.set(null);
+    this.socioMembresiasLoaded.set(false);
+    this.socioMembresias.set([]);
+    this.loadSocioMembresias();
+  }
+
+  onRegistrarPagoMembresia(m: MembresiaResponseDto) {
+    this.showSocioPagoForm.set(true);
+  }
+
+  onVerPagosMembresia(m: MembresiaResponseDto) {
+    this.detailTab.set('pagos');
+    this.socioPagosLoaded.set(false);
+    this.socioPagos.set([]);
+    this.loadSocioPagos();
+  }
+
+  onNuevaMembresia() {
+    this.openSocioMembresiaModal();
   }
 
   // ------------------------------------------------------------

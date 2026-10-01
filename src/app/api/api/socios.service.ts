@@ -29,13 +29,16 @@ import { UpdateSocioDto } from '../model/updateSocioDto';
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { BaseService } from '../api.base.service';
+import {
+    SociosServiceInterface
+} from './socios.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class SociosService extends BaseService {
+export class SociosService extends BaseService implements SociosServiceInterface {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);

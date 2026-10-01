@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LucideAngularModule, DoorOpen, Badge, CheckCircle, XCircle, Info, AlertTriangle, BadgeCheck, Loader2, Clock, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, DoorOpen, Badge, CheckCircle, XCircle, Info, AlertTriangle, BadgeCheck, Loader2 } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
 import { AccesosService, ValidarAccesoDto, AccesoResponseDto } from '@api';
 import { CommonModule } from '@angular/common';
@@ -38,8 +38,6 @@ export class AccesoComponent implements OnInit {
   readonly AlertTriangle = AlertTriangle;
   readonly BadgeCheck = BadgeCheck;
   readonly Loader2 = Loader2;
-  readonly Clock = Clock;
-  readonly RefreshCw = RefreshCw;
 
   checkinForm = this.fb.nonNullable.group({
     dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]]
@@ -53,30 +51,8 @@ export class AccesoComponent implements OnInit {
   socio = signal<SocioAcceso | null>(null);
   ultimoAccesoId = signal<string | null>(null);
 
-  accesosHoy = signal<AccesoResponseDto[]>([]);
-  accesosLoading = signal(true);
-  accesosError = signal<string | null>(null);
-
   ngOnInit() {
     this.layout.setPageTitle('Control de Acceso');
-    this.loadAccesosHoy();
-  }
-
-  loadAccesosHoy() {
-    this.accesosLoading.set(true);
-    this.accesosError.set(null);
-
-    this.accesosService.accesosControllerFindHoy().subscribe({
-      next: (accesos) => {
-        this.accesosHoy.set(accesos || []);
-        this.accesosLoading.set(false);
-      },
-      error: (err) => {
-        this.accesosError.set('No se pudieron cargar los accesos de hoy');
-        this.accesosLoading.set(false);
-        console.error('Error loading accesos de hoy:', err);
-      }
-    });
   }
 
   onValidate() {
@@ -96,7 +72,6 @@ export class AccesoComponent implements OnInit {
         this.loading.set(false);
         this.handleResponse(response);
         this.notifyResult(response);
-        this.loadAccesosHoy();
       },
       error: (err: any) => {
         this.loading.set(false);
@@ -121,9 +96,8 @@ export class AccesoComponent implements OnInit {
       next: (response: AccesoResponseDto) => {
         this.forzandoIngreso.set(false);
         this.applyResponse(response);
-        this.resultState.set('excepcion_confirmada');
+this.resultState.set('excepcion_confirmada');
         this.toast.success('Ingreso registrado por excepción', { title: 'Excepción confirmada' });
-        this.loadAccesosHoy();
       },
       error: (err: any) => {
         this.forzandoIngreso.set(false);
@@ -172,29 +146,5 @@ export class AccesoComponent implements OnInit {
     const primera = partes?.[0] || '';
     const ultima = partes?.[partes.length - 1] || '';
     return primera.charAt(0) + ultima.charAt(0);
-  }
-
-  getAvatarColor(id: string): string {
-    const numId = parseInt(id, 10) || 0;
-    const colors = ['bg-primary-fixed-dim text-on-primary-fixed-variant', 'bg-secondary-container text-on-secondary-container', 'bg-tertiary-container text-on-tertiary-container'];
-    return colors[numId % colors.length];
-  }
-
-  getResultadoBadge(resultado: string): { class: string, icon: any, label: string } {
-    switch (resultado) {
-      case 'permitido':
-        return { class: 'bg-success-container text-on-success-container border border-success', icon: CheckCircle, label: 'Permitido' };
-      case 'rechazado':
-        return { class: 'bg-error-container text-on-error-container border border-error', icon: XCircle, label: 'Rechazado' };
-      case 'excepcion':
-        return { class: 'bg-warning-container text-on-warning-container border border-warning-dim', icon: AlertTriangle, label: 'Excepción' };
-      default:
-        return { class: 'bg-surface-container-high text-on-surface-variant border border-outline-variant', icon: Info, label: resultado };
-    }
-  }
-
-  formatHora(fechaHora: string | Date | undefined): string {
-    if (!fechaHora) return '-';
-    return new Date(fechaHora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   }
 }

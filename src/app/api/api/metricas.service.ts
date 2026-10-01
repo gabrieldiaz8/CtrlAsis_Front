@@ -27,13 +27,16 @@ import { MetricasResumenDto } from '../model/metricasResumenDto';
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { BaseService } from '../api.base.service';
+import {
+    MetricasServiceInterface
+} from './metricas.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class MetricasService extends BaseService {
+export class MetricasService extends BaseService implements MetricasServiceInterface {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);

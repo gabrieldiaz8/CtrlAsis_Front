@@ -27,13 +27,16 @@ import { UpdatePlanMembresiaDto } from '../model/updatePlanMembresiaDto';
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { BaseService } from '../api.base.service';
+import {
+    PlanesMembresiaServiceInterface
+} from './planesMembresia.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class PlanesMembresiaService extends BaseService {
+export class PlanesMembresiaService extends BaseService implements PlanesMembresiaServiceInterface {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
@@ -112,17 +115,29 @@ export class PlanesMembresiaService extends BaseService {
      * Desactivar plan de membresía (soft delete)
      * @endpoint patch /planes-membresia/{id}/desactivar
      * @param id ID (uuid) del plan
+     * @param negocioId Negocio del plan. Solo SUPER_ADMIN; otros roles usan el del token.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public planesMembresiaControllerDesactivar(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PlanMembresiaResponseDto>;
-    public planesMembresiaControllerDesactivar(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlanMembresiaResponseDto>>;
-    public planesMembresiaControllerDesactivar(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlanMembresiaResponseDto>>;
-    public planesMembresiaControllerDesactivar(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public planesMembresiaControllerDesactivar(id: string, negocioId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<PlanMembresiaResponseDto>;
+    public planesMembresiaControllerDesactivar(id: string, negocioId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlanMembresiaResponseDto>>;
+    public planesMembresiaControllerDesactivar(id: string, negocioId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlanMembresiaResponseDto>>;
+    public planesMembresiaControllerDesactivar(id: string, negocioId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling planesMembresiaControllerDesactivar.');
         }
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'negocioId',
+            <any>negocioId,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -157,6 +172,7 @@ export class PlanesMembresiaService extends BaseService {
         return this.httpClient.request<PlanMembresiaResponseDto>('patch', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -170,14 +186,26 @@ export class PlanesMembresiaService extends BaseService {
     /**
      * Listar planes de membresía activos del negocio
      * @endpoint get /planes-membresia
+     * @param negocioId Filtra por otro negocio. Solo SUPER_ADMIN; otros roles usan el del token.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public planesMembresiaControllerFindAll(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PlanMembresiaResponseDto>>;
-    public planesMembresiaControllerFindAll(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PlanMembresiaResponseDto>>>;
-    public planesMembresiaControllerFindAll(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PlanMembresiaResponseDto>>>;
-    public planesMembresiaControllerFindAll(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public planesMembresiaControllerFindAll(negocioId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PlanMembresiaResponseDto>>;
+    public planesMembresiaControllerFindAll(negocioId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PlanMembresiaResponseDto>>>;
+    public planesMembresiaControllerFindAll(negocioId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PlanMembresiaResponseDto>>>;
+    public planesMembresiaControllerFindAll(negocioId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'negocioId',
+            <any>negocioId,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -212,6 +240,7 @@ export class PlanesMembresiaService extends BaseService {
         return this.httpClient.request<Array<PlanMembresiaResponseDto>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -225,14 +254,26 @@ export class PlanesMembresiaService extends BaseService {
     /**
      * Listar todos los planes de membresía del negocio (incluye inactivos)
      * @endpoint get /planes-membresia/admin
+     * @param negocioId Filtra por otro negocio. Solo SUPER_ADMIN; otros roles usan el del token.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public planesMembresiaControllerFindAllAdmin(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PlanMembresiaResponseDto>>;
-    public planesMembresiaControllerFindAllAdmin(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PlanMembresiaResponseDto>>>;
-    public planesMembresiaControllerFindAllAdmin(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PlanMembresiaResponseDto>>>;
-    public planesMembresiaControllerFindAllAdmin(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public planesMembresiaControllerFindAllAdmin(negocioId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PlanMembresiaResponseDto>>;
+    public planesMembresiaControllerFindAllAdmin(negocioId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PlanMembresiaResponseDto>>>;
+    public planesMembresiaControllerFindAllAdmin(negocioId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PlanMembresiaResponseDto>>>;
+    public planesMembresiaControllerFindAllAdmin(negocioId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'negocioId',
+            <any>negocioId,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -267,6 +308,7 @@ export class PlanesMembresiaService extends BaseService {
         return this.httpClient.request<Array<PlanMembresiaResponseDto>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

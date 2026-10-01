@@ -13,6 +13,10 @@ export interface CreateUsuarioDto {
     email: string;
     password: string;
     rol: CreateUsuarioDto.RolEnum;
+    /**
+     * Negocio donde se crea el usuario. Solo SUPER_ADMIN; otros roles usan el del token.
+     */
+    negocioId?: string;
 }
 export namespace CreateUsuarioDto {
     export const RolEnum = {

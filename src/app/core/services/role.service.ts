@@ -1,6 +1,7 @@
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { UsuarioResponseDto } from '@api/model/usuarioResponseDto';
+import { UsuarioLoginDto } from '@api/model/usuarioLoginDto';
 
 export type RolUsuario = UsuarioResponseDto.RolEnum;
 
@@ -8,10 +9,7 @@ export type AppModule =
   | 'acceso'
   | 'dashboard'
   | 'socios'
-  | 'planes'
-  | 'membresias'
   | 'pagos'
-  | 'catalogos'
   | 'configuracion'
   | 'usuarios';
 
@@ -33,14 +31,19 @@ const ROLE_LABELS: Record<RolUsuario, string> = {
 
 const MODULE_ACCESS: Record<AppModule, RolUsuario[]> = {
   acceso: ALL_ROLES,
-  dashboard: ALL_ROLES,
+  dashboard: ['administrador', 'dueno'],
   socios: ALL_ROLES,
   pagos: ALL_ROLES,
-  membresias: ['administrador', 'dueno', 'super_admin'],
-  planes: ['administrador', 'dueno', 'super_admin'],
-  catalogos: ['dueno', 'super_admin'],
-  configuracion: ['dueno', 'super_admin'],
+  configuracion: ['super_admin'],
   usuarios: ['dueno', 'super_admin']
+};
+
+/** El super_admin administra la plataforma, así que su pantalla inicial es la de configuración. */
+export const HOME_ROUTE: Record<RolUsuario, string> = {
+  super_admin: '/configuracion',
+  dueno: '/acceso',
+  administrador: '/acceso',
+  recepcionista: '/acceso'
 };
 
 @Injectable({
@@ -53,6 +56,8 @@ export class RoleService {
 
   readonly currentUserId = signal<string | null>(null);
 
+  readonly currentUserNegocioId = signal<string | null>(null);
+
   constructor() {
     this.refresh();
   }
@@ -61,16 +66,20 @@ export class RoleService {
     if (!isPlatformBrowser(this.platformId)) return;
     let rol: RolUsuario | null = null;
     let userId: string | null = null;
+    let negocioId: string | null = null;
     try {
       const raw = JSON.parse(localStorage.getItem('user_data') || 'null');
       rol = this.normalizeRole(raw?.rol);
       userId = typeof raw?.id === 'string' && raw.id.length > 0 ? raw.id : null;
+      negocioId = typeof raw?.negocioId === 'string' && raw.negocioId.length > 0 ? raw.negocioId : null;
     } catch {
       rol = null;
       userId = null;
+      negocioId = null;
     }
     this.currentUserRole.set(rol);
     this.currentUserId.set(userId);
+    this.currentUserNegocioId.set(negocioId);
   }
 
   hasRole(role: RolUsuario): boolean {
@@ -85,6 +94,12 @@ export class RoleService {
   canAccessModule(module: string): boolean {
     const roles = MODULE_ACCESS[module as AppModule];
     return roles ? this.hasAnyRole(roles) : false;
+  }
+
+  /** A dónde cae el usuario al entrar: el super_admin va directo a configurar la plataforma. */
+  homeRoute(): string {
+    const role = this.currentUserRole();
+    return (role ? HOME_ROUTE[role] : undefined) ?? '/login';
   }
 
   roleLevel(): number {

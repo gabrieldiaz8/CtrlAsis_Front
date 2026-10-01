@@ -12,6 +12,7 @@
 export interface NegocioResponseDto { 
     id: string;
     nombre: string;
+    activo: boolean;
     rubroId: string;
     rubroNombre: string;
 }

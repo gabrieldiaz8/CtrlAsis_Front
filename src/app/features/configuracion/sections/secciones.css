@@ -1,0 +1,27 @@
+/* Estilos compartidos por las secciones de Configuración */
+
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-secondary) 40%, transparent);
+}
+
+select.appearance-none {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23413F3F' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-outline-variant) 80%, transparent);
+  border-radius: 9999px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}

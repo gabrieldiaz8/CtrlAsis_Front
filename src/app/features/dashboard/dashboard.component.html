@@ -1,29 +1,19 @@
 <div class="p-6 max-w-screen-2xl mx-auto w-full">
-  <!-- ===== Encabezado + selector de rango ===== -->
-  <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
-    <div>
-      <h1 class="text-2xl font-serif font-semibold text-primary">Métricas Generales</h1>
-      <div class="flex items-center gap-2">
-        <button
-          type="button"
-          class="micro-btn icon-btn"
-          title="Refrescar datos"
-          aria-label="Refrescar datos"
-          (click)="loadAll()">
-          <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
-        </button>
-      </div>
-    </div>
+  <!-- ===== Encabezado ===== -->
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-serif font-semibold text-primary">Métricas Generales</h1>
+    <button type="button" class="micro-btn icon-btn" title="Refrescar datos" aria-label="Refrescar datos" (click)="loadAll()">
+      <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
+    </button>
   </div>
-
   <!-- ===== KPIs ===== -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6" [@staggerGrid]="resumen()">
+  <div class="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-4 mb-6" [@staggerGrid]="resumen()">
     @if (resumenLoading()) {
-      @for (item of [1, 2, 3, 4]; track item) {
+      @for (item of [1, 2, 3, 4, 5]; track item) {
         <div class="skeleton h-[112px] rounded-card"></div>
       }
     } @else if (resumenError()) {
-      <div class="skeleton h-[112px] rounded-card lg:col-span-3 xl:col-span-4">
+      <div class="skeleton h-[112px] rounded-card sm:col-span-2 xl:col-span-3">
         <div class="inset-state">
           <lucide-icon [img]="AlertTriangle" class="w-5 h-5 text-warning-dim"></lucide-icon>
           <p>No se pudieron cargar los indicadores.</p>
@@ -55,7 +45,7 @@
               </div>
               <p class="text-sm text-primary-muted">Ingresos del mes</p>
             </div>
-            <div class="kpi-trend">
+            <div class="kpi-trend" [class.down]="cambioIngresos !== null && cambioIngresos < 0" [class.neutral]="cambioIngresos === null">
               @if (cambioIngresos !== null) {
                 @if (cambioIngresos >= 0) {
                   <lucide-icon [img]="TrendingUp" class="w-3.5 h-3.5"></lucide-icon>
@@ -63,11 +53,26 @@
                   <lucide-icon [img]="TrendingDown" class="w-3.5 h-3.5"></lucide-icon>
                 }
                 {{ Math.abs(cambioIngresos).toFixed(0) }}%
+              } @else {
+                Sin datos previos
               }
             </div>
           </div>
           <p class="text-3xl font-serif font-semibold text-primary leading-none">${{ ingresosCount().toLocaleString('es-AR') }}</p>
-
+          @if (!sparklineEmpty('ingresos')) {
+            <div class="h-8">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+                <path [attr.d]="sparklineAreaPath(sparklineValues('ingresos'))" fill="url(#sparkSecondaryGrad)" opacity="0.35"></path>
+                <path [attr.d]="sparklinePath(sparklineValues('ingresos'))" fill="none" stroke="var(--color-secondary)" stroke-width="1.5" class="spark-draw"></path>
+              </svg>
+              <defs>
+                <linearGradient id="sparkSecondaryGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--color-secondary)" stop-opacity="0.5"></stop>
+                  <stop offset="100%" stop-color="var(--color-secondary)" stop-opacity="0"></stop>
+                </linearGradient>
+              </defs>
+            </div>
+          }
         </div>
       }
 
@@ -83,22 +88,64 @@
           <div class="kpi-trend neutral">Últimos 7 días</div>
         </div>
         <p class="text-3xl font-serif font-semibold text-primary leading-none">{{ asistenciaCount().toLocaleString('es-AR') }}</p>
-
+        @if (!sparklineEmpty('asistencia')) {
+          <div class="h-8">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+              <path [attr.d]="sparklineAreaPath(sparklineValues('asistencia'))" fill="url(#sparkPrimaryGrad)" opacity="0.35"></path>
+              <path [attr.d]="sparklinePath(sparklineValues('asistencia'))" fill="none" stroke="var(--color-primary)" stroke-width="1.5" class="spark-draw"></path>
+            </svg>
+            <defs>
+              <linearGradient id="sparkPrimaryGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.5"></stop>
+                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+          </div>
+        }
       </div>
 
-      <!-- Por vencer -->
+      <!-- Vencidas sin renovar -->
       <div class="micro-card p-4 flex flex-col gap-3">
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">
             <div class="kpi-icon kpi-warning">
               <lucide-icon [img]="Calendar" class="w-5 h-5"></lucide-icon>
             </div>
-            <p class="text-sm text-primary-muted">Membresías por vencer</p>
+            <p class="text-sm text-primary-muted">Membresías vencidas sin renovar</p>
           </div>
-          <div class="kpi-trend warning">Próximos 30 días</div>
+          <div class="kpi-trend warning">Vencidas actualmente</div>
         </div>
-        <p class="text-3xl font-serif font-semibold text-primary leading-none">{{ porVencerCount().toLocaleString('es-AR') }}</p>
+        @if (vencidasLoading()) {
+          <div class="skeleton h-9 w-16 rounded-lg"></div>
+        } @else {
+          <p class="text-3xl font-serif font-semibold text-primary leading-none">{{ vencidasCount().toLocaleString('es-AR') }}</p>
+        }
+      </div>
+
+      <!-- Accesos de hoy -->
+      <div class="micro-card p-4 flex flex-col gap-3">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="kpi-icon kpi-accent">
+              <lucide-icon [img]="Clock" class="w-5 h-5"></lucide-icon>
+            </div>
+            <p class="text-sm text-primary-muted">Accesos de hoy</p>
+          </div>
+          <div class="kpi-trend neutral">Total del día</div>
+        </div>
+        @if (accesosLoading()) {
+          <div class="skeleton h-9 w-16 rounded-lg"></div>
+        } @else {
+          <p class="text-3xl font-serif font-semibold text-primary leading-none">{{ accesosCount().toLocaleString('es-AR') }}</p>
+        }
       </div>
     }
   </div>
+
+  <!-- ===== Accesos de hoy: detalle ===== -->
+  <app-accesos-hoy [accesos]="accesosHoy()"
+                   [loading]="accesosLoading()"
+                   [error]="accesosError()"
+                   [onReload]="loadAccesosHoy" />
 </div>
+

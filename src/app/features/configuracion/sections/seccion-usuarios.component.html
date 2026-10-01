@@ -1,0 +1,193 @@
+<div class="p-6 lg:p-8">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">
+        <lucide-icon [img]="Users" class="w-5 h-5"></lucide-icon>
+      </div>
+      <div>
+        <h2 class="text-headline-sm font-bold text-on-surface">Usuarios del staff</h2>
+        <p class="text-body-sm text-on-surface-variant">Accesos, roles y estado del equipo</p>
+      </div>
+    </div>
+    <button (click)="openNew()" [disabled]="sinClienteSeleccionado() || loadingNegocios()" class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+      <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+      <span class="text-label-md font-medium">Nuevo usuario</span>
+    </button>
+  </div>
+
+  <section class="mb-6">
+    <label class="block text-label-md font-medium text-on-surface-variant mb-2">Cliente</label>
+    <div class="relative max-w-md">
+      <lucide-icon [img]="Store" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none"></lucide-icon>
+      <select [value]="negocioId()" (change)="onNegocioChange($event)" [disabled]="loadingNegocios()"
+              class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-50">
+        <option value="">{{ loadingNegocios() ? 'Cargando clientes...' : 'Elegí un cliente' }}</option>
+        @for (negocio of negocios(); track negocio.id) {
+          <option [value]="negocio.id">{{ negocio.nombre }}</option>
+        }
+      </select>
+    </div>
+    <p *ngIf="!sinClienteSeleccionado()" class="text-label-sm text-on-surface-variant mt-2">
+      Usuarios de: <strong class="text-on-surface">{{ nombreCliente() }}</strong>
+    </p>
+  </section>
+
+  @if (sinClienteSeleccionado()) {
+    <div class="p-4 bg-surface-container-high border border-outline-variant rounded-lg flex items-start gap-3">
+      <lucide-icon [img]="Info" class="w-5 h-5 text-on-surface-variant flex-shrink-0"></lucide-icon>
+      <span class="text-body-sm text-on-surface">Elegí un cliente para ver y gestionar sus usuarios.</span>
+    </div>
+  } @else if (loadError()) {
+    <div class="p-4 bg-error-container border border-outline-variant rounded-lg flex items-center gap-3">
+      <lucide-icon [img]="Info" class="w-5 h-5 text-error flex-shrink-0"></lucide-icon>
+      <span class="text-body-sm text-on-surface flex-1">{{ loadError() }}</span>
+      <button (click)="load()" class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md hover:bg-secondary-container transition-colors">Reintentar</button>
+    </div>
+  } @else if (loading()) {
+    <div class="space-y-3" aria-busy="true">
+      @for (row of [1, 2, 3]; track row) {
+        <div class="flex items-center gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl">
+          <div class="skeleton h-11 w-11 rounded-full"></div>
+          <div class="flex-1 space-y-2">
+            <div class="skeleton h-4 w-48"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    @for (user of usuarios(); track user.id) {
+      <div class="flex items-center gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl hover:bg-surface-container transition-colors">
+        <div class="w-11 h-11 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-medium text-label-md flex-shrink-0">
+          {{ getUsuarioInitials(user) }}
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <p class="font-medium text-on-surface text-body-md truncate">{{ user.email }}</p>
+            @if (isCurrentUser(user)) {
+              <span class="px-2 py-0.5 rounded-full text-label-sm font-medium bg-primary-container text-on-primary-container">Tú</span>
+            }
+            @if (!user.activo) {
+              <span class="px-2 py-0.5 rounded-full text-label-sm font-medium bg-surface-variant text-on-surface-variant">Inactivo</span>
+            }
+          </div>
+        </div>
+        <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-label-sm font-medium {{ getRolBadgeClasses(user.rol) }}">
+          <lucide-icon [img]="rolIcon(user.rol)" class="w-3.5 h-3.5 mr-1"></lucide-icon>
+          {{ getRolLabel(user.rol) }}
+        </span>
+        <div class="flex items-center gap-1">
+          <label class="relative inline-flex items-center cursor-pointer"
+                 [class.cursor-not-allowed]="!user.activo || !canDeactivateUsuario(user)"
+                 [title]="user.id === roleService.currentUserId() ? 'No podés desactivar tu propia cuenta' : (user.rol === 'super_admin' ? 'Cuenta Super Admin' : (user.activo ? 'Desactivar usuario' : 'Reactivación no disponible'))">
+            <input type="checkbox" [checked]="user.activo" (change)="onToggleActivo(user)"
+                   [disabled]="!user.activo || !canDeactivateUsuario(user)"
+                   class="sr-only peer" />
+            <div class="w-10 h-6 rounded-full peer bg-surface-container-highest peer-checked:bg-success transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4 peer-disabled:opacity-50"></div>
+          </label>
+          <button (click)="openEdit(user)" [disabled]="!canEditUsuario(user)"
+                  class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed"
+                  [title]="canEditUsuario(user) ? 'Editar usuario' : 'Cuenta Super Admin'">
+            <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="p-10 text-center text-on-surface-variant">
+        <lucide-icon [img]="Users" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+        <p class="text-body-md font-medium text-on-surface">No hay usuarios del staff</p>
+        <p class="text-body-sm mt-1">Invitá a tu equipo para comenzar.</p>
+      </div>
+    }
+  }
+
+  @if (!sinClienteSeleccionado()) {
+    <p class="text-body-sm text-on-surface-variant/70 mt-6 flex items-center gap-1.5">
+      <lucide-icon [img]="ShieldCheck" class="w-4 h-4"></lucide-icon>
+      Las cuentas Super Admin no pueden modificarse.
+    </p>
+  }
+
+  <!-- ============ MODAL USUARIO ============ -->
+  <div *ngIf="showModal()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="closeModal()">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Formulario de usuario" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h3 class="text-headline-md font-bold text-on-surface">{{ editingUsuario() ? 'Editar usuario' : 'Nuevo usuario' }}</h3>
+        <button (click)="closeModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSave()" class="p-6 space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Email</label>
+            <div class="relative">
+              <lucide-icon [img]="Mail" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4"></lucide-icon>
+              <input type="email" formControlName="email" placeholder="maria@fitflow.com"
+                     class="w-full pl-9 pr-3 p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            </div>
+            @if (form.get('email')?.invalid && (form.get('email')?.touched || form.get('email')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Ingresá un email válido</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Rol</label>
+            <div class="relative">
+              <lucide-icon [img]="ShieldCheck" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4 pointer-events-none"></lucide-icon>
+              <select formControlName="rol"
+                      class="w-full pl-9 pr-3 p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
+                @for (opt of rolOptionsAvailable(); track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+            @if (form.get('rol')?.invalid && (form.get('rol')?.touched || form.get('rol')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Selecciona un rol</p>
+            }
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">
+              Contraseña
+              @if (editingUsuario()) {
+                <span class="text-on-surface-variant/60">(dejar vacío para no cambiar)</span>
+              }
+            </label>
+            <div class="relative">
+              <lucide-icon [img]="KeyRound" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4"></lucide-icon>
+              <input [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" placeholder="Mínimo 6 caracteres"
+                     class="w-full pl-9 pr-11 p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+              <button type="button" (click)="togglePassword()"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-on-surface-variant hover:text-primary rounded-lg transition-colors"
+                      [title]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <lucide-icon [img]="passwordVisible() ? EyeOff : Eye" class="w-4 h-4"></lucide-icon>
+              </button>
+            </div>
+            @if (form.get('password')?.invalid && (form.get('password')?.touched || form.get('password')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">
+                {{ editingUsuario() ? 'La contraseña debe tener al menos 6 caracteres' : 'La contraseña es requerida (mín. 6 caracteres)' }}
+              </p>
+            }
+            @if (!editingUsuario() && !form.get('password')?.touched && !form.get('password')?.value) {
+              <p class="text-label-sm text-on-surface-variant/70 mt-1">Se usará para el primer inicio de sesión.</p>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeModal()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="form.invalid || saving()"
+                  class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="saving()"></lucide-icon>
+            {{ editingUsuario() ? 'Actualizar usuario' : 'Crear usuario' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  </div>

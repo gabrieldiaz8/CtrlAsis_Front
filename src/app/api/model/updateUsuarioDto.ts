@@ -13,6 +13,10 @@ export interface UpdateUsuarioDto {
     email?: string;
     password?: string;
     rol?: UpdateUsuarioDto.RolEnum;
+    /**
+     * Negocio del usuario a modificar. Solo SUPER_ADMIN; otros roles usan el del token.
+     */
+    negocioId?: string;
 }
 export namespace UpdateUsuarioDto {
     export const RolEnum = {

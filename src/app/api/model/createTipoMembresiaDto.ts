@@ -12,5 +12,9 @@
 export interface CreateTipoMembresiaDto { 
     nombre: string;
     descripcion?: string;
+    /**
+     * Negocio destino. Solo SUPER_ADMIN; otros roles usan el del token.
+     */
+    negocioId?: string;
 }
 

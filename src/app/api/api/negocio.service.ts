@@ -25,13 +25,16 @@ import { UpdateNegocioDto } from '../model/updateNegocioDto';
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { BaseService } from '../api.base.service';
+import {
+    NegocioServiceInterface
+} from './negocio.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class NegocioService extends BaseService {
+export class NegocioService extends BaseService implements NegocioServiceInterface {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
@@ -93,7 +96,8 @@ export class NegocioService extends BaseService {
     }
 
     /**
-     * Actualizar nombre y/o rubro del negocio
+     * Actualizar nombre y/o rubro del negocio del usuario logueado
+     * Reservado a SUPER_ADMIN: la escritura del negocio quedó cerrada para los demás roles. Para editar cualquier cliente usar PATCH /negocios/:id.
      * @endpoint patch /negocio
      * @param updateNegocioDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

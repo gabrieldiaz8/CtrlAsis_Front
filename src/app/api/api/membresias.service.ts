@@ -25,19 +25,24 @@ import { MembresiasControllerCancelarRequest } from '../model/membresiasControll
 // @ts-ignore
 import { PaginatedMembresiasResponseDto } from '../model/paginatedMembresiasResponseDto';
 // @ts-ignore
+import { RenovarMembresiaDto } from '../model/renovarMembresiaDto';
+// @ts-ignore
 import { UpdateMembresiaDto } from '../model/updateMembresiaDto';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { BaseService } from '../api.base.service';
+import {
+    MembresiasServiceInterface
+} from './membresias.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class MembresiasService extends BaseService {
+export class MembresiasService extends BaseService implements MembresiasServiceInterface {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
@@ -343,17 +348,19 @@ export class MembresiasService extends BaseService {
     }
 
     /**
-     * Renovar membresía: cierra la actual como vencida y crea nueva activa con mismo plan
+     * Renovar membresía: cierra la actual como vencida y crea una nueva activa
+     * Sin body renueva con el plan actual. Mandando { planId } cambia de plan: vence la membresía actual y crea la nueva con ese plan.
      * @endpoint post /membresias/{id}/renovar
      * @param id ID (uuid) de la membresía a renovar
+     * @param renovarMembresiaDto 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public membresiasControllerRenovar(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MembresiaResponseDto>;
-    public membresiasControllerRenovar(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MembresiaResponseDto>>;
-    public membresiasControllerRenovar(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MembresiaResponseDto>>;
-    public membresiasControllerRenovar(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public membresiasControllerRenovar(id: string, renovarMembresiaDto?: RenovarMembresiaDto, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<MembresiaResponseDto>;
+    public membresiasControllerRenovar(id: string, renovarMembresiaDto?: RenovarMembresiaDto, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MembresiaResponseDto>>;
+    public membresiasControllerRenovar(id: string, renovarMembresiaDto?: RenovarMembresiaDto, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MembresiaResponseDto>>;
+    public membresiasControllerRenovar(id: string, renovarMembresiaDto?: RenovarMembresiaDto, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling membresiasControllerRenovar.');
         }
@@ -375,6 +382,15 @@ export class MembresiasService extends BaseService {
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -391,6 +407,7 @@ export class MembresiasService extends BaseService {
         return this.httpClient.request<MembresiaResponseDto>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                body: renovarMembresiaDto,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

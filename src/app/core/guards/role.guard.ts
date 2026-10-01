@@ -22,6 +22,6 @@ export const roleGuard: CanActivateFn = (route) => {
   toast.warning('Su rol no tiene permisos para acceder a esta sección.', {
     title: 'Acceso restringido'
   });
-  router.navigate(['/dashboard']);
+  router.navigateByUrl(roleService.homeRoute());
   return false;
 };

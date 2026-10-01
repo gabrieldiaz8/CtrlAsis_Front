@@ -29,13 +29,16 @@ import { UpdatePagoDto } from '../model/updatePagoDto';
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { BaseService } from '../api.base.service';
+import {
+    PagosServiceInterface
+} from './pagos.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class PagosService extends BaseService {
+export class PagosService extends BaseService implements PagosServiceInterface {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);

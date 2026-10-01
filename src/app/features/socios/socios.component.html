@@ -24,7 +24,7 @@
         <lucide-icon [img]="ChevronRight" class="w-4 h-4"></lucide-icon>
       </button>
       <!-- Primary Action -->
-      <button (click)="onNuevoSocio()" *hasRole="['administrador', 'dueno', 'super_admin']" class="micro-btn flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:bg-secondary-container hover:shadow-sm transition-all whitespace-nowrap">
+      <button (click)="onNuevoSocio()" *hasRole="['administrador', 'dueno']" class="micro-btn flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:bg-secondary-container hover:shadow-sm transition-all whitespace-nowrap">
         <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
         Nuevo Socio
       </button>
@@ -485,79 +485,30 @@
           </div>
         </div>
 
-        <!-- Tab Membresías -->
-        <div *ngIf="detailTab() === 'membresias'" class="p-6 space-y-4">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <p class="text-body-sm text-on-surface-variant">
-              {{ socioMembresias().length > 0 ? 'Historial de membresías del socio' : 'Sin membresías registradas' }}
-            </p>
-            <button (click)="openSocioMembresiaModal()"
-                    class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-sm text-label-md font-medium">
-              <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
-              Nueva Membresía
-            </button>
-          </div>
+        <!-- Tab Membresías - Nuevo bloque -->
+        <div *ngIf="detailTab() === 'membresias'" class="p-6 space-y-6">
+          <!-- Membresía actual -->
+<app-membresia-actual
+    [resumen]="socioMembresias()[0] ?? null"
+    [planes]="planesActivos()"
+    (renovar)="onRenovarMembresia(socioMembresias()[0])"
+    (cambiarPlan)="onCambiarPlanMembresia(socioMembresias()[0])"
+    (cancelar)="onCancelarMembresia(socioMembresias()[0])"
+    (registrarPago)="onRegistrarPagoMembresia(socioMembresias()[0])"
+    (nueva)="onNuevaMembresia()"
+    (verHistorial)="detailTab.set('membresias')">
+  </app-membresia-actual>
 
-          @if (socioMembresiasLoading()) {
-            <div class="space-y-3">
-              @for (row of [1, 2, 3]; track row) {
-                <div class="bg-surface rounded-xl border border-outline-variant p-4 space-y-3">
-                  <div class="flex items-center gap-3">
-                    <div class="skeleton h-9 w-9 rounded-full"></div>
-                    <div class="flex-1"><div class="skeleton h-4 w-32 mb-2"></div><div class="skeleton h-3 w-24"></div></div>
-                  </div>
-                  <div class="flex justify-between"><div class="skeleton h-4 w-28"></div><div class="skeleton h-4 w-16"></div></div>
-                </div>
-              }
-            </div>
-          } @else if (socioMembresiasError()) {
-            <div class="p-8 text-center">
-              <p class="text-body-sm text-on-surface-variant">{{ socioMembresiasError() }}</p>
-              <button (click)="loadSocioMembresias()"
-                      class="micro-btn mt-3 inline-flex items-center gap-2 px-4 py-2 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
-                <lucide-icon [img]="RefreshCw" class="w-4 h-4"></lucide-icon>
-                Reintentar
-              </button>
-            </div>
-          } @else if (socioMembresias().length === 0) {
-            <div class="flex flex-col items-center justify-center py-12 text-center">
-              <lucide-icon [img]="Shield" class="w-12 h-12 mb-3 text-on-surface-variant/30"></lucide-icon>
-              <p class="text-body-md font-medium text-on-surface">Este socio no tiene membresías</p>
-              <p class="text-body-sm mt-1 text-on-surface-variant">Creá la primera usando el botón superior</p>
-            </div>
-          } @else {
-            <div class="divide-y divide-outline-variant border border-outline-variant rounded-lg overflow-hidden" [@staggerGrid]="socioMembresias()">
-              <div *ngFor="let m of socioMembresias()" class="p-4 bg-surface-container-lowest">
-                <div class="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p class="text-body-md font-semibold text-on-surface">{{ m.planNombre }}</p>
-                    <p class="text-label-sm text-on-surface-variant">{{ getPlanTipo(m.planId) }} · {{ m.diasPorSemana }} días/semana</p>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-1.5">
-                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-label-sm font-medium whitespace-nowrap"
-                          [ngClass]="getEstadoBadge(m.estado).class">
-                      <lucide-icon [img]="getEstadoBadge(m.estado).icon" class="w-3 h-3"></lucide-icon>
-                      {{ getEstadoBadge(m.estado).label }}
-                    </span>
-                    <span *ngIf="isPorVencer(m)"
-                          class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-label-sm font-medium bg-warning-container text-on-warning-container border border-warning-dim whitespace-nowrap">
-                      <lucide-icon [img]="Clock" class="w-3 h-3"></lucide-icon>
-                      Vence en {{ getDiasRestantes(m.fechaFin) }}d
-                    </span>
-                  </div>
-                </div>
-                <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-label-sm text-on-surface-variant">
-                  <span class="inline-flex items-center gap-1.5">
-                    <lucide-icon [img]="Calendar" class="w-3.5 h-3.5"></lucide-icon>
-                    {{ formatFechaCompleta(m.fechaInicio) }} → {{ formatFechaCompleta(m.fechaFin) }}
-                  </span>
-                  <span *ngIf="m.estado === 'activa'" class="font-semibold" [ngClass]="isPorVencer(m) ? 'text-warning' : 'text-on-surface'">
-                    {{ getDiasRestantes(m.fechaFin) }} días restantes
-                  </span>
-                </div>
-              </div>
-            </div>
-          }
+  <!-- Historial -->
+  <app-historial-membresias
+    [membresias]="socioMembresias()"
+    [planes]="planesActivos()"
+    (renovar)="onRenovarMembresia($event)"
+    (cambiarPlan)="onCambiarPlanMembresia($event)"
+    (cancelar)="onCancelarMembresia($event)"
+    (registrarPago)="onRegistrarPagoMembresia($event)"
+    (verPagos)="onVerPagosMembresia($event)">
+  </app-historial-membresias>
         </div>
 
         <!-- Tab Pagos -->
@@ -664,4 +615,22 @@
   <app-pago-form-modal [open]="showSocioPagoForm()" [socio]="detailSocio()"
                        (saved)="onSocioPagoRegistrado()" (dismissed)="showSocioPagoForm.set(false)">
   </app-pago-form-modal>
+
+  <!-- Modal Renovar / Cambiar de plan -->
+  <app-modal-renovar
+    [open]="showRenovarModal()"
+    [membresia]="renovarMembresia()"
+    [planes]="planesActivos()"
+    (cerrar)="showRenovarModal.set(false)"
+    (renovado)="onRenovado()">
+  </app-modal-renovar>
+
+  <!-- Modal Cancelar -->
+  <app-modal-cancelar
+    [open]="showCancelarModal()"
+    [membresia]="cancelarMembresia()"
+    [planes]="planesActivos()"
+    (cerrar)="showCancelarModal.set(false)"
+    (cancelado)="onCancelado()">
+  </app-modal-cancelar>
 </div>

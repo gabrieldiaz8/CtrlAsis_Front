@@ -1,314 +1,177 @@
-<div class="flex flex-col gap-6 max-w-[1400px] mx-auto w-full">
+<div class="flex flex-col gap-6 max-w-[720px] mx-auto w-full">
 
   <!-- Page Header -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-    <div>
-      <h1 class="text-headline-lg font-bold text-on-background flex items-center gap-3">
-        <lucide-icon [img]="DoorOpen" class="w-8 h-8 text-primary"></lucide-icon>
-        Control de Acceso
-      </h1>
-      <p class="text-body-sm text-on-surface-variant mt-1">Validá el DNI del socio para registrar su ingreso.</p>
-    </div>
-    <button (click)="loadAccesosHoy()" [disabled]="accesosLoading()"
-            class="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-surface-container-lowest text-on-surface-variant rounded-lg text-label-md font-medium hover:bg-surface-container-low transition-colors disabled:opacity-50">
-      <lucide-icon [img]="RefreshCw" class="w-4 h-4" [class.animate-spin]="accesosLoading()"></lucide-icon>
-      Actualizar
-    </button>
+  <div>
+    <h1 class="text-headline-lg font-bold text-on-background flex items-center gap-3">
+      <lucide-icon [img]="DoorOpen" class="w-8 h-8 text-primary"></lucide-icon>
+      Control de Acceso
+    </h1>
+    <p class="text-body-sm text-on-surface-variant mt-1">Validá el DNI del socio para registrar su ingreso.</p>
   </div>
 
-  <!-- Main Layout: columnas en desktop, apilado en móvil -->
-  <div class="flex flex-col lg:flex-row gap-6">
+  <!-- Panel: validador + resultado -->
+  <div class="flex flex-col gap-6">
 
-    <!-- ====== Panel izquierdo: validador ====== -->
-    <div class="flex flex-col gap-6 lg:w-[420px] shrink-0">
+    <!-- Formulario de DNI -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.08)] p-6">
+      <h2 class="text-title-md font-semibold text-on-surface mb-4 flex items-center gap-2">
+        <lucide-icon [img]="Badge" class="w-5 h-5 text-primary"></lucide-icon>
+        Validar ingreso
+      </h2>
 
-      <!-- Formulario de DNI -->
-      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.08)] p-6">
-        <h2 class="text-title-md font-semibold text-on-surface mb-4 flex items-center gap-2">
-          <lucide-icon [img]="Badge" class="w-5 h-5 text-primary"></lucide-icon>
-          Validar ingreso
-        </h2>
-
-        <form [formGroup]="checkinForm" (ngSubmit)="onValidate()" class="flex flex-col gap-4">
-          <div class="flex flex-col gap-1.5">
-            <label for="dniInput" class="text-label-md font-medium text-on-surface-variant">DNI del socio</label>
-            <div class="relative">
-              <lucide-icon [img]="Badge" class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-5 h-5 pointer-events-none"></lucide-icon>
-              <input
-                id="dniInput"
-                type="text"
-                inputmode="numeric"
-                formControlName="dni"
-                placeholder="Ej: 30123456"
-                autocomplete="off"
-                aria-label="DNI del socio"
-                class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-on-surface text-lg tracking-widest"
-              />
-            </div>
-            <p *ngIf="checkinForm.get('dni')?.invalid && checkinForm.get('dni')?.touched"
-               class="text-label-sm text-error mt-0.5">
-              Ingresá un DNI válido (7 u 8 dígitos).
-            </p>
-          </div>
-
-          <button type="submit" [disabled]="loading()"
-                  class="micro-btn w-full bg-secondary hover:bg-secondary-container text-on-secondary py-3 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed font-medium text-label-md">
-            <lucide-icon *ngIf="loading()" [img]="Loader2" class="w-5 h-5 animate-spin"></lucide-icon>
-            <lucide-icon *ngIf="!loading()" [img]="BadgeCheck" class="w-5 h-5"></lucide-icon>
-            {{ loading() ? 'Validando...' : 'Validar ingreso' }}
-          </button>
-        </form>
-      </div>
-
-      <!-- Resultado de la validación -->
-      <div *ngIf="resultState() !== null" [@fadeZoom]>
-
-        <!-- PERMITIDO -->
-        <div *ngIf="resultState() === 'permitido'"
-             class="rounded-xl border-2 border-success bg-success-container p-5 flex flex-col gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-full bg-success text-on-success flex items-center justify-center shrink-0">
-              <lucide-icon [img]="CheckCircle" class="w-6 h-6"></lucide-icon>
-            </div>
-            <div class="min-w-0">
-              <p class="text-label-md font-medium text-on-success-container uppercase tracking-wide">Acceso permitido</p>
-              <p class="text-body-sm text-on-success-container/70">Membresía activa</p>
-            </div>
-          </div>
-          <div *ngIf="socio()" class="flex items-center gap-3 mt-1 bg-success-container/60 rounded-lg p-3 border border-success/30">
-            <div class="w-10 h-10 rounded-full bg-success text-on-success flex items-center justify-center text-label-md font-bold shrink-0">
-              {{ getInitials(socio()!.nombre) }}
-            </div>
-            <div class="min-w-0">
-              <p class="text-body-md font-semibold text-on-success-container truncate">{{ socio()!.nombre }}</p>
-              <p class="text-label-sm text-on-success-container/70">DNI {{ socio()!.dni }}</p>
-            </div>
-          </div>
+      <form [formGroup]="checkinForm" (ngSubmit)="onValidate()" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="dniInput" class="text-label-md font-medium text-on-surface-variant">DNI del socio</label>
+          <input
+            id="dniInput"
+            type="text"
+            inputmode="numeric"
+            formControlName="dni"
+            placeholder="Ej: 30123456"
+            autocomplete="off"
+            aria-label="DNI del socio"
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-on-surface text-lg tracking-widest"
+          />
+          <p *ngIf="checkinForm.get('dni')?.invalid && checkinForm.get('dni')?.touched"
+             class="text-label-sm text-error mt-0.5">
+            Ingresá un DNI válido (7 u 8 dígitos).
+          </p>
         </div>
 
-        <!-- RECHAZADO -->
-        <div *ngIf="resultState() === 'rechazado'"
-             class="rounded-xl border-2 border-error bg-error-container p-5 flex flex-col gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-full bg-error text-on-error flex items-center justify-center shrink-0">
-              <lucide-icon [img]="XCircle" class="w-6 h-6"></lucide-icon>
-            </div>
-            <div class="min-w-0">
-              <p class="text-label-md font-medium text-on-error-container uppercase tracking-wide">Acceso rechazado</p>
-              <p class="text-body-sm text-on-error-container/70">Sin membresía activa</p>
-            </div>
-          </div>
-          <div *ngIf="socio()" class="flex items-center gap-3 mt-1 bg-error-container/60 rounded-lg p-3 border border-error/30">
-            <div class="w-10 h-10 rounded-full bg-error text-on-error flex items-center justify-center text-label-md font-bold shrink-0">
-              {{ getInitials(socio()!.nombre) }}
-            </div>
-            <div class="min-w-0">
-              <p class="text-body-md font-semibold text-on-error-container truncate">{{ socio()!.nombre }}</p>
-              <p class="text-label-sm text-on-error-container/70">DNI {{ socio()!.dni }}</p>
-              <p *ngIf="socio()!.observacion" class="text-label-sm text-on-error-container/80 mt-0.5 italic">{{ socio()!.observacion }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- EXCEPCION (pendiente de forzar) -->
-        <div *ngIf="resultState() === 'excepcion'"
-             class="rounded-xl border-2 border-warning-dim bg-warning-container p-5 flex flex-col gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-full bg-warning text-on-warning flex items-center justify-center shrink-0">
-              <lucide-icon [img]="AlertTriangle" class="w-6 h-6"></lucide-icon>
-            </div>
-            <div class="min-w-0">
-              <p class="text-label-md font-medium text-on-warning-container uppercase tracking-wide">Requiere revisión</p>
-              <p class="text-body-sm text-on-warning-container/70">El acceso debe ser autorizado manualmente.</p>
-            </div>
-          </div>
-          <div *ngIf="socio()" class="flex items-center gap-3 bg-warning-container/60 rounded-lg p-3 border border-warning-dim/40">
-            <div class="w-10 h-10 rounded-full bg-warning text-on-warning flex items-center justify-center text-label-md font-bold shrink-0">
-              {{ getInitials(socio()!.nombre) }}
-            </div>
-            <div class="min-w-0">
-              <p class="text-body-md font-semibold text-on-warning-container truncate">{{ socio()!.nombre }}</p>
-              <p class="text-label-sm text-on-warning-container/70">DNI {{ socio()!.dni }}</p>
-              <p *ngIf="socio()!.observacion" class="text-label-sm text-on-warning-container/80 mt-0.5 italic">{{ socio()!.observacion }}</p>
-            </div>
-          </div>
-          <!-- Observación opcional + botón forzar -->
-          <div class="flex flex-col gap-3">
-            <div class="flex flex-col gap-1.5">
-              <label for="obsInput" class="text-label-md font-medium text-on-warning-container">Observación (opcional)</label>
-              <input
-                id="obsInput"
-                type="text"
-                [formControl]="observacionControl"
-                placeholder="Ej: Autorizó el encargado de turno"
-                aria-label="Observación para forzar el ingreso"
-                class="w-full px-3 py-2.5 bg-surface border border-warning-dim rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
-              />
-            </div>
-            <button (click)="onForzarIngreso()" [disabled]="forzandoIngreso()"
-                    class="micro-btn w-full bg-warning hover:bg-warning/90 text-on-warning py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-label-md disabled:opacity-60 disabled:cursor-not-allowed">
-              <lucide-icon *ngIf="forzandoIngreso()" [img]="Loader2" class="w-5 h-5 animate-spin"></lucide-icon>
-              <lucide-icon *ngIf="!forzandoIngreso()" [img]="CheckCircle" class="w-5 h-5"></lucide-icon>
-              {{ forzandoIngreso() ? 'Registrando...' : 'Forzar ingreso' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- EXCEPCION CONFIRMADA -->
-        <div *ngIf="resultState() === 'excepcion_confirmada'"
-             class="rounded-xl border-2 border-success bg-success-container p-5 flex flex-col gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-full bg-success text-on-success flex items-center justify-center shrink-0">
-              <lucide-icon [img]="CheckCircle" class="w-6 h-6"></lucide-icon>
-            </div>
-            <div class="min-w-0">
-              <p class="text-label-md font-medium text-on-success-container uppercase tracking-wide">Ingreso por excepción</p>
-              <p class="text-body-sm text-on-success-container/70">Registrado y autorizado manualmente.</p>
-            </div>
-          </div>
-          <div *ngIf="socio()" class="flex items-center gap-3 mt-1 bg-success-container/60 rounded-lg p-3 border border-success/30">
-            <div class="w-10 h-10 rounded-full bg-success text-on-success flex items-center justify-center text-label-md font-bold shrink-0">
-              {{ getInitials(socio()!.nombre) }}
-            </div>
-            <div class="min-w-0">
-              <p class="text-body-md font-semibold text-on-success-container truncate">{{ socio()!.nombre }}</p>
-              <p class="text-label-sm text-on-success-container/70">DNI {{ socio()!.dni }}</p>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /resultState -->
-
-      <!-- Estado vacío: aún sin validación -->
-      <div *ngIf="resultState() === null"
-           class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center text-on-surface-variant">
-        <lucide-icon [img]="Info" class="w-10 h-10 opacity-30"></lucide-icon>
-        <p class="text-body-sm">Ingresá un DNI y presioná <strong>Validar</strong> para registrar el acceso.</p>
-      </div>
-
-    </div><!-- /panel izquierdo -->
-
-    <!-- ====== Panel derecho: accesos de hoy ====== -->
-    <div class="flex-1 flex flex-col gap-4 min-w-0">
-
-      <div class="flex items-center justify-between gap-2">
-        <h2 class="text-title-md font-semibold text-on-surface flex items-center gap-2">
-          <lucide-icon [img]="Clock" class="w-5 h-5 text-primary"></lucide-icon>
-          Accesos de hoy
-          <span *ngIf="!accesosLoading() && accesosHoy().length > 0"
-                class="inline-flex items-center justify-center w-6 h-6 bg-primary text-on-primary rounded-full text-label-sm font-bold">
-            {{ accesosHoy().length }}
-          </span>
-        </h2>
-      </div>
-
-      <!-- Cargando accesos -->
-      <div *ngIf="accesosLoading()"
-           class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col gap-3">
-        @for (i of [1,2,3,4]; track i) {
-          <div class="flex items-center gap-3">
-            <div class="skeleton w-9 h-9 rounded-full shrink-0"></div>
-            <div class="flex-1 flex flex-col gap-2">
-              <div class="skeleton h-4 w-36"></div>
-              <div class="skeleton h-3 w-24"></div>
-            </div>
-            <div class="skeleton h-6 w-20 rounded-full"></div>
-          </div>
-        }
-      </div>
-
-      <!-- Error cargando accesos -->
-      <div *ngIf="!accesosLoading() && accesosError()"
-           class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col items-center gap-3 text-center">
-        <lucide-icon [img]="AlertTriangle" class="w-8 h-8 text-error opacity-60"></lucide-icon>
-        <p class="text-body-sm text-on-surface-variant">{{ accesosError() }}</p>
-        <button (click)="loadAccesosHoy()"
-                class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-medium hover:opacity-90 transition-opacity">
-          Reintentar
+        <button type="submit" [disabled]="loading()"
+                class="micro-btn w-full bg-secondary hover:bg-secondary-container text-on-secondary py-3 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed font-medium text-label-md">
+          <lucide-icon *ngIf="loading()" [img]="Loader2" class="w-5 h-5 animate-spin"></lucide-icon>
+          <lucide-icon *ngIf="!loading()" [img]="BadgeCheck" class="w-5 h-5"></lucide-icon>
+          {{ loading() ? 'Validando...' : 'Validar ingreso' }}
         </button>
-      </div>
+      </form>
+    </div>
 
-      <!-- Lista vacía -->
-      <div *ngIf="!accesosLoading() && !accesosError() && accesosHoy().length === 0"
-           class="bg-surface-container-lowest border border-outline-variant rounded-xl p-10 flex flex-col items-center justify-center gap-3 text-center text-on-surface-variant">
-        <lucide-icon [img]="DoorOpen" class="w-10 h-10 opacity-20"></lucide-icon>
-        <p class="text-body-md font-medium">Sin registros hoy</p>
-        <p class="text-body-sm opacity-70">Los accesos validados aparecerán aquí automáticamente.</p>
-      </div>
+    <!-- Resultado de la validación -->
+    <div *ngIf="resultState() !== null" [@fadeZoom]>
 
-      <!-- Lista de accesos -->
-      <div *ngIf="!accesosLoading() && !accesosError() && accesosHoy().length > 0"
-           class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
-
-        <!-- Desktop: tabla -->
-        <div class="hidden md:block overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-surface-container-low border-b border-outline-variant">
-              <tr>
-                <th class="p-3 text-label-md font-medium text-on-surface-variant">Socio</th>
-                <th class="p-3 text-label-md font-medium text-on-surface-variant">DNI</th>
-                <th class="p-3 text-label-md font-medium text-on-surface-variant">Hora</th>
-                <th class="p-3 text-label-md font-medium text-on-surface-variant">Resultado</th>
-              </tr>
-            </thead>
-            <tbody class="text-body-sm divide-y divide-outline-variant">
-              <tr *ngFor="let acceso of accesosHoy(); let i = index"
-                  class="hover:bg-surface-container-low transition-colors"
-                  [class.bg-background]="i % 2 === 1">
-                <td class="p-3">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-label-sm font-bold shrink-0"
-                         [class]="getAvatarColor(acceso.id)">
-                      {{ getInitials(acceso.socioNombre || '') }}
-                    </div>
-                    <span class="font-medium text-on-surface truncate max-w-[160px]">
-                      {{ acceso.socioNombre || '—' }}
-                    </span>
-                  </div>
-                </td>
-                <td class="p-3 text-on-surface-variant whitespace-nowrap">{{ acceso.socioDni || '—' }}</td>
-                <td class="p-3 text-on-surface-variant whitespace-nowrap">
-                  <span class="inline-flex items-center gap-1.5">
-                    <lucide-icon [img]="Clock" class="w-3.5 h-3.5"></lucide-icon>
-                    {{ formatHora(acceso.fechaHora) }}
-                  </span>
-                </td>
-                <td class="p-3">
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-label-sm font-medium border"
-                        [class]="getResultadoBadge(acceso.resultado).class">
-                    <lucide-icon [img]="getResultadoBadge(acceso.resultado).icon" class="w-3.5 h-3.5"></lucide-icon>
-                    {{ getResultadoBadge(acceso.resultado).label }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Móvil: tarjetas -->
-        <div class="md:hidden divide-y divide-outline-variant">
-          <div *ngFor="let acceso of accesosHoy()" class="p-4 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full flex items-center justify-center text-label-sm font-bold shrink-0"
-                 [class]="getAvatarColor(acceso.id)">
-              {{ getInitials(acceso.socioNombre || '') }}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-body-md font-medium text-on-surface truncate">{{ acceso.socioNombre || '—' }}</p>
-              <p class="text-label-sm text-on-surface-variant">
-                {{ acceso.socioDni || '—' }}
-                <span class="mx-1">·</span>
-                {{ formatHora(acceso.fechaHora) }}
-              </p>
-            </div>
-            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-label-sm font-medium border shrink-0"
-                  [class]="getResultadoBadge(acceso.resultado).class">
-              <lucide-icon [img]="getResultadoBadge(acceso.resultado).icon" class="w-3 h-3"></lucide-icon>
-              {{ getResultadoBadge(acceso.resultado).label }}
-            </span>
+      <!-- PERMITIDO -->
+      <div *ngIf="resultState() === 'permitido'"
+           class="rounded-xl border-2 border-success bg-success-container p-5 flex flex-col gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full bg-success text-on-success flex items-center justify-center shrink-0">
+            <lucide-icon [img]="CheckCircle" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div class="min-w-0">
+            <p class="text-label-md font-medium text-on-success-container uppercase tracking-wide">Acceso permitido</p>
+            <p class="text-body-sm text-on-success-container/70">Membresía activa</p>
           </div>
         </div>
+        <div *ngIf="socio()" class="flex items-center gap-3 mt-1 bg-success-container/60 rounded-lg p-3 border border-success/30">
+          <div class="w-10 h-10 rounded-full bg-success text-on-success flex items-center justify-center text-label-md font-bold shrink-0">
+            {{ getInitials(socio()!.nombre) }}
+          </div>
+          <div class="min-w-0">
+            <p class="text-body-md font-semibold text-on-success-container truncate">{{ socio()!.nombre }}</p>
+            <p class="text-label-sm text-on-success-container/70">DNI {{ socio()!.dni }}</p>
+          </div>
+        </div>
+      </div>
 
-      </div><!-- /lista accesos -->
-    </div><!-- /panel derecho -->
-  </div><!-- /main layout -->
+      <!-- RECHAZADO -->
+      <div *ngIf="resultState() === 'rechazado'"
+           class="rounded-xl border-2 border-error bg-error-container p-5 flex flex-col gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full bg-error text-on-error flex items-center justify-center shrink-0">
+            <lucide-icon [img]="XCircle" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div class="min-w-0">
+            <p class="text-label-md font-medium text-on-error-container uppercase tracking-wide">Acceso rechazado</p>
+            <p class="text-body-sm text-on-error-container/70">Sin membresía activa</p>
+          </div>
+        </div>
+        <div *ngIf="socio()" class="flex items-center gap-3 mt-1 bg-error-container/60 rounded-lg p-3 border border-error/30">
+          <div class="w-10 h-10 rounded-full bg-error text-on-error flex items-center justify-center text-label-md font-bold shrink-0">
+            {{ getInitials(socio()!.nombre) }}
+          </div>
+          <div class="min-w-0">
+            <p class="text-body-md font-semibold text-on-error-container truncate">{{ socio()!.nombre }}</p>
+            <p class="text-label-sm text-on-error-container/70">DNI {{ socio()!.dni }}</p>
+            <p *ngIf="socio()!.observacion" class="text-label-sm text-on-error-container/80 mt-0.5 italic">{{ socio()!.observacion }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXCEPCION (pendiente de forzar) -->
+      <div *ngIf="resultState() === 'excepcion'"
+           class="rounded-xl border-2 border-warning-dim bg-warning-container p-5 flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full bg-warning text-on-warning flex items-center justify-center shrink-0">
+            <lucide-icon [img]="AlertTriangle" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div class="min-w-0">
+            <p class="text-label-md font-medium text-on-warning-container uppercase tracking-wide">Requiere revisión</p>
+            <p class="text-body-sm text-on-warning-container/70">El acceso debe ser autorizado manualmente.</p>
+          </div>
+        </div>
+        <div *ngIf="socio()" class="flex items-center gap-3 bg-warning-container/60 rounded-lg p-3 border border-warning-dim/40">
+          <div class="w-10 h-10 rounded-full bg-warning text-on-warning flex items-center justify-center text-label-md font-bold shrink-0">
+            {{ getInitials(socio()!.nombre) }}
+          </div>
+          <div class="min-w-0">
+            <p class="text-body-md font-semibold text-on-warning-container truncate">{{ socio()!.nombre }}</p>
+            <p class="text-label-sm text-on-warning-container/70">DNI {{ socio()!.dni }}</p>
+            <p *ngIf="socio()!.observacion" class="text-label-sm text-on-warning-container/80 mt-0.5 italic">{{ socio()!.observacion }}</p>
+          </div>
+        </div>
+        <!-- Observación opcional + botón forzar -->
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col gap-1.5">
+            <label for="obsInput" class="text-label-md font-medium text-on-warning-container">Observación (opcional)</label>
+            <input
+              id="obsInput"
+              type="text"
+              [formControl]="observacionControl"
+              placeholder="Ej: Autorizó el encargado de turno"
+              aria-label="Observación para forzar el ingreso"
+              class="w-full px-3 py-2.5 bg-surface border border-warning-dim rounded-lg text-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all"
+            />
+          </div>
+          <button (click)="onForzarIngreso()" [disabled]="forzandoIngreso()"
+                  class="micro-btn w-full bg-warning hover:bg-warning/90 text-on-warning py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-label-md disabled:opacity-60 disabled:cursor-not-allowed">
+            <lucide-icon *ngIf="forzandoIngreso()" [img]="Loader2" class="w-5 h-5 animate-spin"></lucide-icon>
+            <lucide-icon *ngIf="!forzandoIngreso()" [img]="CheckCircle" class="w-5 h-5"></lucide-icon>
+            {{ forzandoIngreso() ? 'Registrando...' : 'Forzar ingreso' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- EXCEPCION CONFIRMADA -->
+      <div *ngIf="resultState() === 'excepcion_confirmada'"
+           class="rounded-xl border-2 border-success bg-success-container p-5 flex flex-col gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-full bg-success text-on-success flex items-center justify-center shrink-0">
+            <lucide-icon [img]="CheckCircle" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div class="min-w-0">
+            <p class="text-label-md font-medium text-on-success-container uppercase tracking-wide">Ingreso por excepción</p>
+            <p class="text-body-sm text-on-success-container/70">Registrado y autorizado manualmente.</p>
+          </div>
+        </div>
+        <div *ngIf="socio()" class="flex items-center gap-3 mt-1 bg-success-container/60 rounded-lg p-3 border border-success/30">
+          <div class="w-10 h-10 rounded-full bg-success text-on-success flex items-center justify-center text-label-md font-bold shrink-0">
+            {{ getInitials(socio()!.nombre) }}
+          </div>
+          <div class="min-w-0">
+            <p class="text-body-md font-semibold text-on-success-container truncate">{{ socio()!.nombre }}</p>
+            <p class="text-label-sm text-on-success-container/70">DNI {{ socio()!.dni }}</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /resultState -->
+
+    <!-- Estado vacío: aún sin validación -->
+    <div *ngIf="resultState() === null"
+         class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center text-on-surface-variant">
+      <lucide-icon [img]="Info" class="w-10 h-10 opacity-30"></lucide-icon>
+      <p class="text-body-sm">Ingresá un DNI y presioná <strong>Validar</strong> para registrar el acceso.</p>
+    </div>
+
+  </div><!-- /panel -->
 </div>

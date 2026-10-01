@@ -39,13 +39,16 @@ import { UpdateTipoMembresiaDto } from '../model/updateTipoMembresiaDto';
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import { BaseService } from '../api.base.service';
+import {
+    CatalogosServiceInterface
+} from './catalogos.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class CatalogosService extends BaseService {
+export class CatalogosService extends BaseService implements CatalogosServiceInterface {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
@@ -380,17 +383,29 @@ export class CatalogosService extends BaseService {
      * Desactivar tipo de membresía (soft delete)
      * @endpoint patch /catalogos/tipos-membresia/{id}/desactivar
      * @param id ID (uuid) del tipo de membresía
+     * @param negocioId Negocio del tipo de membresía. Solo SUPER_ADMIN; otros roles usan el del token.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public catalogosControllerDesactivarTipoMembresia(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TipoMembresiaResponseDto>;
-    public catalogosControllerDesactivarTipoMembresia(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TipoMembresiaResponseDto>>;
-    public catalogosControllerDesactivarTipoMembresia(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TipoMembresiaResponseDto>>;
-    public catalogosControllerDesactivarTipoMembresia(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public catalogosControllerDesactivarTipoMembresia(id: string, negocioId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<TipoMembresiaResponseDto>;
+    public catalogosControllerDesactivarTipoMembresia(id: string, negocioId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TipoMembresiaResponseDto>>;
+    public catalogosControllerDesactivarTipoMembresia(id: string, negocioId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TipoMembresiaResponseDto>>;
+    public catalogosControllerDesactivarTipoMembresia(id: string, negocioId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling catalogosControllerDesactivarTipoMembresia.');
         }
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'negocioId',
+            <any>negocioId,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -425,6 +440,7 @@ export class CatalogosService extends BaseService {
         return this.httpClient.request<TipoMembresiaResponseDto>('patch', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -658,14 +674,26 @@ export class CatalogosService extends BaseService {
     /**
      * Listar tipos de membresía activos del negocio
      * @endpoint get /catalogos/tipos-membresia
+     * @param negocioId Filtra por otro negocio. Solo SUPER_ADMIN; otros roles usan el del token.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public catalogosControllerFindAllTiposMembresia(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<TipoMembresiaResponseDto>>;
-    public catalogosControllerFindAllTiposMembresia(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<TipoMembresiaResponseDto>>>;
-    public catalogosControllerFindAllTiposMembresia(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<TipoMembresiaResponseDto>>>;
-    public catalogosControllerFindAllTiposMembresia(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public catalogosControllerFindAllTiposMembresia(negocioId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<TipoMembresiaResponseDto>>;
+    public catalogosControllerFindAllTiposMembresia(negocioId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<TipoMembresiaResponseDto>>>;
+    public catalogosControllerFindAllTiposMembresia(negocioId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<TipoMembresiaResponseDto>>>;
+    public catalogosControllerFindAllTiposMembresia(negocioId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'negocioId',
+            <any>negocioId,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -700,6 +728,7 @@ export class CatalogosService extends BaseService {
         return this.httpClient.request<Array<TipoMembresiaResponseDto>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -713,14 +742,26 @@ export class CatalogosService extends BaseService {
     /**
      * Listar todos los tipos de membresía del negocio (incluye inactivos)
      * @endpoint get /catalogos/tipos-membresia/admin
+     * @param negocioId Filtra por otro negocio. Solo SUPER_ADMIN; otros roles usan el del token.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public catalogosControllerFindAllTiposMembresiaAdmin(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<TipoMembresiaResponseDto>>;
-    public catalogosControllerFindAllTiposMembresiaAdmin(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<TipoMembresiaResponseDto>>>;
-    public catalogosControllerFindAllTiposMembresiaAdmin(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<TipoMembresiaResponseDto>>>;
-    public catalogosControllerFindAllTiposMembresiaAdmin(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public catalogosControllerFindAllTiposMembresiaAdmin(negocioId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<TipoMembresiaResponseDto>>;
+    public catalogosControllerFindAllTiposMembresiaAdmin(negocioId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<TipoMembresiaResponseDto>>>;
+    public catalogosControllerFindAllTiposMembresiaAdmin(negocioId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<TipoMembresiaResponseDto>>>;
+    public catalogosControllerFindAllTiposMembresiaAdmin(negocioId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'negocioId',
+            <any>negocioId,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -755,6 +796,7 @@ export class CatalogosService extends BaseService {
         return this.httpClient.request<Array<TipoMembresiaResponseDto>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

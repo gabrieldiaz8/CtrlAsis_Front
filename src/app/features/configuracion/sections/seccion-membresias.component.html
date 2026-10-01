@@ -1,0 +1,300 @@
+<div class="p-6 lg:p-8 space-y-10">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">
+      <lucide-icon [img]="BadgeCheck" class="w-5 h-5"></lucide-icon>
+    </div>
+    <div>
+      <h2 class="text-headline-sm font-bold text-on-surface">Planes y precios</h2>
+      <p class="text-body-sm text-on-surface-variant">Precios, duración y días por semana de cada cliente</p>
+    </div>
+  </div>
+
+  <!-- ============ CLIENTE ============ -->
+  <section>
+    <label class="block text-label-md font-medium text-on-surface-variant mb-2">Cliente</label>
+    <div class="relative max-w-md">
+      <lucide-icon [img]="Store" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none"></lucide-icon>
+      <select [value]="negocioId()" (change)="onNegocioChange($event)" [disabled]="loadingNegocios()"
+              class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none disabled:opacity-50">
+        <option value="">{{ loadingNegocios() ? 'Cargando clientes...' : 'Elegí un cliente' }}</option>
+        @for (negocio of negocios(); track negocio.id) {
+          <option [value]="negocio.id">{{ negocio.nombre }}</option>
+        }
+      </select>
+    </div>
+  </section>
+
+  @if (sinClienteSeleccionado()) {
+    <div class="p-4 bg-surface-container-high border border-outline-variant rounded-lg flex items-start gap-3">
+      <lucide-icon [img]="Info" class="w-5 h-5 text-on-surface-variant flex-shrink-0"></lucide-icon>
+      <span class="text-body-sm text-on-surface">Elegí un cliente para ver y cargar sus planes.</span>
+    </div>
+  } @else if (faltaConfiguracionInicial()) {
+    <div class="p-4 bg-surface-container-high border border-outline-variant rounded-lg flex items-start gap-3">
+      <lucide-icon [img]="Info" class="w-5 h-5 text-on-surface-variant flex-shrink-0"></lucide-icon>
+      <span class="text-body-sm text-on-surface">{{ nombreCliente() }} todavía no tiene tipos ni planes cargados</span>
+    </div>
+  }
+
+  @if (!sinClienteSeleccionado()) {
+  <!-- ============ TIPOS (PERÍODO) ============ -->
+  <section>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+      <h3 class="text-title-md font-semibold text-on-surface">Tipos (período)</h3>
+      <button (click)="openNewTipo()" class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+        <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+        <span class="text-label-md font-medium">Nuevo tipo</span>
+      </button>
+    </div>
+
+    <div class="overflow-x-auto" *ngIf="!loading(); else tableSkeleton">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant">
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Nombre</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Descripción</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Planes asociados</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Estado</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-body-sm">
+          @for (tipo of tipos(); track tipo.id) {
+            <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+              <td class="p-3 font-medium text-on-surface">{{ tipo.nombre }}</td>
+              <td class="p-3 text-on-surface-variant max-w-xs truncate">{{ tipo.descripcion || '-' }}</td>
+              <td class="p-3">
+                <span class="inline-flex items-center gap-1.5 text-on-surface-variant">
+                  <lucide-icon [img]="Boxes" class="w-4 h-4"></lucide-icon>
+                  {{ cantidadPlanes(tipo.id) }}
+                </span>
+              </td>
+              <td class="p-3">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
+                      [ngClass]="tipo.activo ? 'bg-success-container text-on-success-container' : 'bg-surface-variant text-on-surface-variant'">
+                  {{ tipo.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="p-3 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="openEditTipo(tipo)"
+                          class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                          title="Editar" aria-label="Editar tipo de membresía">
+                    <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                  </button>
+                  <button (click)="onDesactivarTipo(tipo)"
+                          class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                          [title]="cantidadPlanes(tipo.id) > 0 ? 'No se puede desactivar: tiene planes asociados' : 'Desactivar'"
+                          aria-label="Desactivar tipo de membresía">
+                    <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="p-10 text-center text-on-surface-variant">
+                <lucide-icon [img]="BadgeCheck" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+                <p class="text-body-md font-medium text-on-surface">No hay tipos de membresía</p>
+                <p class="text-body-sm mt-1">Crea el primer tipo para después cargarle planes.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ PLANES (PRECIO Y DÍAS POR SEMANA) ============ -->
+  <section>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+      <h3 class="text-title-md font-semibold text-on-surface">Planes (precio y días por semana)</h3>
+      <button (click)="openNewPlan()" [disabled]="tipos().length === 0"
+              [title]="tipos().length === 0 ? 'Primero creá un tipo de membresía' : 'Añadir plan'"
+              class="micro-btn bg-secondary hover:bg-secondary-container text-on-secondary py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+        <lucide-icon [img]="Plus" class="w-5 h-5"></lucide-icon>
+        <span class="text-label-md font-medium">Nuevo plan</span>
+      </button>
+    </div>
+
+    <div class="overflow-x-auto" *ngIf="!loading(); else tableSkeleton">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-outline-variant">
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Tipo</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Días/Semana</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Duración</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Precio</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant">Estado</th>
+            <th class="p-3 text-label-md font-medium text-on-surface-variant text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-body-sm">
+          @for (plan of planes(); track plan.id) {
+            <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+              <td class="p-3 font-medium text-on-surface">{{ plan.tipoMembresiaNombre }}</td>
+              <td class="p-3 text-on-surface-variant">{{ plan.diasPorSemana }}</td>
+              <td class="p-3 text-on-surface-variant">{{ plan.duracionDias }} días</td>
+              <td class="p-3 font-semibold text-on-surface">{{ formatPrice(plan.precio) }}</td>
+              <td class="p-3">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-label-sm font-medium"
+                      [ngClass]="plan.activo ? 'bg-success-container text-on-success-container' : 'bg-surface-variant text-on-surface-variant'">
+                  {{ plan.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="p-3 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button (click)="openEditPlan(plan)"
+                          class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                          title="Editar" aria-label="Editar plan">
+                    <lucide-icon [img]="Edit" class="w-4 h-4"></lucide-icon>
+                  </button>
+                  <button (click)="onDesactivarPlan(plan)"
+                          class="text-on-surface-variant hover:text-error transition-colors p-2 rounded-lg hover:bg-surface-container-low"
+                          title="Desactivar" aria-label="Desactivar plan">
+                    <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="p-10 text-center text-on-surface-variant">
+                <lucide-icon [img]="Calendar" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/30"></lucide-icon>
+                <p class="text-body-md font-medium text-on-surface">No hay planes</p>
+                <p class="text-body-sm mt-1">Asociá un precio y una duración a cada tipo.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  }
+
+  <!-- ============ MODAL TIPO ============ -->
+  <div *ngIf="showTipoModal()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="closeTipoModal()">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Formulario de tipo de membresía" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h3 class="text-headline-md font-bold text-on-surface">{{ editingTipo() ? 'Editar tipo' : 'Nuevo tipo de membresía' }}</h3>
+        <button (click)="closeTipoModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="tipoForm" (ngSubmit)="onSaveTipo()" class="p-6 space-y-6">
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Nombre</label>
+          <input type="text" formControlName="nombre" placeholder="Ej: Clásica"
+                 class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+          @if (tipoForm.get('nombre')?.invalid && (tipoForm.get('nombre')?.touched || tipoForm.get('nombre')?.dirty)) {
+            <p class="text-label-sm text-error mt-1">El nombre es requerido (mín. 2 caracteres)</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Descripción</label>
+          <textarea formControlName="descripcion" rows="3" placeholder="Descripción opcional..."
+                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all resize-none"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closeTipoModal()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="tipoForm.invalid || savingTipo()"
+                  class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="savingTipo()"></lucide-icon>
+            {{ editingTipo() ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL PLAN ============ -->
+  <div *ngIf="showPlanModal()" @modalOverlay class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="closePlanModal()">
+    <div @modalPanel role="dialog" aria-modal="true" aria-label="Formulario de plan" class="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+        <h3 class="text-headline-md font-bold text-on-surface">{{ editingPlan() ? 'Editar plan' : 'Nuevo plan' }}</h3>
+        <button (click)="closePlanModal()" class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <form [formGroup]="planForm" (ngSubmit)="onSavePlan()" class="p-6 space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Tipo de membresía</label>
+            <select formControlName="tipoMembresiaId"
+                    class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all appearance-none">
+              <option value="">Seleccionar...</option>
+              @for (tipo of tipos(); track tipo.id) {
+                <option [value]="tipo.id">{{ tipo.nombre }}</option>
+              }
+            </select>
+            @if (planForm.get('tipoMembresiaId')?.invalid && (planForm.get('tipoMembresiaId')?.touched || planForm.get('tipoMembresiaId')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Selecciona un tipo</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Precio (ARS)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-body-md text-on-surface-variant">$</span>
+              <input type="number" formControlName="precio" step="100" min="0"
+                     class="w-full pl-8 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            </div>
+            @if (planForm.get('precio')?.invalid && (planForm.get('precio')?.touched || planForm.get('precio')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">El precio debe ser mayor o igual a 0</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Días por semana</label>
+            <input type="number" formControlName="diasPorSemana" min="1" max="7"
+                   class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            @if (planForm.get('diasPorSemana')?.invalid && (planForm.get('diasPorSemana')?.touched || planForm.get('diasPorSemana')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">Requerido (1-7)</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-label-sm font-medium text-on-surface-variant mb-1">Duración (días)</label>
+            <input type="number" formControlName="duracionDias" min="1"
+                   class="w-full p-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" />
+            @if (planForm.get('duracionDias')?.invalid && (planForm.get('duracionDias')?.touched || planForm.get('duracionDias')?.dirty)) {
+              <p class="text-label-sm text-error mt-1">La duración es requerida y debe ser mayor a 0</p>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+          <button type="button" (click)="closePlanModal()"
+                  class="px-6 py-2.5 text-label-md font-medium text-on-surface-variant bg-surface-container-high hover:bg-surface-container rounded-lg transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="planForm.invalid || savingPlan()"
+                  class="micro-btn px-6 py-2.5 text-label-md font-medium text-on-secondary bg-secondary hover:bg-secondary-container rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin" *ngIf="savingPlan()"></lucide-icon>
+            {{ editingPlan() ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <ng-template #tableSkeleton>
+    <div class="space-y-2" aria-busy="true">
+      @for (row of [1, 2, 3]; track row) {
+        <div class="flex items-center gap-4 py-3">
+          <div class="skeleton h-4 w-40"></div>
+          <div class="skeleton h-4 w-32"></div>
+          <div class="skeleton h-6 w-16 rounded-full"></div>
+          <div class="skeleton h-5 w-16 ml-auto"></div>
+        </div>
+      }
+    </div>
+  </ng-template>
+</div>

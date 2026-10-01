@@ -14,5 +14,9 @@ export interface UpdatePlanMembresiaDto {
     duracionDias?: number;
     precio?: number;
     tipoMembresiaId?: string;
+    /**
+     * Negocio destino. Solo SUPER_ADMIN; otros roles usan el del token.
+     */
+    negocioId?: string;
 }
 

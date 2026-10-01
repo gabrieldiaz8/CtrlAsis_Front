@@ -70,7 +70,7 @@ export class LoginComponent {
         
         this.loading.set(false);
         this.roleService.refresh();
-        this.router.navigate(['/dashboard']);
+        this.router.navigateByUrl(this.roleService.homeRoute());
       },
       error: (err) => {
         this.loading.set(false);

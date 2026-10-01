@@ -153,7 +153,7 @@ Sistema global de feedback desplegado en `app.html` (`<app-toast-container />`).
 - Barra de progreso inferior con el acento del tipo; al hacer **hover se pausa** el auto-dismiss (`animation-play-state`). Al terminar la barra se cierra el toast.
 - Entrada: *slide-in-right* con rebote (desktop) y *slide-in-top* con rebote (móvil). Sin hex nuevos: todo vía `var(--color-*)`.
 - Accesibilidad: cada toast con `role="alert"`, contenedor `aria-live="polite" aria-atomic="false"`, botón de cierre con `aria-label`, y cierre con `Escape`. Z-index `100` (por encima de modales `z-50`).
-- Uso (reemplaza alerts inline): cargas/fallos de página, validación de acceso, CRUD de socios y todos los formularios (membresías, pagos, planes, catálogos, configuración, login).
+- Uso (reemplaza alerts inline): cargas/fallos de página, validación de acceso, CRUD de socios y todos los formularios (pagos, planes, catálogos, configuración, login).
 
 ## Tema claro/oscuro
 

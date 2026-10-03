@@ -17,12 +17,6 @@
           class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all text-on-surface"
         />
       </div>
-      <!-- Filter Dropdown -->
-      <button class="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-surface-container-lowest text-on-surface rounded-lg text-label-md font-label-md hover:bg-surface-container-low transition-colors whitespace-nowrap">
-        <lucide-icon [img]="Filter" class="w-4 h-4"></lucide-icon>
-        Filtros
-        <lucide-icon [img]="ChevronRight" class="w-4 h-4"></lucide-icon>
-      </button>
       <!-- Primary Action -->
       <button (click)="onNuevoSocio()" *hasRole="['administrador', 'dueno']" class="micro-btn flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg text-label-md font-label-md hover:bg-secondary-container hover:shadow-sm transition-all whitespace-nowrap">
         <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon>
@@ -33,10 +27,6 @@
 
   <!-- Filtros por estado de membresía -->
   <div class="flex flex-wrap items-center gap-2">
-    <span class="text-body-sm font-body-sm text-on-surface-variant mr-1 flex items-center gap-1.5">
-      <lucide-icon [img]="Filter" class="w-4 h-4"></lucide-icon>
-      Membresía
-    </span>
     @for (chip of chipsMembresia; track chip.label) {
       <button
         type="button"

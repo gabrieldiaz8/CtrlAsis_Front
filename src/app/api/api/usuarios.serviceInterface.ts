@@ -54,8 +54,9 @@ export interface UsuariosServiceInterface {
      * 
      * @endpoint get /usuarios/{id}
      * @param id ID (uuid) del usuario
+     * @param negocioId Negocio del usuario. Solo SUPER_ADMIN; otros roles usan el del token.
      */
-    usuariosControllerFindOne(id: string, extraHttpRequestParams?: any): Observable<UsuarioResponseDto>;
+    usuariosControllerFindOne(id: string, negocioId?: string, extraHttpRequestParams?: any): Observable<UsuarioResponseDto>;
 
     /**
      * Actualizar usuario

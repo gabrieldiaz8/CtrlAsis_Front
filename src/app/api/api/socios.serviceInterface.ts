@@ -42,6 +42,14 @@ export interface SociosServiceInterface {
     sociosControllerDesactivar(id: string, extraHttpRequestParams?: any): Observable<SocioResponseDto>;
 
     /**
+     * Eliminar socio de forma definitiva (borrado físico)
+     * Borra físicamente el socio junto con sus accesos y sus membresías, en ese orden por las FK en RESTRICT. Es irreversible. Requiere que el socio ya esté dado de baja (&#x60;activo &#x3D; false&#x60;) y que no tenga ningún pago registrado en ninguna de sus membresías: un socio con historial financiero se conserva desactivado. Para la baja normal usar PATCH /socios/:id/desactivar, que es reversible.
+     * @endpoint delete /socios/{id}/definitivo
+     * @param id ID (uuid) del socio
+     */
+    sociosControllerEliminarDefinitivo(id: string, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
      * Listar socios con filtros y paginación
      * 
      * @endpoint get /socios
@@ -71,6 +79,14 @@ export interface SociosServiceInterface {
      * @param id ID (uuid) del socio
      */
     sociosControllerFindOne(id: string, extraHttpRequestParams?: any): Observable<SocioResponseDto>;
+
+    /**
+     * Reactivar socio (deshacer el soft delete). No reactiva ni crea membresías
+     * 
+     * @endpoint patch /socios/{id}/reactivar
+     * @param id ID (uuid) del socio
+     */
+    sociosControllerReactivar(id: string, extraHttpRequestParams?: any): Observable<SocioResponseDto>;
 
     /**
      * Actualizar socio

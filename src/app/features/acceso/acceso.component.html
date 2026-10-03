@@ -6,7 +6,7 @@
       <lucide-icon [img]="DoorOpen" class="w-8 h-8 text-primary"></lucide-icon>
       Control de Acceso
     </h1>
-    <p class="text-body-sm text-on-surface-variant mt-1">Validá el DNI del socio para registrar su ingreso.</p>
+    <p class="text-body-sm text-on-surface-variant mt-1">Ingresá tu DNI para registrar tu entrada.</p>
   </div>
 
   <!-- Panel: validador + resultado -->
@@ -16,25 +16,25 @@
     <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.08)] p-6">
       <h2 class="text-title-md font-semibold text-on-surface mb-4 flex items-center gap-2">
         <lucide-icon [img]="Badge" class="w-5 h-5 text-primary"></lucide-icon>
-        Validar ingreso
+        Registrar ingreso
       </h2>
 
       <form [formGroup]="checkinForm" (ngSubmit)="onValidate()" class="flex flex-col gap-4">
         <div class="flex flex-col gap-1.5">
-          <label for="dniInput" class="text-label-md font-medium text-on-surface-variant">DNI del socio</label>
+          <label for="dniInput" class="text-label-md font-medium text-on-surface-variant">Tu DNI</label>
           <input
             id="dniInput"
             type="text"
             inputmode="numeric"
             formControlName="dni"
-            placeholder="Ej: 30123456"
+            placeholder="Ej. 30123456"
             autocomplete="off"
             aria-label="DNI del socio"
             class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all text-on-surface text-lg tracking-widest"
           />
           <p *ngIf="checkinForm.get('dni')?.invalid && checkinForm.get('dni')?.touched"
              class="text-label-sm text-error mt-0.5">
-            Ingresá un DNI válido (7 u 8 dígitos).
+            Ingresá un DNI válido (8 dígitos).
           </p>
         </div>
 
@@ -42,7 +42,7 @@
                 class="micro-btn w-full bg-secondary hover:bg-secondary-container text-on-secondary py-3 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed font-medium text-label-md">
           <lucide-icon *ngIf="loading()" [img]="Loader2" class="w-5 h-5 animate-spin"></lucide-icon>
           <lucide-icon *ngIf="!loading()" [img]="BadgeCheck" class="w-5 h-5"></lucide-icon>
-          {{ loading() ? 'Validando...' : 'Validar ingreso' }}
+          {{ loading() ? 'Validando...' : 'Registrar entrada' }}
         </button>
       </form>
     </div>
@@ -170,7 +170,7 @@
     <div *ngIf="resultState() === null"
          class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center text-on-surface-variant">
       <lucide-icon [img]="Info" class="w-10 h-10 opacity-30"></lucide-icon>
-      <p class="text-body-sm">Ingresá un DNI y presioná <strong>Validar</strong> para registrar el acceso.</p>
+      <p class="text-body-sm">Ingresá tu <strong>DNI</strong> para registrar tu entrada.</p>
     </div>
 
   </div><!-- /panel -->

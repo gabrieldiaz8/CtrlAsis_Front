@@ -64,6 +64,14 @@ export interface MembresiasServiceInterface {
     membresiasControllerFindOne(id: string, extraHttpRequestParams?: any): Observable<MembresiaResponseDto>;
 
     /**
+     * Reanudar membresía: pasa el estado de suspendida a activa
+     * Solo válido si la membresía está en estado suspendida. No modifica fecha_inicio ni fecha_fin. Da 409 si la fecha_fin ya pasó o si el socio tiene otra membresía activa: en ambos casos hay que renovar.
+     * @endpoint post /membresias/{id}/reanudar
+     * @param id ID (uuid) de la membresía a reanudar
+     */
+    membresiasControllerReanudar(id: string, extraHttpRequestParams?: any): Observable<MembresiaResponseDto>;
+
+    /**
      * Renovar membresía: cierra la actual como vencida y crea una nueva activa
      * Sin body renueva con el plan actual. Mandando { planId } cambia de plan: vence la membresía actual y crea la nueva con ese plan.
      * @endpoint post /membresias/{id}/renovar
@@ -71,6 +79,14 @@ export interface MembresiasServiceInterface {
      * @param renovarMembresiaDto 
      */
     membresiasControllerRenovar(id: string, renovarMembresiaDto?: RenovarMembresiaDto, extraHttpRequestParams?: any): Observable<MembresiaResponseDto>;
+
+    /**
+     * Suspender membresía: pasa el estado de activa a suspendida
+     * Solo válido si la membresía está en estado activa. No modifica fecha_inicio ni fecha_fin: el tiempo suspendido no se compensa, así que al reanudar el socio recupera el período que le quedaba. Mientras está suspendida, el acceso al gimnasio queda rechazado.
+     * @endpoint post /membresias/{id}/suspender
+     * @param id ID (uuid) de la membresía a suspender
+     */
+    membresiasControllerSuspender(id: string, extraHttpRequestParams?: any): Observable<MembresiaResponseDto>;
 
     /**
      * Actualizar fechas de una membresía (no permite cambiar plan, socio ni estado)

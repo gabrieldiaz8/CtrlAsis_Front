@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, H
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap } from 'rxjs';
-import { LucideAngularModule, Users, Search, Filter, Plus, EllipsisVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt, Ban, Pencil } from 'lucide-angular';
+import { LucideAngularModule, Users, Search, Plus, EllipsisVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt, Ban, Pencil } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
 import {
   SociosService,
@@ -76,7 +76,6 @@ export class SociosComponent implements OnInit {
 
   readonly Users = Users;
   readonly Search = Search;
-  readonly Filter = Filter;
   readonly Plus = Plus;
   readonly MoreVertical = EllipsisVertical;
   readonly ChevronLeft = ChevronLeft;

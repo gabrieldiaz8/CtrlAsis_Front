@@ -20,9 +20,9 @@ export interface UsuarioLoginDto {
      */
     rol: UsuarioLoginDto.RolEnum;
     /**
-     * ID del negocio al que pertenece
+     * ID del negocio al que pertenece (null para SUPER_ADMIN)
      */
-    negocioId: string;
+    negocioId: string | null;
 }
 export namespace UsuarioLoginDto {
     export const RolEnum = {

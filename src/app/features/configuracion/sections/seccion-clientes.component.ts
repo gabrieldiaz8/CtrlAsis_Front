@@ -8,7 +8,6 @@ import {
   CatalogosService, CreateNegocioDto, NegocioAdminResponseDto, NegociosService, NegociosAdminControllerEliminarRequest, RubroResponseDto, UpdateNegocioDto
 } from '@api';
 import { ToastService } from '@core/services/toast.service';
-import { RoleService } from '@core/services/role.service';
 import { modalOverlay, modalPanel } from '@shared/utils/animations';
 
 @Component({
@@ -25,7 +24,6 @@ export class SeccionClientesComponent implements OnInit {
   private readonly catalogosService = inject(CatalogosService);
   private readonly fb = inject(FormBuilder);
   private readonly toast = inject(ToastService);
-  private readonly roleService = inject(RoleService);
 
   readonly Building = Building;
   readonly Edit = Edit;
@@ -266,21 +264,6 @@ export class SeccionClientesComponent implements OnInit {
         console.error('Error deleting negocio:', err);
       }
     });
-  }
-
-  /** Verifica si es el negocio propio del super_admin logueado */
-  isOwnNegocio(negocio: NegocioAdminResponseDto): boolean {
-    return this.roleService.currentUserNegocioId() === negocio.id;
-  }
-
-  /** Determina si mostrar acción de desactivar/reactivar */
-  canToggleEstado(negocio: NegocioAdminResponseDto): boolean {
-    return !this.isOwnNegocio(negocio);
-  }
-
-  /** Determina si mostrar acción de eliminar (solo si desactivado y no es propio) */
-  canDelete(negocio: NegocioAdminResponseDto): boolean {
-    return !negocio.activo && !this.isOwnNegocio(negocio);
   }
 
   isDuplicateError(err: unknown): boolean {

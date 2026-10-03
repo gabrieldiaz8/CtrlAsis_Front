@@ -50,7 +50,7 @@ export class SeccionUsuariosComponent implements OnInit {
   readonly usuarios = signal<UsuarioResponseDto[]>([]);
 
   readonly negocios = signal<NegocioAdminResponseDto[]>([]);
-  readonly negocioId = signal<string>('');
+  readonly negocioId = signal<string | null>(null);
 
   readonly showModal = signal(false);
   readonly editingUsuario = signal<UsuarioResponseDto | null>(null);
@@ -74,12 +74,13 @@ export class SeccionUsuariosComponent implements OnInit {
   }
 
   onNegocioChange(event: Event): void {
-    this.negocioId.set((event.target as HTMLSelectElement).value);
+    const value = (event.target as HTMLSelectElement).value;
+    this.negocioId.set(value || null);
     this.load();
   }
 
   sinClienteSeleccionado(): boolean {
-    return !this.negocioId();
+    return this.negocioId() === null;
   }
 
   nombreCliente(): string {
@@ -90,8 +91,14 @@ export class SeccionUsuariosComponent implements OnInit {
     this.loadingNegocios.set(true);
     this.negociosService.negociosAdminControllerFindAll().subscribe({
       next: data => {
-        this.negocios.set(data.filter(n => n.activo));
+        const activos = data.filter(n => n.activo);
+        this.negocios.set(activos);
         this.loadingNegocios.set(false);
+        // Limpiar selección si el negocio elegido ya no está activo
+        const currentId = this.negocioId();
+        if (currentId && !activos.some(n => n.id === currentId)) {
+          this.negocioId.set(null);
+        }
         if (data.length === 0) {
           this.toast.warning('No hay clientes cargados. Creá un cliente antes de gestionar sus usuarios.', { title: 'Usuarios' });
         }
@@ -105,7 +112,8 @@ export class SeccionUsuariosComponent implements OnInit {
   }
 
   load(): void {
-    if (this.sinClienteSeleccionado()) {
+    const id = this.negocioId();
+    if (!id) {
       this.usuarios.set([]);
       this.loading.set(false);
       return;
@@ -114,7 +122,7 @@ export class SeccionUsuariosComponent implements OnInit {
     this.loading.set(true);
     this.loadError.set(null);
 
-    this.usuariosService.usuariosControllerFindAll(this.negocioId()).subscribe({
+    this.usuariosService.usuariosControllerFindAll(id).subscribe({
       next: data => {
         this.usuarios.set(this.sortByEmail(data));
         this.loading.set(false);
@@ -229,10 +237,16 @@ export class SeccionUsuariosComponent implements OnInit {
     }
 
     const negocioId = this.negocioId();
+    if (!negocioId && !editing) {
+      this.toast.error('Debés seleccionar un cliente para crear un usuario', { title: 'Cliente requerido' });
+      this.saving.set(false);
+      return;
+    }
+
     this.saving.set(true);
 
     if (editing) {
-      const updateData: UpdateUsuarioDto = { email: raw.email, rol: raw.rol as RolUsuario, negocioId };
+      const updateData: UpdateUsuarioDto = { email: raw.email, rol: raw.rol as RolUsuario, negocioId: negocioId ?? undefined };
       if (raw.password) updateData.password = raw.password;
 
       this.usuariosService.usuariosControllerUpdate(String(editing.id), updateData).subscribe({
@@ -246,7 +260,7 @@ export class SeccionUsuariosComponent implements OnInit {
       email: raw.email,
       password: raw.password,
       rol: raw.rol as RolUsuario,
-      negocioId
+      negocioId: negocioId!
     };
 
     this.usuariosService.usuariosControllerCreate(createData).subscribe({
@@ -285,7 +299,7 @@ export class SeccionUsuariosComponent implements OnInit {
       return;
     }
 
-    this.usuariosService.usuariosControllerDesactivar(String(u.id), this.negocioId()).subscribe({
+    this.usuariosService.usuariosControllerDesactivar(String(u.id), this.negocioId() ?? undefined).subscribe({
       next: deactivated => {
         this.usuarios.update(list => list.map(us => (us.id === deactivated.id ? { ...us, ...deactivated } : us)));
         this.toast.success(`${deactivated.email} desactivado`, { title: 'Desactivado' });

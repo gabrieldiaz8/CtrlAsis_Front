@@ -59,30 +59,20 @@
               </td>
               <td class="p-3 text-right">
                 <div class="flex items-center justify-end gap-1.5">
-                  @if (canToggleEstado(negocio)) {
-                    <button (click)="toggleEstado(negocio)"
-                            [disabled]="saving() || deleteLoading()"
-                            class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors disabled:opacity-50"
-                            [title]="negocio.activo ? 'Desactivar cliente' : 'Reactivar cliente'">
-                      <lucide-icon [img]="ToggleLeft" class="w-4 h-4"></lucide-icon>
-                    </button>
-                  } @else {
-                    <span class="p-2 text-on-surface-variant/50" title="No puedes desactivar/reactivar tu propio negocio">
-                      <lucide-icon [img]="AlertTriangle" class="w-4 h-4"></lucide-icon>
-                    </span>
-                  }
+                  <button (click)="toggleEstado(negocio)"
+                          [disabled]="saving() || deleteLoading()"
+                          class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors disabled:opacity-50"
+                          [title]="negocio.activo ? 'Desactivar cliente' : 'Reactivar cliente'">
+                    <lucide-icon [img]="ToggleLeft" class="w-4 h-4"></lucide-icon>
+                  </button>
 
-                  @if (canDelete(negocio)) {
+                  @if (!negocio.activo) {
                     <button (click)="openDeleteModal(negocio)"
                             [disabled]="saving() || deleteLoading()"
                             class="p-2 rounded-lg text-on-surface-variant hover:text-red hover:bg-red-container/10 transition-colors disabled:opacity-50"
                             title="Eliminar cliente (requiere estar desactivado)">
                       <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
                     </button>
-                  } @else if (!negocio.activo && isOwnNegocio(negocio)) {
-                    <span class="p-2 text-on-surface-variant/50" title="No puedes eliminar tu propio negocio">
-                      <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
-                    </span>
                   }
 
                   <button (click)="openEdit(negocio)" class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-high"

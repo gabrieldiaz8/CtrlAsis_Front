@@ -30,10 +30,10 @@ const ROLE_LABELS: Record<RolUsuario, string> = {
 };
 
 const MODULE_ACCESS: Record<AppModule, RolUsuario[]> = {
-  acceso: ALL_ROLES,
+  acceso: ['recepcionista', 'administrador', 'dueno'],
   dashboard: ['administrador', 'dueno'],
-  socios: ALL_ROLES,
-  pagos: ALL_ROLES,
+  socios: ['recepcionista', 'administrador', 'dueno'],
+  pagos: ['recepcionista', 'administrador', 'dueno'],
   configuracion: ['super_admin'],
   usuarios: ['dueno', 'super_admin']
 };

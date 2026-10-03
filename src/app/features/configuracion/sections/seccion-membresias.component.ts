@@ -45,7 +45,7 @@ export class SeccionMembresiasComponent implements OnInit {
   readonly savingPlan = signal(false);
 
   readonly negocios = signal<NegocioAdminResponseDto[]>([]);
-  readonly negocioId = signal<string>('');
+  readonly negocioId = signal<string | null>(null);
 
   readonly tipos = signal<TipoMembresiaResponseDto[]>([]);
   readonly planes = signal<PlanMembresiaResponseDto[]>([]);
@@ -78,12 +78,13 @@ export class SeccionMembresiasComponent implements OnInit {
    * `negocioId`.
    */
   onNegocioChange(event: Event): void {
-    this.negocioId.set((event.target as HTMLSelectElement).value);
+    const value = (event.target as HTMLSelectElement).value;
+    this.negocioId.set(value || null);
     this.load();
   }
 
   sinClienteSeleccionado(): boolean {
-    return !this.negocioId();
+    return this.negocioId() === null;
   }
 
   nombreCliente(): string {
@@ -106,8 +107,14 @@ export class SeccionMembresiasComponent implements OnInit {
     this.loadingNegocios.set(true);
     this.negociosService.negociosAdminControllerFindAll().subscribe({
       next: data => {
-        this.negocios.set(data.filter(n => n.activo));
+        const activos = data.filter(n => n.activo);
+        this.negocios.set(activos);
         this.loadingNegocios.set(false);
+        // Limpiar selección si el negocio elegido ya no está activo
+        const currentId = this.negocioId();
+        if (currentId && !activos.some(n => n.id === currentId)) {
+          this.negocioId.set(null);
+        }
       },
       error: err => {
         console.error('Error loading negocios:', err);
@@ -154,14 +161,16 @@ export class SeccionMembresiasComponent implements OnInit {
   // ============================================================
 
   openNewTipo(): void {
-    if (!this.negocioId()) return;
+    const negocioId = this.negocioId();
+    if (!negocioId) return;
     this.editingTipo.set(null);
     this.tipoForm.reset({ nombre: '', descripcion: '' });
     this.showTipoModal.set(true);
   }
 
   openEditTipo(tipo: TipoMembresiaResponseDto): void {
-    if (!this.negocioId()) return;
+    const negocioId = this.negocioId();
+    if (!negocioId) return;
     this.editingTipo.set(tipo);
     this.tipoForm.reset({ nombre: tipo.nombre, descripcion: tipo.descripcion ?? '' });
     this.showTipoModal.set(true);
@@ -245,14 +254,16 @@ export class SeccionMembresiasComponent implements OnInit {
   // ============================================================
 
   openNewPlan(): void {
-    if (!this.negocioId()) return;
+    const negocioId = this.negocioId();
+    if (!negocioId) return;
     this.editingPlan.set(null);
     this.planForm.reset({ diasPorSemana: 5, duracionDias: 30, precio: 0, tipoMembresiaId: '' });
     this.showPlanModal.set(true);
   }
 
   openEditPlan(plan: PlanMembresiaResponseDto): void {
-    if (!this.negocioId()) return;
+    const negocioId = this.negocioId();
+    if (!negocioId) return;
     this.editingPlan.set(plan);
     this.planForm.reset({
       diasPorSemana: plan.diasPorSemana,

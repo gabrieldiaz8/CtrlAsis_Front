@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, H
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap } from 'rxjs';
-import { LucideAngularModule, Users, Search, Filter, Plus, MoreVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt, CalendarClock, CircleSlash, Ban, PauseCircle, LucideIconData } from 'lucide-angular';
+import { LucideAngularModule, Users, Search, Filter, Plus, EllipsisVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt, Ban, Pencil } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
 import {
   SociosService,
@@ -15,7 +15,7 @@ import { MembresiasService, MembresiaResponseDto, CreateMembresiaDto, RenovarMem
 import { PlanesMembresiaService, PlanMembresiaResponseDto } from '@api';
 import { PagosService, PagoResponseDto, CreatePagoDto } from '@api';
 import { CatalogosService, MedioPagoResponseDto } from '@api';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from '@core/services/toast.service';
 import { HasRoleDirective } from '@core/directives/has-role.directive';
@@ -24,7 +24,10 @@ import { MembresiaActualComponent } from './membresia-actual/membresia-actual.co
 import { HistorialMembresiasComponent } from './historial-membresias/historial-membresias.component';
 import { ModalRenovarComponent } from './modal-renovar/modal-renovar.component';
 import { ModalCancelarComponent } from './modal-cancelar/modal-cancelar.component';
-import { modalOverlay, modalPanel, staggerGrid } from '@shared/utils/animations';
+import { modalOverlay, modalPanel, staggerGrid, fadeZoom } from '@shared/utils/animations';
+
+/** Ancho del menú de acciones; tiene que coincidir con el `w-*` del panel. */
+const MENU_ANCHO = 176;
 
 /** Paso del alta de socio con membresía que se está ejecutando o que falló. */
 type AltaPaso = 'socio' | 'membresia' | 'pago';
@@ -51,8 +54,8 @@ interface ChipMembresia {
   selector: 'app-socios',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, CommonModule, ReactiveFormsModule, FormsModule, DatePipe, HasRoleDirective, PagoFormModalComponent, PlanMembresiaFieldsComponent, MembresiaActualComponent, HistorialMembresiasComponent, ModalRenovarComponent, ModalCancelarComponent],
-  animations: [staggerGrid, modalOverlay, modalPanel],
+  imports: [LucideAngularModule, CommonModule, ReactiveFormsModule, FormsModule, HasRoleDirective, PagoFormModalComponent, PlanMembresiaFieldsComponent, MembresiaActualComponent, HistorialMembresiasComponent, ModalRenovarComponent, ModalCancelarComponent],
+  animations: [staggerGrid, modalOverlay, modalPanel, fadeZoom],
   templateUrl: './socios.component.html',
   styleUrl: './socios.component.css'
 })
@@ -75,7 +78,7 @@ export class SociosComponent implements OnInit {
   readonly Search = Search;
   readonly Filter = Filter;
   readonly Plus = Plus;
-  readonly MoreVertical = MoreVertical;
+  readonly MoreVertical = EllipsisVertical;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
   readonly User = User;
@@ -96,10 +99,8 @@ export class SociosComponent implements OnInit {
   readonly DollarSign = DollarSign;
   readonly Landmark = Landmark;
   readonly Receipt = Receipt;
-  readonly CalendarClock = CalendarClock;
-  readonly CircleSlash = CircleSlash;
   readonly Ban = Ban;
-  readonly PauseCircle = PauseCircle;
+  readonly Pencil = Pencil;
 
   socios = signal<SocioResponseDto[]>([]);
   loading = signal(true);
@@ -113,6 +114,34 @@ export class SociosComponent implements OnInit {
   estadoMembresia = signal<EstadoMembresiaFiltro | undefined>(undefined);
   /** Conteos que devuelve el backend según la búsqueda actual. */
   conteosMembresia = signal<ConteosEstadoMembresiaDto | null>(null);
+
+  /**
+   * Socio cuyo menú de acciones está abierto. `null` = todos cerrados. Se guarda
+   * el id y no un booleano para que abrir uno cierre el anterior.
+   */
+  menuSocioId = signal<string | null>(null);
+  /**
+   * Ubicación del menú en pantalla. El panel se posiciona con `fixed` porque la
+   * tabla vive dentro de un contenedor con `overflow-x-auto`, que recorta
+   * cualquier panel `absolute` que se desborde hacia abajo.
+   */
+  menuPos = signal<{ top: number; left: number } | null>(null);
+
+  /** Socio dueño del menú abierto, para no arrastrar el id por cada handler. */
+  readonly socioAbierto = computed(() => {
+    const id = this.menuSocioId();
+    return id ? (this.socios().find(s => s.id === id) ?? null) : null;
+  });
+
+  /**
+   * Estado completo del menú: dónde se dibuja y de quién es. `null` = cerrado.
+   * Posición y socio se abren y cierran siempre juntos, así que viven juntos.
+   */
+  readonly menuAcciones = computed(() => {
+    const pos = this.menuPos();
+    const socio = this.socioAbierto();
+    return pos && socio ? { ...pos, socio } : null;
+  });
 
   readonly chipsMembresia: ChipMembresia[] = [
     { label: 'Todos', value: undefined },
@@ -320,6 +349,86 @@ export class SociosComponent implements OnInit {
     return estado ? (conteos[estado] ?? 0) : (conteos.total ?? 0);
   }
 
+  // ------------------------------------------------------------
+  // Menú de acciones por fila (⋮)
+  // ------------------------------------------------------------
+
+  /**
+   * Abre o cierra el menú de la fila. El `stopPropagation` es lo que impide que
+   * el clic del propio ⋮ termine abriendo el detalle al subir a la fila.
+   */
+  onToggleMenuAcciones(event: Event, socio: SocioResponseDto) {
+    event.stopPropagation();
+
+    if (this.menuSocioId() === socio.id) {
+      this.cerrarMenuAcciones();
+      return;
+    }
+
+    const boton = event.currentTarget as HTMLElement;
+    const rect = boton.getBoundingClientRect();
+
+    this.menuPos.set({ top: rect.bottom + 4, left: rect.right - MENU_ANCHO });
+    this.menuSocioId.set(socio.id);
+  }
+
+  cerrarMenuAcciones() {
+    this.menuSocioId.set(null);
+    this.menuPos.set(null);
+  }
+
+  /** Cierra el menú si el clic fue fuera del panel abierto. */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.menuSocioId()) return;
+
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('[data-menu-acciones]')) return;
+
+    this.cerrarMenuAcciones();
+  }
+
+  /**
+   * El menú está anclado con `fixed`: si la página se desplaza o se redimensiona
+   * la ventana queda descolgado del botón, así que se cierra.
+   */
+  @HostListener('window:scroll')
+  @HostListener('window:resize')
+  onDesplazarVentana() {
+    if (this.menuSocioId()) this.cerrarMenuAcciones();
+  }
+
+  /**
+   * Cierra el menú y ejecuta la acción. Se pasan por los mismos handlers que
+   * usaban los íconos sueltos, para no duplicar su comportamiento.
+   */
+  verDetalleDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    this.openSocioDetail(socio);
+  }
+
+  editarDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    this.onEditSocio(socio);
+  }
+
+  darDeBajaDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    this.onDeleteSocio(socio);
+  }
+
+  /** Toda la fila abre el detalle. El menú ⋮ frena la propagación antes. */
+  onFilaClick(socio: SocioResponseDto) {
+    this.openSocioDetail(socio);
+  }
+
+  /** Enter o Espacio sobre la fila, que es `tabindex="0"`. */
+  onFilaKeydown(event: KeyboardEvent, socio: SocioResponseDto) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    this.openSocioDetail(socio);
+  }
+
   /**
    * Estado visual del badge de una fila. Devuelve la etiqueta y las clases ya
    * resueltas, para no repetir el ternario de colores en el template.
@@ -332,13 +441,11 @@ export class SociosComponent implements OnInit {
   badgeMembresia(resumen: SocioResponseDto['membresiaResumen']): {
     etiqueta: string;
     clases: string;
-    icono: LucideIconData;
   } {
     if (!resumen) {
       return {
         etiqueta: 'Sin membresía',
-        clases: 'bg-surface-container-highest text-on-surface-variant border-outline-variant',
-        icono: CircleSlash,
+        clases: 'bg-surface-container-highest text-on-surface-variant',
       };
     }
 
@@ -346,27 +453,54 @@ export class SociosComponent implements OnInit {
       case 'activa':
         return {
           etiqueta: 'Activa',
-          clases: 'bg-success-container text-on-success-container border-success',
-          icono: CheckCircle,
+          clases: 'bg-success-container text-on-success-container',
         };
       case 'vencida':
         return {
           etiqueta: 'Vencida',
-          clases: 'bg-warning-container text-on-warning-container border-warning',
-          icono: CalendarClock,
+          clases: 'bg-error-container text-on-error-container',
         };
       case 'suspendida':
         return {
           etiqueta: 'Suspendida',
-          clases: 'bg-primary-container text-on-primary-container border-primary',
-          icono: PauseCircle,
+          clases: 'bg-warning-container text-on-warning-container',
         };
       default:
         return {
           etiqueta: 'Cancelada',
-          clases: 'bg-error-container text-on-error-container border-error',
-          icono: Ban,
+          clases: 'bg-error-container text-on-error-container',
         };
+    }
+  }
+
+  /**
+   * Segunda línea de la columna Membresía. Un único formato para todos los
+   * estados, en minúscula salvo la fecha:
+   *   activa / suspendida -> "vence 30/10/2026 · 28 días"
+   *   vencida            -> "venció 04/09/2026"
+   *   cancelada          -> "cancelada"
+   *
+   * `fechaFin` llega como date-only en UTC medianoche, así que se formatea en
+   * UTC: con la zona local, en Argentina, mostraría el día anterior. El locale
+   * es 'en-US' porque 'dd/MM/yyyy' es puramente numérico y no depende de datos
+   * de idioma. Se usa `formatDate` y no `DatePipe` porque los pipes no se
+   * registran en el inyector: inyectarlos tira NullInjectorError.
+   */
+  detalleMembresia(
+    resumen: NonNullable<SocioResponseDto['membresiaResumen']>,
+  ): string {
+    const fecha = formatDate(resumen.fechaFin, 'dd/MM/yyyy', 'en-US', 'UTC');
+
+    switch (this.estadoEfectivoMembresia(resumen)) {
+      case 'activa':
+      case 'suspendida': {
+        const dias = this.getDiasRestantes(resumen.fechaFin);
+        return `vence ${fecha} · ${dias} ${dias === 1 ? 'día' : 'días'}`;
+      }
+      case 'vencida':
+        return `venció ${fecha}`;
+      default:
+        return 'cancelada';
     }
   }
 
@@ -409,12 +543,6 @@ export class SociosComponent implements OnInit {
 
   getInitials(nombre: string, apellido: string): string {
     return `${nombre?.charAt(0) || ''}${apellido?.charAt(0) || ''}`.toUpperCase();
-  }
-
-  getAvatarColor(id: string): string {
-    const numId = parseInt(id, 10) || 0;
-    const colors = ['bg-primary-fixed-dim text-on-primary-fixed-variant', 'bg-secondary-container text-on-secondary-container', 'bg-tertiary-container text-on-tertiary-container'];
-    return colors[numId % colors.length];
   }
 
   getEstadoBadge(estado: string): { class: string, icon: any, label: string } {
@@ -551,7 +679,9 @@ export class SociosComponent implements OnInit {
     if (this.showSocioPagoForm()) {
       return;
     }
-    if (this.showSocioDetail()) {
+    if (this.menuSocioId()) {
+      this.cerrarMenuAcciones();
+    } else if (this.showSocioDetail()) {
       this.closeSocioDetail();
     } else if (this.showSocioMembresiaModal()) {
       this.closeSocioMembresiaModal();

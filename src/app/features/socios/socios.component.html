@@ -42,21 +42,17 @@
         type="button"
         (click)="onEstadoMembresiaChange(chip.value)"
         [attr.aria-pressed]="estadoMembresia() === chip.value"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-label-md font-label-md border transition-colors"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[13px] font-body-sm transition-colors"
         [class.bg-secondary]="estadoMembresia() === chip.value"
         [class.text-on-secondary]="estadoMembresia() === chip.value"
-        [class.border-secondary]="estadoMembresia() === chip.value"
-        [class.bg-surface-container-lowest]="estadoMembresia() !== chip.value"
         [class.text-on-surface-variant]="estadoMembresia() !== chip.value"
-        [class.border-outline-variant]="estadoMembresia() !== chip.value"
         [class.hover:bg-surface-container-low]="estadoMembresia() !== chip.value"
       >
         {{ chip.label }}
         <span
-          class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-[11px] font-semibold"
-          [class.bg-on-secondary]="estadoMembresia() === chip.value"
-          [class.text-secondary]="estadoMembresia() === chip.value"
-          [class.bg-surface-container-highest]="estadoMembresia() !== chip.value"
+          class="inline-flex items-center justify-center min-w-[1.1rem] text-[11px] tabular-nums"
+          [class.text-on-secondary]="estadoMembresia() === chip.value"
+          [class.text-on-surface-variant]="estadoMembresia() !== chip.value"
         >{{ conteoChip(chip.value) }}</span>
       </button>
     }
@@ -66,29 +62,32 @@
   <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
     @if (loading()) {
       <div class="p-6">
-        <table class="w-full text-left border-collapse whitespace-nowrap">
+        <table class="w-full table-fixed text-left border-collapse">
+          <colgroup>
+            <col class="w-[35%]" />
+            <col class="w-[20%]" />
+            <col class="w-[30%]" />
+            <col class="w-[15%]" />
+          </colgroup>
           <thead>
             <tr>
-              @for (col of ['Socio', 'DNI', 'Teléfono', 'Fecha Alta', 'Membresía', 'Estado', 'Acciones']; track col) {
+              @for (col of ['Socio', 'Contacto', 'Membresía', 'Acciones']; track col) {
                 <th class="px-4 py-3"><div class="skeleton h-4 w-20"></div></th>
               }
             </tr>
           </thead>
-          <tbody class="divide-y divide-outline-variant">
+          <tbody class="divide-y divide-outline">
             @for (row of [1, 2, 3, 4, 5]; track row) {
               <tr>
-                <td class="px-4 py-3">
+                <td class="px-4 py-4">
                   <div class="flex items-center gap-3">
-                    <div class="skeleton h-10 w-10 rounded-full"></div>
-                    <div><div class="skeleton h-4 w-36 mb-2"></div><div class="skeleton h-3 w-24"></div></div>
+                    <div class="skeleton h-10 w-10 shrink-0 rounded-full"></div>
+                    <div class="min-w-0"><div class="skeleton h-4 w-36 mb-2"></div><div class="skeleton h-3 w-24"></div></div>
                   </div>
                 </td>
-                <td class="px-4 py-3"><div class="skeleton h-4 w-24"></div></td>
-                <td class="px-4 py-3"><div class="skeleton h-4 w-28"></div></td>
-                <td class="px-4 py-3"><div class="skeleton h-4 w-20"></div></td>
-                <td class="px-4 py-3"><div class="skeleton h-6 w-28 rounded-full"></div></td>
-                <td class="px-4 py-3"><div class="skeleton h-6 w-16 rounded-full"></div></td>
-                <td class="px-4 py-3"><div class="skeleton h-5 w-16 ml-auto"></div></td>
+                <td class="px-4 py-4"><div class="skeleton h-4 w-28"></div></td>
+                <td class="px-4 py-4"><div class="skeleton h-5 w-24 rounded-full"></div></td>
+                <td class="px-4 py-4"><div class="skeleton h-5 w-5 ml-auto"></div></td>
               </tr>
             }
           </tbody>
@@ -101,81 +100,87 @@
       </div>
     } @else {
       <div class="overflow-x-auto flex-1">
-        <table class="w-full text-left border-collapse whitespace-nowrap">
-          <thead class="bg-surface border-b border-outline-variant sticky top-0 z-10">
+        <table class="w-full table-fixed text-left border-collapse">
+          <colgroup>
+            <col class="w-[35%]" />
+            <col class="w-[20%]" />
+            <col class="w-[30%]" />
+            <col class="w-[15%]" />
+          </colgroup>
+          <thead class="bg-surface border-b border-outline sticky top-0 z-10">
             <tr>
-              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Socio</th>
-              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">DNI</th>
-              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Teléfono</th>
-              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Fecha Alta</th>
-              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Membresía</th>
-              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold">Estado</th>
-              <th class="px-4 py-3 text-label-md font-label-md text-on-surface-variant font-semibold text-right">Acciones</th>
+              <th class="px-4 py-3 text-label-sm font-label-sm uppercase tracking-wide text-on-surface-variant">Socio</th>
+              <th class="px-4 py-3 text-label-sm font-label-sm uppercase tracking-wide text-on-surface-variant">Contacto</th>
+              <th class="px-4 py-3 text-label-sm font-label-sm uppercase tracking-wide text-on-surface-variant">Membresía</th>
+              <th class="px-4 py-3 text-label-sm font-label-sm uppercase tracking-wide text-on-surface-variant text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-outline-variant" [@staggerGrid]="socios()">
+          <tbody class="divide-y divide-outline" [@staggerGrid]="socios()">
             @for (socio of socios(); track socio.id) {
-              <tr class="hover:bg-surface-container-low transition-colors duration-150" [class.bg-surface-bright]="$even">
-                <td class="px-4 py-3">
+              <tr
+                class="hover:bg-surface-container-low transition-colors duration-150 cursor-pointer"
+                [class.bg-surface-bright]="$even"
+                [class.opacity-60]="socio.activo === false"
+                tabindex="0"
+                (click)="onFilaClick(socio)"
+                (keydown)="onFilaKeydown($event, socio)"
+              >
+                <td class="px-4 py-4">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full {{ getAvatarColor(socio.id) }} flex items-center justify-center text-label-md font-label-md">
+                    <div class="w-10 h-10 shrink-0 rounded-full bg-surface-container-highest text-on-surface flex items-center justify-center text-label-sm font-medium">
                       {{ getInitials(socio.nombre || '', socio.apellido || '') }}
                     </div>
-                    <div>
-                      <p class="text-label-md font-label-md text-on-background">{{ socio.nombre }} {{ socio.apellido }}</p>
-                      <p class="text-body-sm font-body-sm text-on-surface-variant text-[12px] flex items-center gap-1">
-                        <lucide-icon [img]="Mail" class="w-3 h-3"></lucide-icon>
-                        Socio #{{ socio.id }}
-                      </p>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2">
+                        <p class="text-body-sm font-medium text-on-background truncate">{{ socio.nombre }} {{ socio.apellido }}</p>
+                        @if (socio.activo === false) {
+                          <span class="shrink-0 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-surface-container-highest text-on-surface-variant">Inactivo</span>
+                        }
+                      </div>
+                      <p class="text-label-sm font-label-sm text-on-surface-variant tabular-nums truncate">{{ socio.dni }}</p>
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-body-sm font-body-sm text-on-background">{{ socio.dni }}</td>
-                <td class="px-4 py-3 text-body-sm font-body-sm text-on-background">{{ socio.telefono }}</td>
-                <td class="px-4 py-3 text-body-sm font-body-sm text-on-background">{{ socio.fechaAlta | date:'dd/MM/yyyy' }}</td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-4 text-body-sm font-body-sm">
+                  @if (socio.telefono) {
+                    <span class="text-on-surface-variant">{{ socio.telefono }}</span>
+                  } @else {
+                    <span class="text-on-surface-variant/60">—</span>
+                  }
+                </td>
+                <td class="px-4 py-4">
                   @if (socio.membresiaResumen; as resumen) {
-                    <div class="flex flex-col gap-1">
-                      <span class="inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-full font-label-sm border {{ badgeMembresia(resumen).clases }}">
-                        <lucide-icon [img]="badgeMembresia(resumen).icono" class="w-3.5 h-3.5"></lucide-icon>
+                    <div class="flex flex-col items-start gap-1">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {{ badgeMembresia(resumen).clases }}">
                         {{ badgeMembresia(resumen).etiqueta }}
                       </span>
-                      <span class="text-[12px] text-on-surface-variant">
-                        {{ resumen.planNombre }} · vence {{ resumen.fechaFin | date:'dd/MM/yyyy':'UTC' }}
+                      <span class="text-label-sm font-label-sm text-on-surface-variant truncate">
+                        {{ detalleMembresia(resumen) }}
                       </span>
                     </div>
                   } @else {
-                    <span class="inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-full font-label-sm border bg-surface-container-highest text-on-surface-variant border-outline-variant">
-                      <lucide-icon [img]="CircleSlash" class="w-3.5 h-3.5"></lucide-icon>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-surface-container-highest text-on-surface-variant">
                       Sin membresía
                     </span>
                   }
                 </td>
-                <td class="px-4 py-3">
-                  @if (socio.activo !== undefined) {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm border {{ socio.activo ? 'bg-success-container text-on-success-container border-success' : 'bg-error-container text-on-error-container border-error' }}">
-                      <lucide-icon [img]="socio.activo ? CheckCircle : XCircle" class="w-3.5 h-3.5"></lucide-icon>
-                      {{ socio.activo ? 'Activo' : 'Inactivo' }}
-                    </span>
-                  }
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="flex items-center justify-end gap-1">
-                    <button (click)="openSocioDetail(socio)" class="text-on-surface-variant hover:text-primary p-2 rounded-lg transition-colors" title="Ver detalle y membresías" aria-label="Ver detalle del socio">
-                      <lucide-icon [img]="Eye" class="w-5 h-5"></lucide-icon>
-                    </button>
-                    <button (click)="onEditSocio(socio)" *hasRole="['administrador', 'dueno', 'super_admin']" class="text-on-surface-variant hover:text-primary p-2 rounded-lg transition-colors" title="Editar" aria-label="Editar socio">
-                      <lucide-icon [img]="User" class="w-5 h-5"></lucide-icon>
-                    </button>
-                    <button (click)="onDeleteSocio(socio)" *hasRole="['administrador', 'dueno', 'super_admin']" class="text-on-surface-variant hover:text-error p-2 rounded-lg transition-colors" title="Eliminar" aria-label="Eliminar socio">
-                      <lucide-icon [img]="XCircle" class="w-5 h-5"></lucide-icon>
-                    </button>
-                  </div>
+                <td class="px-4 py-4 text-right">
+                  <button
+                    type="button"
+                    (click)="onToggleMenuAcciones($event, socio)"
+                    [attr.aria-expanded]="menuSocioId() === socio.id"
+                    aria-haspopup="menu"
+                    aria-label="Acciones del socio"
+                    title="Acciones"
+                    class="p-2 rounded-lg text-on-surface-variant hover:text-primary transition-colors"
+                  >
+                    <lucide-icon [img]="MoreVertical" class="w-5 h-5"></lucide-icon>
+                  </button>
                 </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="px-4 py-12 text-center text-on-surface-variant">
+                <td colspan="4" class="px-4 py-12 text-center text-on-surface-variant">
                   <lucide-icon [img]="Users" class="w-12 h-12 mx-auto mb-3 text-on-surface-variant/50"></lucide-icon>
                   <p class="text-body-md">No se encontraron socios</p>
                   @if (estadoMembresia()) {
@@ -192,7 +197,7 @@
       </div>
 
       <!-- Pagination Footer -->
-      <div class="bg-surface border-t border-outline-variant px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="bg-surface border-t border-outline px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p class="text-body-sm font-body-sm text-on-surface-variant">
           Mostrando
           <span class="font-semibold text-on-background ml-1 mr-1">{{ (currentPage() - 1) * pageSize + 1 }}</span>
@@ -219,6 +224,56 @@
           </button>
         </div>
       </div>
+
+      <!-- Menú de acciones de la fila abierta -->
+      @if (menuAcciones(); as menu) {
+        <div
+          data-menu-acciones
+          role="menu"
+          aria-label="Acciones del socio"
+          @fadeZoom
+          [style.top.px]="menu.top"
+          [style.left.px]="menu.left"
+          class="fixed z-30 w-44 py-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.1)]"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            (click)="verDetalleDesdeMenu(menu.socio)"
+            class="w-full flex items-center gap-2.5 px-3 py-2 text-left text-body-sm font-body-sm text-on-surface hover:bg-surface-container-low transition-colors"
+          >
+            <lucide-icon [img]="Eye" class="w-4 h-4 shrink-0"></lucide-icon>
+            Ver detalle
+          </button>
+
+          <ng-container *hasRole="['administrador', 'dueno', 'super_admin']">
+            <button
+              type="button"
+              role="menuitem"
+              (click)="editarDesdeMenu(menu.socio)"
+              class="w-full flex items-center gap-2.5 px-3 py-2 text-left text-body-sm font-body-sm text-on-surface hover:bg-surface-container-low transition-colors"
+            >
+              <lucide-icon [img]="Pencil" class="w-4 h-4 shrink-0"></lucide-icon>
+              Editar
+            </button>
+
+            <!-- El backend no expone reactivar un socio (solo desactivar), así
+                 que a un inactivo no se le ofrece ninguna acción de estado. -->
+            @if (menu.socio.activo !== false) {
+              <div class="my-1 border-t border-outline-variant"></div>
+              <button
+                type="button"
+                role="menuitem"
+                (click)="darDeBajaDesdeMenu(menu.socio)"
+                class="w-full flex items-center gap-2.5 px-3 py-2 text-left text-body-sm font-body-sm text-error hover:bg-error-container transition-colors"
+              >
+                <lucide-icon [img]="Ban" class="w-4 h-4 shrink-0"></lucide-icon>
+                Dar de baja
+              </button>
+            }
+          </ng-container>
+        </div>
+      }
     }
   </div>
 

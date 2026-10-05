@@ -215,8 +215,11 @@
         </div>
       </div>
 
-      <!-- Menú de acciones de la fila abierta -->
+      <!-- Menú de acciones de la fila abierta.
+           Las opciones las arma `accionesMenu`, que ya filtro por rol según lo
+           que permite el backend, así que acá no hace falta *hasRole. -->
       @if (menuAcciones(); as menu) {
+        @let base = 'w-full flex items-center gap-2.5 px-3 py-2 text-left text-body-sm font-body-sm transition-colors';
         <div
           data-menu-acciones
           role="menu"
@@ -224,44 +227,84 @@
           @fadeZoom
           [style.top.px]="menu.top"
           [style.left.px]="menu.left"
-          class="fixed z-30 w-44 py-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.1)]"
+          class="fixed z-30 w-56 py-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.1)]"
         >
-          <button
-            type="button"
-            role="menuitem"
-            (click)="verDetalleDesdeMenu(menu.socio)"
-            class="w-full flex items-center gap-2.5 px-3 py-2 text-left text-body-sm font-body-sm text-on-surface hover:bg-surface-container-low transition-colors"
-          >
-            <lucide-icon [img]="Eye" class="w-4 h-4 shrink-0"></lucide-icon>
-            Ver detalle
-          </button>
-
-          <ng-container *hasRole="['administrador', 'dueno', 'super_admin']">
-            <button
-              type="button"
-              role="menuitem"
-              (click)="editarDesdeMenu(menu.socio)"
-              class="w-full flex items-center gap-2.5 px-3 py-2 text-left text-body-sm font-body-sm text-on-surface hover:bg-surface-container-low transition-colors"
-            >
-              <lucide-icon [img]="Pencil" class="w-4 h-4 shrink-0"></lucide-icon>
-              Editar
-            </button>
-
-            <!-- El backend no expone reactivar un socio (solo desactivar), así
-                 que a un inactivo no se le ofrece ninguna acción de estado. -->
-            @if (menu.socio.activo !== false) {
-              <div class="my-1 border-t border-outline-variant"></div>
-              <button
-                type="button"
-                role="menuitem"
-                (click)="darDeBajaDesdeMenu(menu.socio)"
-                class="w-full flex items-center gap-2.5 px-3 py-2 text-left text-body-sm font-body-sm text-error hover:bg-error-container transition-colors"
-              >
-                <lucide-icon [img]="Ban" class="w-4 h-4 shrink-0"></lucide-icon>
-                Dar de baja
-              </button>
+          @for (accion of accionesMenu(); track accion) {
+            @switch (accion) {
+              @case ('detalle') {
+                <button type="button" role="menuitem" (click)="verDetalleDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="Eye" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Ver detalle
+                </button>
+              }
+              @case ('editar') {
+                <button type="button" role="menuitem" (click)="editarDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="Pencil" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Editar
+                </button>
+              }
+              @case ('suspender') {
+                <button type="button" role="menuitem" (click)="suspenderMembresiaDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="Pause" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Suspender membresía
+                </button>
+              }
+              @case ('reanudar') {
+                <button type="button" role="menuitem" (click)="reanudarMembresiaDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="Play" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Reanudar membresía
+                </button>
+              }
+              @case ('renovar') {
+                <button type="button" role="menuitem" (click)="renovarMembresiaDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="RefreshCw" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Renovar membresía
+                </button>
+              }
+              @case ('asignar') {
+                <button type="button" role="menuitem" (click)="asignarMembresiaDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="CreditCard" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Asignar membresía
+                </button>
+              }
+              @case ('cancelar') {
+                <button type="button" role="menuitem" (click)="cancelarMembresiaDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="XCircle" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Cancelar membresía
+                </button>
+              }
+              @case ('darDeBaja') {
+                <div class="my-1 border-t border-outline-variant"></div>
+                <button type="button" role="menuitem" (click)="darDeBajaDesdeMenu(menu.socio)"
+                        class="{{ base }} text-error hover:bg-error-container">
+                  <lucide-icon [img]="Ban" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Dar de baja
+                </button>
+              }
+              @case ('reactivar') {
+                <button type="button" role="menuitem" (click)="reactivarDesdeMenu(menu.socio)"
+                        class="{{ base }} text-on-surface hover:bg-surface-container-low">
+                  <lucide-icon [img]="RefreshCw" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Reactivar socio
+                </button>
+              }
+              @case ('eliminar') {
+                <div class="my-1 border-t border-outline-variant"></div>
+                <button type="button" role="menuitem" (click)="eliminarDefinitivoDesdeMenu(menu.socio)"
+                        class="{{ base }} text-error hover:bg-error-container">
+                  <lucide-icon [img]="Trash2" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Eliminar definitivamente
+                </button>
+              }
             }
-          </ng-container>
+          }
         </div>
       }
     }

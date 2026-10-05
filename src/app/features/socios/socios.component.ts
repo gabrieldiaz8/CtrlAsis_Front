@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed, H
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable, Subscription, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, tap } from 'rxjs';
-import { LucideAngularModule, Users, Search, Plus, EllipsisVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt, Ban, Pencil } from 'lucide-angular';
+import { LucideAngularModule, Users, Search, Plus, EllipsisVertical, ChevronLeft, ChevronRight, User, Mail, Calendar, AlertCircle, CheckCircle, XCircle, Loader2, X, Eye, CreditCard, Shield, RefreshCw, Clock, RotateCcw, Wallet, DollarSign, Landmark, Receipt, Ban, Pencil, Pause, Play, Trash2 } from 'lucide-angular';
 import { MainLayoutComponent } from '@shared/components/layout';
 import {
   SociosService,
@@ -18,6 +18,7 @@ import { CatalogosService, MedioPagoResponseDto } from '@api';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastService } from '@core/services/toast.service';
+import { RoleService, RolUsuario } from '@core/services/role.service';
 import { HasRoleDirective } from '@core/directives/has-role.directive';
 import { PagoFormModalComponent, PlanMembresiaFieldsComponent } from '@shared/components';
 import { MembresiaActualComponent } from './membresia-actual/membresia-actual.component';
@@ -27,7 +28,21 @@ import { ModalCancelarComponent } from './modal-cancelar/modal-cancelar.componen
 import { modalOverlay, modalPanel, staggerGrid, fadeZoom } from '@shared/utils/animations';
 
 /** Ancho del menú de acciones; tiene que coincidir con el `w-*` del panel. */
-const MENU_ANCHO = 176;
+const MENU_ANCHO = 224;
+
+/**
+ * Roles con los que se puede olhar sobre socios y membresías. Son los mismos que
+ * exige el backend: `PATCH|DELETE /socios` y `POST /membresias/*` aceptan
+ * dueño, super_admin y administrador.
+ */
+const ROLES_GESTION: RolUsuario[] = ['administrador', 'dueno', 'super_admin'];
+
+/**
+ * El borrado definitivo está más restringido: el backend sólo lo habilita para
+ * dueño y super_admin, así que el menú tampoco puede ofrecerlo a un
+ * administrador.
+ */
+const ROLES_ELIMINAR: RolUsuario[] = ['dueno', 'super_admin'];
 
 /** Paso del alta de socio con membresía que se está ejecutando o que falló. */
 type AltaPaso = 'socio' | 'membresia' | 'pago';
@@ -50,6 +65,22 @@ interface ChipMembresia {
   value: EstadoMembresiaFiltro | undefined;
 }
 
+/**
+ * Acciones que el menú ⋮ puede ofrecer. Las que dependen del estado de la fila
+ * se calculan en `accionesMenu`, que también las filtra por rol.
+ */
+type AccionMenuSocio =
+  | 'detalle'
+  | 'editar'
+  | 'suspender'
+  | 'reanudar'
+  | 'renovar'
+  | 'asignar'
+  | 'cancelar'
+  | 'darDeBaja'
+  | 'reactivar'
+  | 'eliminar';
+
 @Component({
   selector: 'app-socios',
   standalone: true,
@@ -69,6 +100,7 @@ export class SociosComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
+  private roles = inject(RoleService);
   private destroyRef = inject(DestroyRef);
 
   private search$ = new Subject<string>();
@@ -100,6 +132,9 @@ export class SociosComponent implements OnInit {
   readonly Receipt = Receipt;
   readonly Ban = Ban;
   readonly Pencil = Pencil;
+  readonly Pause = Pause;
+  readonly Play = Play;
+  readonly Trash2 = Trash2;
 
   socios = signal<SocioResponseDto[]>([]);
   loading = signal(true);
@@ -141,6 +176,52 @@ export class SociosComponent implements OnInit {
     const socio = this.socioAbierto();
     return pos && socio ? { ...pos, socio } : null;
   });
+
+  /**
+   * Acciones del menú para la fila abierta: dependen del estado del socio y de
+   * su membresía, y se descartan las que el rol actual no puede ejecutar.
+   *
+   * Un socio inactivo no ofrece nada de membresía: si se lo reactivó no vuelve
+   * a tener membresía (el backend no la recrea) y hay que asignarle una nueva.
+   */
+  readonly accionesMenu = computed<AccionMenuSocio[]>(() => {
+    const socio = this.socioAbierto();
+    if (!socio) return [];
+
+    const candidatas = socio.activo === false
+      ? (['detalle', 'reactivar', 'eliminar'] as AccionMenuSocio[])
+      : this.accionesPorMembresia(this.estadoMembresiaDe(socio));
+
+    return candidatas.filter(accion => this.permiteAccion(accion));
+  });
+
+  /** Qué se puede hacer según el estado de la membresía de un socio activo. */
+  private accionesPorMembresia(estado: EstadoMembresiaFiltro): AccionMenuSocio[] {
+    switch (estado) {
+      case 'activa':
+        return ['detalle', 'editar', 'suspender', 'cancelar', 'darDeBaja'];
+      case 'suspendida':
+        return ['detalle', 'editar', 'reanudar', 'cancelar', 'darDeBaja'];
+      case 'vencida':
+      case 'cancelada':
+        return ['detalle', 'editar', 'renovar', 'darDeBaja'];
+      default:
+        return ['detalle', 'editar', 'asignar', 'darDeBaja'];
+    }
+  }
+
+  /** El detalle se muestra siempre; el resto se reserva a los roles que lo operaron. */
+  private permiteAccion(accion: AccionMenuSocio): boolean {
+    if (accion === 'detalle') return true;
+    if (accion === 'eliminar') return this.roles.hasAnyRole(ROLES_ELIMINAR);
+    return this.roles.hasAnyRole(ROLES_GESTION);
+  }
+
+  /** Estado efectivo de la membresía de una fila, o 'sin_membresia' si no tiene. */
+  estadoMembresiaDe(socio: SocioResponseDto): EstadoMembresiaFiltro {
+    const resumen = socio.membresiaResumen;
+    return resumen ? this.estadoEfectivoMembresia(resumen) : 'sin_membresia';
+  }
 
   readonly chipsMembresia: ChipMembresia[] = [
     { label: 'Todos', value: undefined },
@@ -398,8 +479,9 @@ export class SociosComponent implements OnInit {
   }
 
   /**
-   * Cierra el menú y ejecuta la acción. Se pasan por los mismos handlers que
-   * usaban los íconos sueltos, para no duplicar su comportamiento.
+   * Cierra el menú y ejecuta la acción. Los handlers que había antes seguían
+   * apuntando a los íconos sueltos, así que se mantienen para no duplicar su
+   * comportamiento; los de membresía los agrega `accionesMenu`.
    */
   verDetalleDesdeMenu(socio: SocioResponseDto) {
     this.cerrarMenuAcciones();
@@ -411,9 +493,125 @@ export class SociosComponent implements OnInit {
     this.onEditSocio(socio);
   }
 
+  /** El id de la membresía vive en el resumen que ya trae la fila. */
+  private membresiaIdDe(socio: SocioResponseDto): string | null {
+    return socio.membresiaResumen?.id ?? null;
+  }
+
+  suspenderMembresiaDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    const id = this.membresiaIdDe(socio);
+    if (!id) return;
+
+    this.membresiasService.membresiasControllerSuspender(id).subscribe({
+      next: () => {
+        this.loadSocios();
+        this.toast.success('Membresía suspendida correctamente', { title: 'Suspendida' });
+      },
+      error: (err) => {
+        this.toast.error(this.mensajeDeError(err, 'No se pudo suspender la membresía'), { title: 'Error' });
+        console.error('Error al suspender membresía:', err);
+      }
+    });
+  }
+
+  reanudarMembresiaDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    const id = this.membresiaIdDe(socio);
+    if (!id) return;
+
+    this.membresiasService.membresiasControllerReanudar(id).subscribe({
+      next: () => {
+        this.loadSocios();
+        this.toast.success('Membresía reanudada correctamente', { title: 'Reanudada' });
+      },
+      error: (err) => {
+        this.toast.error(this.mensajeDeError(err, 'No se pudo reanudar la membresía'), { title: 'Error' });
+        console.error('Error al reanudar membresía:', err);
+      }
+    });
+  }
+
+  /**
+   * Renovar y cancelar reutilizan los modales que ya están en la ficha, pero
+   * esos reciben la `MembresiaResponseDto` completa y la fila solo trae el
+   * resumen. Se pide la membresía y se abre el modal ya cargado, en vez de
+   * volver a escribir el formulario acá.
+   */
+  private abrirModalDeMembresia(socio: SocioResponseDto, modal: 'renovar' | 'cancelar') {
+    const id = this.membresiaIdDe(socio);
+    if (!id) return;
+
+    this.membresiasService.membresiasControllerFindOne(id).subscribe({
+      next: (membresia) => {
+        if (modal === 'renovar') {
+          this.onRenovarMembresia(membresia);
+        } else {
+          this.onCancelarMembresia(membresia);
+        }
+      },
+      error: (err) => {
+        this.toast.error(this.mensajeDeError(err, 'No se pudo cargar la membresía'), { title: 'Error' });
+        console.error('Error al cargar la membresía para el modal:', err);
+      }
+    });
+  }
+
+  renovarMembresiaDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    this.abrirModalDeMembresia(socio, 'renovar');
+  }
+
+  cancelarMembresiaDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    this.abrirModalDeMembresia(socio, 'cancelar');
+  }
+
+  /** Reaprovecha el modal de alta de membresía que ya se usa en la ficha. */
+  asignarMembresiaDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    this.openSocioMembresiaModal(socio);
+  }
+
   darDeBajaDesdeMenu(socio: SocioResponseDto) {
     this.cerrarMenuAcciones();
     this.onDeleteSocio(socio);
+  }
+
+  reactivarDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+    this.sociosService.sociosControllerReactivar(socio.id).subscribe({
+      next: () => {
+        this.loadSocios();
+        this.toast.success('Socio reactivado correctamente', { title: 'Reactivado' });
+      },
+      error: (err) => {
+        this.toast.error(this.mensajeDeError(err, 'No se pudo reactivar el socio'), { title: 'Error' });
+        console.error('Error reactivating socio:', err);
+      }
+    });
+  }
+
+  eliminarDefinitivoDesdeMenu(socio: SocioResponseDto) {
+    this.cerrarMenuAcciones();
+
+    const nombre = `${socio.nombre} ${socio.apellido}`;
+    if (!confirm(
+      `¿Eliminar definitivamente a ${nombre}?\n\n` +
+      'Se borran su membresía y sus accesos. No se puede deshacer; ' +
+      'si sólo querés darlo de baja, usá "Dar de baja".'
+    )) return;
+
+    this.sociosService.sociosControllerEliminarDefinitivo(socio.id).subscribe({
+      next: () => {
+        this.loadSocios();
+        this.toast.success('Socio eliminado definitivamente', { title: 'Eliminado' });
+      },
+      error: (err) => {
+        this.toast.error(this.mensajeDeError(err, 'No se pudo eliminar el socio'), { title: 'Error' });
+        console.error('Error deleting socio:', err);
+      }
+    });
   }
 
   /** Toda la fila abre el detalle. El menú ⋮ frena la propagación antes. */
@@ -778,7 +976,15 @@ export class SociosComponent implements OnInit {
   // ------------------------------------------------------------
   // Crear membresía desde el socio
   // ------------------------------------------------------------
-  openSocioMembresiaModal() {
+  /**
+   * Alta de membresía para un socio ya existente. Sin argumento usa el de la
+   * ficha abierta; el menú ⋮ pasa el de la fila, así que el mismo modal sirve
+   * para las dos entradas.
+   */
+  openSocioMembresiaModal(socio: SocioResponseDto | null = this.detailSocio()) {
+    if (!socio) return;
+
+    this.detailSocio.set(socio);
     this.setHabilitada(this.membresiaRapidaForm, true);
     this.membresiaRapidaForm.reset({ planId: '', fechaInicio: this.getToday(), fechaFin: '' });
     this.socialMembresiaSaving.set(false);
@@ -812,6 +1018,9 @@ export class SociosComponent implements OnInit {
           this.socioMembresiasLoaded.set(false);
           this.socioMembresias.set([]);
           this.loadSocioMembresias();
+          // El alta puede venir del menú de la fila, donde no hay ficha abierta:
+          // la lista y los contadores de los chips se actualizan siempre.
+          this.loadSocios();
           this.toast.success('Membresía creada correctamente', { title: 'Creada' });
         },
         error: (err) => {
@@ -836,6 +1045,7 @@ export class SociosComponent implements OnInit {
     this.socioMembresiasLoaded.set(false);
     this.socioMembresias.set([]);
     this.loadSocioMembresias();
+    this.loadSocios();
   }
 
   onCambiarPlanMembresia(m: MembresiaResponseDto) {
@@ -854,6 +1064,7 @@ export class SociosComponent implements OnInit {
     this.socioMembresiasLoaded.set(false);
     this.socioMembresias.set([]);
     this.loadSocioMembresias();
+    this.loadSocios();
   }
 
   onRegistrarPagoMembresia(m: MembresiaResponseDto) {
@@ -1181,18 +1392,30 @@ export class SociosComponent implements OnInit {
   }
 
   onDeleteSocio(socio: SocioResponseDto) {
-    if (confirm(`¿Eliminar a ${socio.nombre} ${socio.apellido}?`)) {
-      this.sociosService.sociosControllerDesactivar(socio.id).subscribe({
-        next: (desactivado) => {
-          this.socios.update(list => list.map(s => s.id === desactivado.id ? { ...s, activo: false } : s));
-          this.toast.success('Socio desactivado correctamente', { title: 'Desactivado' });
-        },
-        error: (err) => {
-          this.toast.error('No se pudo desactivar el socio', { title: 'Error' });
-          console.error('Error deactivating socio:', err);
-        }
-      });
-    }
+    // Baja lógica: deja el historial financiero intacto, por eso el diálogo
+    // dice "dar de baja" y no "eliminar".
+    if (!confirm(`¿Dar de baja a ${socio.nombre} ${socio.apellido}?`)) return;
+
+    this.sociosService.sociosControllerDesactivar(socio.id).subscribe({
+      next: () => {
+        this.loadSocios();
+        this.toast.success('Socio dado de baja correctamente', { title: 'Desactivado' });
+      },
+      error: (err) => {
+        this.toast.error(this.mensajeDeError(err, 'No se pudo dar de baja el socio'), { title: 'Error' });
+        console.error('Error deactivating socio:', err);
+      }
+    });
+  }
+
+  /**
+   * Mensaje del backend si viene alguno, si no un texto propio. Importa para los
+   * 409: borrar un socio con pagos, o reactivar con otra membresía activa, explica
+   * en la respuesta por qué no se puede y esa explicación se muestra tal cual.
+   */
+  private mensajeDeError(err: any, porDefecto: string): string {
+    const mensaje = err?.error?.message;
+    return typeof mensaje === 'string' && mensaje.trim() ? mensaje : porDefecto;
   }
 
   fieldError(field: string): string | null {
